@@ -297,7 +297,7 @@
     }
 
     function showScript(name, url) {
-      const full = `loadstring(game:HttpGet("${url}"))()`;
+      const full = `loadstring(game:HttpGetAsync("${url}"))()`;
       document.getElementById("codeOutput").textContent = full;
       document.getElementById("scriptName").textContent = name + " Script";
       document.getElementById("viewer").classList.remove("hidden");
