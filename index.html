@@ -192,12 +192,6 @@
       box-shadow: 0 0 25px red;
     }
 
-    .version {
-      margin-top: 20px;
-      color: #888;
-      font-size: 0.9rem;
-    }
-
     .footer {
       text-align: center;
       padding: 30px;
@@ -213,6 +207,17 @@
 
     .footer a:hover {
       text-decoration: underline;
+    }
+
+    #versionTag {
+      position: fixed;
+      bottom: 10px;
+      right: 20px;
+      font-size: 0.85rem;
+      color: #ff4444;
+      opacity: 0.8;
+      pointer-events: none;
+      font-family: monospace;
     }
   </style>
 </head>
@@ -231,14 +236,13 @@
     <button class="tab-btn" onclick="openTab('obfuscator', event)">Luau Obfuscator</button>
   </div>
 
-  <!-- Scripts Tab -->
   <section class="tab-content" id="tab-scripts">
     <div class="script-grid">
       <div class="script-card" onclick="showScript('AutoFarm', 'Coming Soon!')">
         <h2>AutoFarm</h2>
         <p>Automate your grind</p>
       </div>
-       <div class="script-card" onclick="showScript('Murder Mystery 2', 'https://raw.githubusercontent.com/Syr0nix/scripts/refs/heads/main/MM2')">
+      <div class="script-card" onclick="showScript('Murder Mystery 2', 'https://raw.githubusercontent.com/Syr0nix/scripts/refs/heads/main/MM2')">
         <h2>Murder Mystery 2</h2>
         <p>See all kill all Murder Mystery 2</p>
       </div>
@@ -264,7 +268,6 @@
     </div>
   </section>
 
-  <!-- Executor Tab with Image Centered Above -->
   <section class="tab-content hidden" id="tab-executor">
     <div style="display: flex; flex-direction: column; align-items: center; gap: 30px;">
       <img 
@@ -276,12 +279,10 @@
         <h2>Download RedFox Executor</h2>
         <p>The fastest, safest way to run Roblox scripts — built for power users.</p>
         <a class="download-btn" href="https://yourdomain.com/RedFoxExecutor.zip" download>⬇️ Download Executor</a>
-        <div class="version">v2.0 • 5.4MB • Updated May 2025</div>
       </div>
     </div>
   </section>
 
-  <!-- Obfuscator Tab -->
   <section class="tab-content hidden" id="tab-obfuscator">
     <h2>Luau Obfuscator</h2>
     <p style="color: #aaa;">Coming soon — protect your scripts with advanced obfuscation.</p>
@@ -291,6 +292,8 @@
     <p>RedFox Tools • <a href="https://discord.gg/CCzPKQfe8K">Join Discord</a></p>
     <p>© 2025 Syr0nix Studio's™. All rights reserved.</p>
   </footer>
+
+  <div id="versionTag">Loading version...</div>
 
   <script>
     function openTab(tabId, event) {
@@ -312,6 +315,30 @@
       navigator.clipboard.writeText(code);
       alert("Copied to clipboard!");
     }
+
+    const versionURL = "https://raw.githubusercontent.com/Syr0nix/RedFoxScripts.com/refs/heads/main/version.txt";
+    let lastVersion = "";
+
+    async function checkForUpdate() {
+      try {
+        const res = await fetch(versionURL + "?t=" + Date.now());
+        const latestVersion = (await res.text()).trim();
+        document.getElementById("versionTag").textContent = "Version: " + latestVersion;
+
+        if (!lastVersion) {
+          lastVersion = latestVersion;
+        } else if (latestVersion !== lastVersion) {
+          console.log("New version detected. Reloading...");
+          location.reload(true);
+        }
+      } catch (e) {
+        console.warn("Version check failed:", e);
+        document.getElementById("versionTag").textContent = "Version: Unknown";
+      }
+    }
+
+    checkForUpdate();
+    setInterval(checkForUpdate, 15000);
   </script>
 </body>
 </html>
