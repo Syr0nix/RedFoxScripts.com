@@ -293,34 +293,29 @@
     return str.split('').map(c => "\\" + String(c.charCodeAt(0) ^ xorKey).padStart(3, '0')).join('');
   }
 
-  function runObfuscator() {
-    const input = document.getElementById("luauInput").value.trim();
-    const output = document.getElementById("obfOutput");
-    const copyBtn = document.getElementById("copyObf");
+function runObfuscator() {
+  const input = document.getElementById("luauInput").value.trim();
+  const output = document.getElementById("obfOutput");
+  const copyBtn = document.getElementById("copyObf");
 
-    if (!input) {
-      output.textContent = "-- Please enter Luau code.";
-      copyBtn.style.display = "none";
-      return;
-    }
-
-    const key = "K3Y";
-    const hiddenKey = byteEncode(key, 93);
-    const encoded = xorEncode(input, key);
-
-    const xorFunc = "function(a,b)local r={}for i=1,#a do r[#r+1]=string.char(bit32.bxor(string.byte(a,i),string.byte(b,(i-1)%#b+1)))end return table.concat(r)end";
-    const keyDecode = `local k=(function(s)local r={}for i=1,#s do r[#r+1]=string.char(bit32.bxor(string.byte(s,i),93))end return table.concat(r)end)("${hiddenKey}")`;
-    const payload = `--[[RedFox Obfuscator]] local xor=${xorFunc} ${keyDecode} local d="${encoded}" local f=xor(d,k) loadstring(f)()`;
-
-    output.textContent = payload;
-    copyBtn.style.display = "inline-block";
+  if (!input) {
+    output.textContent = "-- Please enter Luau code.";
+    copyBtn.style.display = "none";
+    return;
   }
 
-  function copyObfText() {
-    const code = document.getElementById("obfOutput").textContent;
-    navigator.clipboard.writeText(code);
-    alert("Obfuscated script copied!");
-  }
+  const bytes = input.split('').map(c => c.charCodeAt(0));
+  const encoded = `local code = { ${bytes.join(", ")} }\nloadstring(string.char(unpack(code)))()`;
+
+  output.textContent = encoded;
+  copyBtn.style.display = "inline-block";
+}
+
+function copyObfText() {
+  const code = document.getElementById("obfOutput").textContent;
+  navigator.clipboard.writeText(code);
+  alert("Obfuscated script copied!");
+}
 
   function checkForUpdate() {
     const versionURL = "https://raw.githubusercontent.com/Syr0nix/RedFoxScripts.com/refs/heads/main/version.txt";
