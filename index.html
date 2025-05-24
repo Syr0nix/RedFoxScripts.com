@@ -13,7 +13,6 @@
       color: #fff;
       overflow-x: hidden;
     }
-
     .background-glow {
       position: fixed;
       top: 0; left: 0;
@@ -24,46 +23,38 @@
       z-index: -1;
       animation: pulseGlow 6s ease-in-out infinite;
     }
-
     @keyframes pulseGlow {
       0%, 100% { opacity: 0.8; }
       50% { opacity: 0.2; }
     }
-
     .site-header {
       text-align: center;
       padding: 60px 20px 20px;
       background-color: #0a0a0a;
     }
-
     .logo {
       width: 72px;
       filter: drop-shadow(0 0 15px red);
     }
-
     .site-title {
       font-size: 2.5rem;
       font-weight: bold;
       color: #ff3b3b;
       text-shadow: 0 0 12px red;
     }
-
     .site-title span {
       color: #ff66cc;
     }
-
     .subtitle {
       color: #ccc;
       margin-top: 10px;
     }
-
     .tab-bar {
       display: flex;
       justify-content: center;
       background: #111;
       border-bottom: 2px solid red;
     }
-
     .tab-btn {
       background: none;
       border: none;
@@ -73,28 +64,23 @@
       cursor: pointer;
       transition: 0.3s;
     }
-
     .tab-btn.active {
       color: #ff4444;
       border-bottom: 2px solid red;
     }
-
     .tab-content {
       display: none;
       padding: 40px 20px;
     }
-
     .tab-content:not(.hidden) {
       display: block;
     }
-
     .script-grid {
       display: flex;
       flex-wrap: wrap;
       gap: 30px;
       justify-content: center;
     }
-
     .script-card {
       background: #1a1a1a;
       padding: 24px;
@@ -106,38 +92,15 @@
       transition: all 0.3s ease;
       text-align: left;
     }
-
-    .script-card h2 {
-      margin: 0 0 10px;
-      color: #ff5555;
-    }
-
-    .script-card p {
-      color: #aaa;
-      font-size: 0.9rem;
-    }
-
+    .script-card h2 { margin: 0 0 10px; color: #ff5555; }
+    .script-card p { color: #aaa; font-size: 0.9rem; }
     .script-card:hover {
       transform: translateY(-5px) scale(1.03);
       box-shadow: 0 0 20px red;
     }
-
-    .viewer {
-      background: #0a0a0a;
-      padding: 40px 20px;
-      text-align: center;
-    }
-
-    .viewer.hidden {
-      display: none;
-    }
-
-    .viewer-title {
-      font-size: 1.5rem;
-      margin-bottom: 20px;
-      color: #ff6666;
-    }
-
+    .viewer { background: #0a0a0a; padding: 40px 20px; text-align: center; }
+    .viewer.hidden { display: none; }
+    .viewer-title { font-size: 1.5rem; margin-bottom: 20px; color: #ff6666; }
     .code-box {
       background: #0f0f0f;
       border-radius: 12px;
@@ -151,7 +114,6 @@
       max-width: 90%;
       overflow-x: auto;
     }
-
     .copy-button {
       position: absolute;
       top: 12px;
@@ -166,12 +128,10 @@
       box-shadow: 0 0 10px rgba(255, 50, 80, 0.8);
       transition: all 0.2s ease;
     }
-
     .copy-button:hover {
       transform: scale(1.1);
       box-shadow: 0 0 20px rgba(255, 75, 100, 1);
     }
-
     .download-btn {
       background: linear-gradient(to right, #ff3b3b, #ff1a1a);
       color: white;
@@ -186,12 +146,10 @@
       text-decoration: none;
       display: inline-block;
     }
-
     .download-btn:hover {
       transform: scale(1.05);
       box-shadow: 0 0 25px red;
     }
-
     .footer {
       text-align: center;
       padding: 30px;
@@ -199,16 +157,8 @@
       font-size: 0.9rem;
       background-color: #0a0a0a;
     }
-
-    .footer a {
-      color: #ff4444;
-      text-decoration: none;
-    }
-
-    .footer a:hover {
-      text-decoration: underline;
-    }
-
+    .footer a { color: #ff4444; text-decoration: none; }
+    .footer a:hover { text-decoration: underline; }
     #versionTag {
       position: fixed;
       bottom: 10px;
@@ -223,13 +173,11 @@
 </head>
 <body>
   <div class="background-glow"></div>
-
   <header class="site-header">
     <img src="https://raw.githubusercontent.com/Syr0nix/RedFox-Scripts/main/Screenshot_2025-04-21_034725-removebg-preview.png" class="logo" />
     <h1 class="site-title">Red<span>Fox</span>Scripts.com</h1>
     <p class="subtitle">🔥 Roblox Scripts — Clean. Fast. Dangerous.</p>
   </header>
-
   <div class="tab-bar">
     <button class="tab-btn active" onclick="openTab('scripts', event)">Scripts</button>
     <button class="tab-btn" onclick="openTab('executor', event)">Executor</button>
@@ -252,7 +200,6 @@
       </div>
     </div>
   </section>
-
   <section class="tab-content hidden" id="tab-executor">
     <div style="display: flex; flex-direction: column; align-items: center; gap: 30px;">
       <img src="https://github.com/Syr0nix/RedFox-Scripts/blob/main/image_2025-05-11_132234605.png?raw=true" style="width: 500px; max-width: 90%; border-radius: 16px; box-shadow: 0 0 24px red, 0 0 60px rgba(255,0,0,0.2);" />
@@ -290,44 +237,61 @@
   <div id="versionTag">Loading version...</div>
 
   <script>
-function xorEncode(str, key) {
-  const result = [];
-  for (let i = 0; i < str.length; i++) {
-    result.push("\\" + (str.charCodeAt(i) ^ key.charCodeAt(i % key.length)));
-  }
-  return result.join('');
-}
+    function openTab(tabId, event) {
+      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+      event.currentTarget.classList.add('active');
+    }
 
-function byteEncode(str, xorKey = 93) {
-  return str.split('').map(c => "\\" + (c.charCodeAt(0) ^ xorKey)).join('');
-}
+    function showScript(name, url) {
+      const full = `loadstring(game:HttpGet("${url}"))()`;
+      document.getElementById("codeOutput").textContent = full;
+      document.getElementById("scriptName").textContent = name + " Script";
+      document.getElementById("viewer").classList.remove("hidden");
+    }
 
-function getRandomKey(length = 3) {
-  const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  let key = "";
-  for (let i = 0; i < length; i++) {
-    key += charset[Math.floor(Math.random() * charset.length)];
-  }
-  return key;
-}
+    function copyScript() {
+      const code = document.getElementById("codeOutput").textContent;
+      navigator.clipboard.writeText(code);
+      alert("Copied to clipboard!");
+    }
 
-function runObfuscator() {
-  const input = document.getElementById("luauInput").value.trim();
-  if (!input) {
-    document.getElementById("obfOutput").textContent = "-- Please enter Luau code.";
-    return;
-  }
+    function xorEncode(str, key) {
+      const result = [];
+      for (let i = 0; i < str.length; i++) {
+        result.push("\\" + (str.charCodeAt(i) ^ key.charCodeAt(i % key.length)));
+      }
+      return result.join('');
+    }
 
-  const key = "K3Y"; // or: const key = getRandomKey(3);
-  const hiddenKey = byteEncode(key, 93);
-  const encoded = xorEncode(input, key);
+    function byteEncode(str, xorKey = 93) {
+      return str.split('').map(c => "\\" + (c.charCodeAt(0) ^ xorKey)).join('');
+    }
 
-  const xorFunc = "function(a,b)local r={}for i=1,#a do r[#r+1]=string.char(bit32.bxor(string.byte(a,i),string.byte(b,(i-1)%#b+1)))end return table.concat(r)end";
-  const keyDecode = `local k=(function(s)local r={}for i=1,#s do r[#r+1]=string.char(bit32.bxor(string.byte(s,i),93))end return table.concat(r)end)("${hiddenKey}")`;
-  const payload = `--[[RedFox Obfuscator]] local xor=${xorFunc} ${keyDecode} local d="${encoded}" local f=xor(d,k) if typeof(loadstring)=="function" then loadstring(f)() else print(f) end`;
+    function runObfuscator() {
+      const input = document.getElementById("luauInput").value.trim();
+      if (!input) {
+        document.getElementById("obfOutput").textContent = "-- Please enter Luau code.";
+        return;
+      }
+      const key = "K3Y"; // static XOR key
+      const hiddenKey = byteEncode(key, 93);
+      const encoded = xorEncode(input, key);
+      const xorFunc = "function(a,b)local r={}for i=1,#a do r[#r+1]=string.char(bit32.bxor(string.byte(a,i),string.byte(b,(i-1)%#b+1)))end return table.concat(r)end";
+      const keyDecode = `local k=(function(s)local r={}for i=1,#s do r[#r+1]=string.char(bit32.bxor(string.byte(s,i),93))end return table.concat(r)end)("${hiddenKey}")`;
+      const payload = `--[[RedFox Obfuscator]] local xor=${xorFunc} ${keyDecode} local d="${encoded}" local f=xor(d,k) if typeof(loadstring)=="function" then loadstring(f)() else print(f) end`;
+      document.getElementById("obfOutput").textContent = payload;
+    }
 
-  document.getElementById("obfOutput").textContent = payload;
-}
+    function checkForUpdate() {
+      const versionURL = "https://raw.githubusercontent.com/Syr0nix/RedFoxScripts.com/refs/heads/main/version.txt";
+      fetch(versionURL + "?t=" + Date.now())
+        .then(res => res.text())
+        .then(ver => document.getElementById("versionTag").textContent = "Version: " + ver.trim())
+        .catch(() => document.getElementById("versionTag").textContent = "Version: Unknown");
+    }
+
     checkForUpdate();
     setInterval(checkForUpdate, 15000);
   </script>
