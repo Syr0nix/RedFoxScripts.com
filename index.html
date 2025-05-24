@@ -290,7 +290,7 @@
   <div id="versionTag">Loading version...</div>
 
   <script>
-    function xorEncode(str, key) {
+function xorEncode(str, key) {
   const result = [];
   for (let i = 0; i < str.length; i++) {
     result.push("\\" + (str.charCodeAt(i) ^ key.charCodeAt(i % key.length)));
@@ -318,17 +318,18 @@ function runObfuscator() {
     return;
   }
 
-  const key = "K3Y"; // static for now to match your table exactly
+  const key = "K3Y"; // or: const key = getRandomKey(3);
   const hiddenKey = byteEncode(key, 93);
   const encoded = xorEncode(input, key);
 
   const xorFunc = "function(a,b)local r={}for i=1,#a do r[#r+1]=string.char(bit32.bxor(string.byte(a,i),string.byte(b,(i-1)%#b+1)))end return table.concat(r)end";
   const keyDecode = `local k=(function(s)local r={}for i=1,#s do r[#r+1]=string.char(bit32.bxor(string.byte(s,i),93))end return table.concat(r)end)("${hiddenKey}")`;
+  const payload = `--[[RedFox Obfuscator]] local xor=${xorFunc} ${keyDecode} local d="${encoded}" local f=xor(d,k) if typeof(loadstring)=="function" then loadstring(f)() else print(f) end`;
 
-  const line = `--[[RedFox Obfuscator]] local xor=${xorFunc} ${keyDecode} local d="${encoded}" local f=xor(d,k) if loadstring then loadstring(f)() else print(f) end`;
-
-  document.getElementById("obfOutput").textContent = line;
+  document.getElementById("obfOutput").textContent = payload;
 }
+</script>
+
     checkForUpdate();
     setInterval(checkForUpdate, 15000);
   </script>
