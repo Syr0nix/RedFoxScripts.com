@@ -199,11 +199,13 @@
     <h1 class="site-title">Red<span>Fox</span>Scripts.com</h1>
     <p class="subtitle">🔥 Roblox Scripts — Clean. Fast. Dangerous.</p>
   </header>
+
   <div class="tab-bar">
     <button class="tab-btn active" onclick="openTab('scripts', event)">Scripts</button>
     <button class="tab-btn" onclick="openTab('executor', event)">Executor</button>
     <button class="tab-btn" onclick="openTab('obfuscator', event)">Luau Obfuscator</button>
   </div>
+
   <section class="tab-content" id="tab-scripts">
     <div class="script-grid">
       <div class="script-card" onclick="showScript('AutoFarm', 'Coming Soon!')"><h2>AutoFarm</h2><p>Automate your grind</p></div>
@@ -250,3 +252,86 @@
       </div>
     </div>
   </section>
+
+  <footer class="footer">
+    <p>RedFox Tools • <a href="https://discord.gg/CCzPKQfe8K">Join Discord</a></p>
+    <p>© 2025 Syr0nix Studio's™. All rights reserved.</p>
+  </footer>
+
+  <div id="versionTag">Loading version...</div>
+<script>
+  function openTab(tabId, event) {
+    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+    event.currentTarget.classList.add('active');
+  }
+
+  function showScript(name, url) {
+    const full = `loadstring(game:HttpGet("${url}"))()`;
+    document.getElementById("codeOutput").textContent = full;
+    document.getElementById("scriptName").textContent = name + " Script";
+    document.getElementById("viewer").classList.remove("hidden");
+  }
+
+  function copyScript() {
+    const code = document.getElementById("codeOutput").textContent;
+    navigator.clipboard.writeText(code);
+    alert("Copied to clipboard!");
+  }
+
+  function xorEncode(str, key) {
+    const result = [];
+    for (let i = 0; i < str.length; i++) {
+      const xorChar = str.charCodeAt(i) ^ key.charCodeAt(i % key.length);
+      result.push("\\" + String(xorChar).padStart(3, '0'));
+    }
+    return result.join('');
+  }
+
+  function byteEncode(str, xorKey = 93) {
+    return str.split('').map(c => "\\" + String(c.charCodeAt(0) ^ xorKey).padStart(3, '0')).join('');
+  }
+
+  function runObfuscator() {
+    const input = document.getElementById("luauInput").value.trim();
+    const output = document.getElementById("obfOutput");
+    const copyBtn = document.getElementById("copyObf");
+
+    if (!input) {
+      output.textContent = "-- Please enter Luau code.";
+      copyBtn.style.display = "none";
+      return;
+    }
+
+    const key = "K3Y";
+    const hiddenKey = byteEncode(key, 93);
+    const encoded = xorEncode(input, key);
+
+    const xorFunc = "function(a,b)local r={}for i=1,#a do r[#r+1]=string.char(bit32.bxor(string.byte(a,i),string.byte(b,(i-1)%#b+1)))end return table.concat(r)end";
+    const keyDecode = `local k=(function(s)local r={}for i=1,#s do r[#r+1]=string.char(bit32.bxor(string.byte(s,i),93))end return table.concat(r)end)("${hiddenKey}")`;
+    const payload = `--[[RedFox Obfuscator]] local xor=${xorFunc} ${keyDecode} local d="${encoded}" local f=xor(d,k) loadstring(f)()`;
+
+    output.textContent = payload;
+    copyBtn.style.display = "inline-block";
+  }
+
+  function copyObfText() {
+    const code = document.getElementById("obfOutput").textContent;
+    navigator.clipboard.writeText(code);
+    alert("Obfuscated script copied!");
+  }
+
+  function checkForUpdate() {
+    const versionURL = "https://raw.githubusercontent.com/Syr0nix/RedFoxScripts.com/refs/heads/main/version.txt";
+    fetch(versionURL + "?t=" + Date.now())
+      .then(res => res.text())
+      .then(ver => document.getElementById("versionTag").textContent = "Version: " + ver.trim())
+      .catch(() => document.getElementById("versionTag").textContent = "Version: Unknown");
+  }
+
+  checkForUpdate();
+  setInterval(checkForUpdate, 15000);
+</script>
+</body>
+</html>
