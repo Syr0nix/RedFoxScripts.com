@@ -290,58 +290,45 @@
   <div id="versionTag">Loading version...</div>
 
   <script>
-    function openTab(tabId, event) {
-      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
-      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-      document.getElementById(`tab-${tabId}`).classList.remove('hidden');
-      event.currentTarget.classList.add('active');
-    }
+    function xorEncode(str, key) {
+  const result = [];
+  for (let i = 0; i < str.length; i++) {
+    result.push("\\" + (str.charCodeAt(i) ^ key.charCodeAt(i % key.length)));
+  }
+  return result.join('');
+}
 
-    function showScript(name, url) {
-      const full = `loadstring(game:HttpGetAsync("${url}"))()`;
-      document.getElementById("codeOutput").textContent = full;
-      document.getElementById("scriptName").textContent = name + " Script";
-      document.getElementById("viewer").classList.remove("hidden");
-    }
+function byteEncode(str, xorKey = 93) {
+  return str.split('').map(c => "\\" + (c.charCodeAt(0) ^ xorKey)).join('');
+}
 
-    function copyScript() {
-      const code = document.getElementById("codeOutput").textContent;
-      navigator.clipboard.writeText(code);
-      alert("Copied to clipboard!");
-    }
+function getRandomKey(length = 3) {
+  const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  let key = "";
+  for (let i = 0; i < length; i++) {
+    key += charset[Math.floor(Math.random() * charset.length)];
+  }
+  return key;
+}
 
-   function runObfuscator() {
+function runObfuscator() {
   const input = document.getElementById("luauInput").value.trim();
-  const level = document.getElementById("obfLevel").value;
   if (!input) {
-    document.getElementById("obfOutput").textContent = "-- Please enter Luau code to obfuscate.";
+    document.getElementById("obfOutput").textContent = "-- Please enter Luau code.";
     return;
   }
 
-  const junk = () => Math.random().toString(36).substring(2, 8);
-  const reserved = ["function", "local", "end", "if", "then", "else", "for", "do", "while", "repeat", "until", "return", "break"];
-  const fnAliases = {
-    print: "_" + junk(),
-    warn: "_" + junk(),
-  };
+  const key = "K3Y"; // static for now to match your table exactly
+  const hiddenKey = byteEncode(key, 93);
+  const encoded = xorEncode(input, key);
 
-  let output = input
-    .replace(/\bprint\b/g, fnAliases.print)
-    .replace(/\bwarn\b/g, fnAliases.warn)
-    .replace(/\b([a-zA-Z_]\w*)\b/g, match => {
-      if (reserved.includes(match) || Object.values(fnAliases).includes(match)) return match;
-      return "_" + junk();
-    })
-    .replace(/"([^"]*?)"/g, (_, str) => `"${btoa(str)}"`); // Encode strings in Base64
+  const xorFunc = "function(a,b)local r={}for i=1,#a do r[#r+1]=string.char(bit32.bxor(string.byte(a,i),string.byte(b,(i-1)%#b+1)))end return table.concat(r)end";
+  const keyDecode = `local k=(function(s)local r={}for i=1,#s do r[#r+1]=string.char(bit32.bxor(string.byte(s,i),93))end return table.concat(r)end)("${hiddenKey}")`;
 
-  let header = `--[[ RedFox Obfuscator ]]--\n`;
-  header += `local ${fnAliases.print} = function(str) print((str and typeof(str)=="string") and game:GetService("HttpService"):Base64Decode(str) or str) end\n`;
-  header += `local ${fnAliases.warn} = function(str) warn((str and typeof(str)=="string") and game:GetService("HttpService"):Base64Decode(str) or str) end\n\n`;
+  const line = `--[[RedFox Obfuscator]] local xor=${xorFunc} ${keyDecode} local d="${encoded}" local f=xor(d,k) if loadstring then loadstring(f)() else print(f) end`;
 
-  document.getElementById("obfOutput").textContent = header + output;
+  document.getElementById("obfOutput").textContent = line;
 }
-
-
     checkForUpdate();
     setInterval(checkForUpdate, 15000);
   </script>
