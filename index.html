@@ -179,3 +179,274 @@
   </script>
 </body>
 </html>
+    .tab-bar {
+      display: flex;
+      justify-content: center;
+      background: #111;
+      border-bottom: 2px solid red;
+    }
+    .tab-btn {
+      background: none;
+      border: none;
+      padding: 16px 24px;
+      font-size: 1rem;
+      color: #fff;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .tab-btn.active {
+      color: #ff4444;
+      border-bottom: 2px solid red;
+    }
+    .tab-content {
+      display: none;
+      padding: 40px 20px;
+    }
+    .tab-content:not(.hidden) {
+      display: block;
+    }
+    .script-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 30px;
+      justify-content: center;
+    }
+    .script-card {
+      background: #1a1a1a;
+      padding: 24px;
+      border-radius: 16px;
+      width: 250px;
+      box-shadow: 0 0 12px rgba(255, 0, 0, 0.4);
+      border: 2px solid red;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-align: left;
+    }
+    .script-card h2 { margin: 0 0 10px; color: #ff5555; }
+    .script-card p { color: #aaa; font-size: 0.9rem; }
+    .script-card:hover {
+      transform: translateY(-5px) scale(1.03);
+      box-shadow: 0 0 20px red;
+    }
+    .viewer {
+      background: #0a0a0a;
+      padding: 40px 20px;
+      text-align: center;
+    }
+    .viewer.hidden { display: none; }
+    .viewer-title {
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+      color: #ff6666;
+    }
+    .code-box {
+      background: #0f0f0f;
+      border-radius: 12px;
+      padding: 20px;
+      position: relative;
+      display: inline-block;
+      font-family: monospace;
+      font-size: 0.9rem;
+      color: #ff5ec9;
+      box-shadow: inset 0 0 10px #000;
+      max-width: 90%;
+      overflow-x: auto;
+    }
+    .copy-button, #copyObf {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: linear-gradient(to right, #ff416c, #ff4b2b);
+      border: none;
+      padding: 6px 12px;
+      border-radius: 8px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(255, 50, 80, 0.8);
+      transition: all 0.2s ease;
+    }
+    .copy-button:hover, #copyObf:hover {
+      transform: scale(1.1);
+      box-shadow: 0 0 20px rgba(255, 75, 100, 1);
+    }
+    .download-btn {
+      background: linear-gradient(to right, #ff3b3b, #ff1a1a);
+      color: white;
+      font-weight: bold;
+      padding: 18px 40px;
+      border: none;
+      border-radius: 12px;
+      font-size: 1.2rem;
+      cursor: pointer;
+      box-shadow: 0 0 20px rgba(255, 0, 0, 0.6);
+      transition: transform 0.2s ease;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .download-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 25px red;
+    }
+    .footer {
+      text-align: center;
+      padding: 30px;
+      color: #777;
+      font-size: 0.9rem;
+      background-color: #0a0a0a;
+    }
+    .footer a { color: #ff4444; text-decoration: none; }
+    .footer a:hover { text-decoration: underline; }
+    #versionTag {
+      position: fixed;
+      bottom: 10px;
+      right: 20px;
+      font-size: 0.85rem;
+      color: #ff4444;
+      opacity: 0.8;
+      pointer-events: none;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+  <div class="background-glow"></div>
+  <header class="site-header">
+    <img src="https://raw.githubusercontent.com/Syr0nix/RedFox-Scripts/main/Screenshot_2025-04-21_034725-removebg-preview.png" class="logo" />
+    <h1 class="site-title">Red<span>Fox</span>Scripts.com</h1>
+    <p class="subtitle">🔥 Roblox Scripts — Clean. Fast. Dangerous.</p>
+  </header>
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="openTab('scripts', event)">Scripts</button>
+    <button class="tab-btn" onclick="openTab('executor', event)">Executor</button>
+    <button class="tab-btn" onclick="openTab('obfuscator', event)">Luau Obfuscator</button>
+  </div>
+  <section class="tab-content" id="tab-scripts">
+    <div class="script-grid">
+      <div class="script-card" onclick="showScript('AutoFarm', 'Coming Soon!')"><h2>AutoFarm</h2><p>Automate your grind</p></div>
+      <div class="script-card" onclick="showScript('Murder Mystery 2', 'https://raw.githubusercontent.com/Syr0nix/scripts/refs/heads/main/MM2')"><h2>Murder Mystery 2</h2><p>See all kill all Murder Mystery 2</p></div>
+      <div class="script-card" onclick="showScript('Server Browser', 'https://raw.githubusercontent.com/Syr0nix/loader/refs/heads/main/serverBowserloader')"><h2>Server Browser</h2><p>See all servers and join instantly</p></div>
+      <div class="script-card" onclick="showScript('Ip Logger', 'https://raw.githubusercontent.com/Syr0nix/scripts/refs/heads/main/discord-invite-main.lua')"><h2>Ip Logger</h2><p>Log your your "friends"</p></div>
+      <div class="script-card" onclick="showScript('Fly', 'Coming Soon!')"><h2>Fly</h2><p>Soar through the skies</p></div>
+    </div>
+    <div class="viewer hidden" id="viewer">
+      <p class="viewer-title" id="scriptName">Selected Script</p>
+      <div class="code-box">
+        <code id="codeOutput">...</code>
+        <button onclick="copyScript()" class="copy-button">📋</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="tab-content hidden" id="tab-executor">
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 30px;">
+      <img src="https://github.com/Syr0nix/RedFox-Scripts/blob/main/image_2025-05-11_132234605.png?raw=true" style="width: 500px; max-width: 90%; border-radius: 16px; box-shadow: 0 0 24px red, 0 0 60px rgba(255,0,0,0.2);" />
+      <div style="text-align: center; max-width: 600px;">
+        <h2>Download RedFox Executor</h2>
+        <p>The fastest, safest way to run Roblox scripts — built for power users.</p>
+        <a class="download-btn" href="https://yourdomain.com/RedFoxExecutor.zip" download>⬇️ Download Executor</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="tab-content hidden" id="tab-obfuscator">
+    <h2 style="color:#ff4444; text-align:center;">🔐 Luau Obfuscator</h2>
+    <p style="text-align:center; color: #aaa;">Enter your Luau script and choose an obfuscation level.</p>
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 20px; max-width: 800px; margin: auto; padding-top: 20px;">
+      <textarea id="luauInput" rows="10" placeholder="-- Paste your Luau script here" style="width:100%; background:#111; color:#fff; border-radius:10px; padding:12px; border:none;"></textarea>
+      <select id="obfLevel" style="padding:10px; width:100%; background:#111; color:#ff4444; border:none; border-radius:8px;">
+        <option value="light">Light</option>
+        <option value="medium" selected>Medium</option>
+        <option value="heavy">Heavy</option>
+      </select>
+      <button onclick="runObfuscator()" style="padding:12px 30px; background:#ff1f1f; color:white; font-weight:bold; border:none; border-radius:10px; cursor:pointer; box-shadow:0 0 10px red;">⚙️ Obfuscate</button>
+      <button id="copyObf" onclick="copyObfText()" class="copy-button" style="display:none; top: 10px; right: 10px;">📋</button>
+      <div style="width:100%;">
+        <label style="color:#888;">Output:</label>
+        <pre id="obfOutput" style="white-space:pre-wrap; background:#000; padding:15px; color:#ff5ec9; border-radius:10px; overflow-x:auto; border:1px solid #222;"></pre>
+      </div>
+    </div>
+  </section>
+  <footer class="footer">
+    <p>RedFox Tools • <a href="https://discord.gg/CCzPKQfe8K">Join Discord</a></p>
+    <p>© 2025 Syr0nix Studio's™. All rights reserved.</p>
+  </footer>
+
+  <div id="versionTag">Loading version...</div>
+
+  <script>
+    function openTab(tabId, event) {
+      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+      event.currentTarget.classList.add('active');
+    }
+
+    function showScript(name, url) {
+      const full = `loadstring(game:HttpGet("${url}"))()`;
+      document.getElementById("codeOutput").textContent = full;
+      document.getElementById("scriptName").textContent = name + " Script";
+      document.getElementById("viewer").classList.remove("hidden");
+    }
+
+    function copyScript() {
+      const code = document.getElementById("codeOutput").textContent;
+      navigator.clipboard.writeText(code);
+      alert("Copied to clipboard!");
+    }
+
+    function xorEncode(str, key) {
+      const result = [];
+      for (let i = 0; i < str.length; i++) {
+        const xorChar = str.charCodeAt(i) ^ key.charCodeAt(i % key.length);
+        result.push("\\" + String(xorChar).padStart(3, '0'));
+      }
+      return result.join('');
+    }
+
+    function byteEncode(str, xorKey = 93) {
+      return str.split('').map(c => "\\" + String(c.charCodeAt(0) ^ xorKey).padStart(3, '0')).join('');
+    }
+
+    function runObfuscator() {
+      const input = document.getElementById("luauInput").value.trim();
+      const output = document.getElementById("obfOutput");
+      const copyBtn = document.getElementById("copyObf");
+
+      if (!input) {
+        output.textContent = "-- Please enter Luau code.";
+        copyBtn.style.display = "none";
+        return;
+      }
+
+      const key = "K3Y";
+      const hiddenKey = byteEncode(key, 93);
+      const encoded = xorEncode(input, key);
+
+      const xorFunc = "function(a,b)local r={}for i=1,#a do r[#r+1]=string.char(bit32.bxor(string.byte(a,i),string.byte(b,(i-1)%#b+1)))end return table.concat(r)end";
+      const keyDecode = `local k=(function(s)local r={}for i=1,#s do r[#r+1]=string.char(bit32.bxor(string.byte(s,i),93))end return table.concat(r)end)("${hiddenKey}")`;
+      const payload = `--[[RedFox Obfuscator]] local xor=${xorFunc} ${keyDecode} local d="${encoded}" local f=xor(d,k) loadstring(f)()`;
+
+      output.textContent = payload;
+      copyBtn.style.display = "inline-block";
+    }
+
+    function copyObfText() {
+      const code = document.getElementById("obfOutput").textContent;
+      navigator.clipboard.writeText(code);
+      alert("Obfuscated script copied!");
+    }
+
+    function checkForUpdate() {
+      const versionURL = "https://raw.githubusercontent.com/Syr0nix/RedFoxScripts.com/refs/heads/main/version.txt";
+      fetch(versionURL + "?t=" + Date.now())
+        .then(res => res.text())
+        .then(ver => document.getElementById("versionTag").textContent = "Version: " + ver.trim())
+        .catch(() => document.getElementById("versionTag").textContent = "Version: Unknown");
+    }
+
+    checkForUpdate();
+    setInterval(checkForUpdate, 15000);
+  </script>
+</body>
+</html>
