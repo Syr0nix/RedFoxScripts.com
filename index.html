@@ -237,60 +237,47 @@
   <div id="versionTag">Loading version...</div>
 
   <script>
-    function openTab(tabId, event) {
-      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
-      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-      document.getElementById(`tab-${tabId}`).classList.remove('hidden');
-      event.currentTarget.classList.add('active');
-    }
+function xorEncode(str, key) {
+  const result = [];
+  for (let i = 0; i < str.length; i++) {
+    const xorChar = str.charCodeAt(i) ^ key.charCodeAt(i % key.length);
+    result.push("\\" + String(xorChar).padStart(3, '0'));
+  }
+  return result.join('');
+}
 
-    function showScript(name, url) {
-      const full = `loadstring(game:HttpGet("${url}"))()`;
-      document.getElementById("codeOutput").textContent = full;
-      document.getElementById("scriptName").textContent = name + " Script";
-      document.getElementById("viewer").classList.remove("hidden");
-    }
+function byteEncode(str, xorKey = 93) {
+  return str.split('').map(c => "\\" + String(c.charCodeAt(0) ^ xorKey).padStart(3, '0')).join('');
+}
 
-    function copyScript() {
-      const code = document.getElementById("codeOutput").textContent;
-      navigator.clipboard.writeText(code);
-      alert("Copied to clipboard!");
-    }
+function runObfuscator() {
+  const input = document.getElementById("luauInput").value.trim();
+  const output = document.getElementById("obfOutput");
+  const copyBtn = document.getElementById("copyObf");
 
-    function xorEncode(str, key) {
-      const result = [];
-      for (let i = 0; i < str.length; i++) {
-        result.push("\\" + (str.charCodeAt(i) ^ key.charCodeAt(i % key.length)));
-      }
-      return result.join('');
-    }
+  if (!input) {
+    output.textContent = "-- Please enter Luau code.";
+    copyBtn.style.display = "none";
+    return;
+  }
 
-    function byteEncode(str, xorKey = 93) {
-      return str.split('').map(c => "\\" + (c.charCodeAt(0) ^ xorKey)).join('');
-    }
+  const key = "K3Y";
+  const hiddenKey = byteEncode(key, 93);
+  const encoded = xorEncode(input, key);
 
-    function runObfuscator() {
-      const input = document.getElementById("luauInput").value.trim();
-      if (!input) {
-        document.getElementById("obfOutput").textContent = "-- Please enter Luau code.";
-        return;
-      }
-      const key = "K3Y"; // static XOR key
-      const hiddenKey = byteEncode(key, 93);
-      const encoded = xorEncode(input, key);
-      const xorFunc = "function(a,b)local r={}for i=1,#a do r[#r+1]=string.char(bit32.bxor(string.byte(a,i),string.byte(b,(i-1)%#b+1)))end return table.concat(r)end";
-      const keyDecode = `local k=(function(s)local r={}for i=1,#s do r[#r+1]=string.char(bit32.bxor(string.byte(s,i),93))end return table.concat(r)end)("${hiddenKey}")`;
-      const payload = `--[[RedFox Obfuscator]] local xor=${xorFunc} ${keyDecode} local d="${encoded}" local f=xor(d,k) if typeof(loadstring)=="function" then loadstring(f)() else print(f) end`;
-      document.getElementById("obfOutput").textContent = payload;
-    }
+  const xorFunc = "function(a,b)local r={}for i=1,#a do r[#r+1]=string.char(bit32.bxor(string.byte(a,i),string.byte(b,(i-1)%#b+1)))end return table.concat(r)end";
+  const keyDecode = `local k=(function(s)local r={}for i=1,#s do r[#r+1]=string.char(bit32.bxor(string.byte(s,i),93))end return table.concat(r)end)("${hiddenKey}")`;
+  const payload = `--[[RedFox Obfuscator]] local xor=${xorFunc} ${keyDecode} local d="${encoded}" local f=xor(d,k) if typeof(loadstring)=="function" then loadstring(f)() else print(f) end`;
 
-    function checkForUpdate() {
-      const versionURL = "https://raw.githubusercontent.com/Syr0nix/RedFoxScripts.com/refs/heads/main/version.txt";
-      fetch(versionURL + "?t=" + Date.now())
-        .then(res => res.text())
-        .then(ver => document.getElementById("versionTag").textContent = "Version: " + ver.trim())
-        .catch(() => document.getElementById("versionTag").textContent = "Version: Unknown");
-    }
+  output.textContent = payload;
+  copyBtn.style.display = "inline-block";
+}
+
+function copyObfText() {
+  const code = document.getElementById("obfOutput").textContent;
+  navigator.clipboard.writeText(code);
+  alert("Obfuscated script copied!");
+}
 
     checkForUpdate();
     setInterval(checkForUpdate, 15000);
