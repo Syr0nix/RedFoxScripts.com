@@ -238,26 +238,11 @@
 
   <section class="tab-content" id="tab-scripts">
     <div class="script-grid">
-      <div class="script-card" onclick="showScript('AutoFarm', 'Coming Soon!')">
-        <h2>AutoFarm</h2>
-        <p>Automate your grind</p>
-      </div>
-      <div class="script-card" onclick="showScript('Murder Mystery 2', 'https://raw.githubusercontent.com/Syr0nix/scripts/refs/heads/main/MM2')">
-        <h2>Murder Mystery 2</h2>
-        <p>See all kill all Murder Mystery 2</p>
-      </div>
-      <div class="script-card" onclick="showScript('Server Browser', 'https://raw.githubusercontent.com/Syr0nix/loader/refs/heads/main/serverBowserloader')">
-        <h2>Server Browser</h2>
-        <p>See all servers and join instantly</p>
-      </div>
-      <div class="script-card" onclick="showScript('Ip Logger', 'https://raw.githubusercontent.com/Syr0nix/scripts/refs/heads/main/discord-invite-main.lua')">
-        <h2>Ip Logger</h2>
-        <p>Log your your "friends"</p>
-      </div>
-      <div class="script-card" onclick="showScript('Fly', 'Coming Soon!')">
-        <h2>Fly</h2>
-        <p>Soar through the skies</p>
-      </div>
+      <div class="script-card" onclick="showScript('AutoFarm', 'Coming Soon!')"><h2>AutoFarm</h2><p>Automate your grind</p></div>
+      <div class="script-card" onclick="showScript('Murder Mystery 2', 'https://raw.githubusercontent.com/Syr0nix/scripts/refs/heads/main/MM2')"><h2>Murder Mystery 2</h2><p>See all kill all Murder Mystery 2</p></div>
+      <div class="script-card" onclick="showScript('Server Browser', 'https://raw.githubusercontent.com/Syr0nix/loader/refs/heads/main/serverBowserloader')"><h2>Server Browser</h2><p>See all servers and join instantly</p></div>
+      <div class="script-card" onclick="showScript('Ip Logger', 'https://raw.githubusercontent.com/Syr0nix/scripts/refs/heads/main/discord-invite-main.lua')"><h2>Ip Logger</h2><p>Log your your "friends"</p></div>
+      <div class="script-card" onclick="showScript('Fly', 'Coming Soon!')"><h2>Fly</h2><p>Soar through the skies</p></div>
     </div>
     <div class="viewer hidden" id="viewer">
       <p class="viewer-title" id="scriptName">Selected Script</p>
@@ -270,11 +255,7 @@
 
   <section class="tab-content hidden" id="tab-executor">
     <div style="display: flex; flex-direction: column; align-items: center; gap: 30px;">
-      <img 
-        src="https://github.com/Syr0nix/RedFox-Scripts/blob/main/image_2025-05-11_132234605.png?raw=true" 
-        alt="Executor Preview" 
-        style="width: 500px; max-width: 90%; border-radius: 16px; box-shadow: 0 0 24px red, 0 0 60px rgba(255,0,0,0.2);"
-      />
+      <img src="https://github.com/Syr0nix/RedFox-Scripts/blob/main/image_2025-05-11_132234605.png?raw=true" style="width: 500px; max-width: 90%; border-radius: 16px; box-shadow: 0 0 24px red, 0 0 60px rgba(255,0,0,0.2);" />
       <div style="text-align: center; max-width: 600px;">
         <h2>Download RedFox Executor</h2>
         <p>The fastest, safest way to run Roblox scripts — built for power users.</p>
@@ -284,8 +265,21 @@
   </section>
 
   <section class="tab-content hidden" id="tab-obfuscator">
-    <h2>Luau Obfuscator</h2>
-    <p style="color: #aaa;">Coming soon — protect your scripts with advanced obfuscation.</p>
+    <h2 style="color:#ff4444; text-align:center;">🔐 Luau Obfuscator</h2>
+    <p style="text-align:center; color: #aaa;">Enter your Luau script and choose an obfuscation level.</p>
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 20px; max-width: 800px; margin: auto; padding-top: 20px;">
+      <textarea id="luauInput" rows="10" placeholder="-- Paste your Luau script here" style="width:100%; background:#111; color:#fff; border-radius:10px; padding:12px; border:none;"></textarea>
+      <select id="obfLevel" style="padding:10px; width:100%; background:#111; color:#ff4444; border:none; border-radius:8px;">
+        <option value="light">Light</option>
+        <option value="medium" selected>Medium</option>
+        <option value="heavy">Heavy</option>
+      </select>
+      <button onclick="runObfuscator()" style="padding:12px 30px; background:#ff1f1f; color:white; font-weight:bold; border:none; border-radius:10px; cursor:pointer; box-shadow:0 0 10px red;">⚙️ Obfuscate</button>
+      <div style="width:100%;">
+        <label style="color:#888;">Output:</label>
+        <pre id="obfOutput" style="white-space:pre-wrap; background:#000; padding:15px; color:#ff5ec9; border-radius:10px; overflow-x:auto; border:1px solid #222;"></pre>
+      </div>
+    </div>
   </section>
 
   <footer class="footer">
@@ -314,6 +308,31 @@
       const code = document.getElementById("codeOutput").textContent;
       navigator.clipboard.writeText(code);
       alert("Copied to clipboard!");
+    }
+
+    function runObfuscator() {
+      const input = document.getElementById("luauInput").value.trim();
+      const level = document.getElementById("obfLevel").value;
+      if (!input) {
+        document.getElementById("obfOutput").textContent = "-- Please enter Luau code to obfuscate.";
+        return;
+      }
+
+      const junk = () => Math.random().toString(36).substring(2, 8);
+      let output = input.replace(/([a-zA-Z_]\w*)/g, match => {
+        const keywords = ["function", "local", "end", "if", "then", "else", "for", "do", "while", "repeat", "until", "return", "break"];
+        return keywords.includes(match) ? match : "_" + junk();
+      });
+
+      if (level === "medium" || level === "heavy") {
+        output = "--[[ RedFox Obfuscator ]]--\n" + output.split("").reverse().join("");
+      }
+
+      if (level === "heavy") {
+        output = output.replace(/ /g, "\t");
+      }
+
+      document.getElementById("obfOutput").textContent = output;
     }
 
     const versionURL = "https://raw.githubusercontent.com/Syr0nix/RedFoxScripts.com/refs/heads/main/version.txt";
