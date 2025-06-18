@@ -203,6 +203,7 @@
 
   <div class="tab-bar">
     <button class="tab-btn active" onclick="openTab('scripts', event)">Scripts</button>
+    <button class="tab-btn" onclick="openTab('executor', event)">Windows Tools</button>
     <button class="tab-btn" onclick="openTab('executor', event)">Executor</button>
     <button class="tab-btn" onclick="openTab('obfuscator', event)">Luau Obfuscator</button>
   </div>
@@ -223,7 +224,33 @@
       </div>
     </div>
   </section>
+  
+<section class="tab-content hidden" id="tab-windows">
+  <div style="text-align: center; padding: 40px;">
+    <h2 style="color: #ff4444;">🛠️ Windows Tools</h2>
+    <p style="color: #aaa;">Helpful tools for cleaning, optimizing, and repairing Windows.</p>
 
+    <div class="script-grid">
+      <div class="script-card" onclick="window.open('https://yourdomain.com/CleanRAM.bat')">
+        <h2>Clear RAM</h2>
+        <p>Frees up system memory instantly.</p>
+      </div>
+      <div class="script-card" onclick="window.open('https://yourdomain.com/NetworkFix.bat')">
+        <h2>Fix Network</h2>
+        <p>Flush DNS, reset winsock, and renew IP.</p>
+      </div>
+      <div class="script-card" onclick="window.open('https://yourdomain.com/TempCleaner.bat')">
+        <h2>Clean Temp Files</h2>
+        <p>Removes temp and prefetch junk files.</p>
+      </div>
+      <div class="script-card" onclick="window.open('https://yourdomain.com/WindowsDebloat.bat')">
+        <h2>Debloat Windows</h2>
+        <p>Remove bloatware and speed up boot time.</p>
+      </div>
+    </div>
+  </div>
+</section>
+  
   <section class="tab-content hidden" id="tab-executor">
     <div style="display: flex; flex-direction: column; align-items: center; gap: 30px;">
       <img src="https://raw.githubusercontent.com/Syr0nix/RedFox-Scripts/refs/heads/main/Screenshot%202025-06-01%20155242.png" style="width: 500px; max-width: 90%; border-radius: 16px; box-shadow: 0 0 24px red, 0 0 60px rgba(255,0,0,0.2);" />
