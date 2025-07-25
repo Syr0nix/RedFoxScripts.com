@@ -24,6 +24,17 @@ function copyScript() {
   });
 }
 
+if (currentPage === "windows-tools") {
+  fetch("https://raw.githubusercontent.com/Syr0nix/WinOps/main/version.txt")
+    .then(res => res.text())
+    .then(version => {
+      document.getElementById("winops-version").innerText = version.trim();
+    })
+    .catch(() => {
+      document.getElementById("winops-version").innerText = "Unavailable";
+    });
+}
+
 // LUAU OBFUSCATOR
 function runObfuscator() {
   const input = document.getElementById("luauInput").value.trim();
