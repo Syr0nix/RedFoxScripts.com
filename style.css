@@ -97,6 +97,9 @@ body {
   margin-top: 20px;
 }
 
+.hidden {
+  display: none;
+}
 
 /* Unified card styles */
 .card,
