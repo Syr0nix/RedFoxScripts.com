@@ -1,138 +1,249 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>RedFoxScripts.com</title>
-  <link rel="icon" href="https://raw.githubusercontent.com/Syr0nix/RedFox-Scripts/main/Screenshot_2025-04-21_034725-removebg-preview.png" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@600&display=swap" rel="stylesheet" />
+  <link rel="icon" href="https://raw.githubusercontent.com/Syr0nix/RedFox-Scripts/main/Screenshot_2025-04-21_034725-removebg-preview.png"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@600&display=swap" rel="stylesheet"/>
   <style>
     :root {
       --accent: #ff3b3b;
       --bg-dark: #0a0a0a;
       --bg-deep: #000;
       --text-light: #fff;
-      --text-dim: #999;
     }
-
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
     body {
       font-family: 'Inter', sans-serif;
-      background-color: var(--bg-deep);
+      background: var(--bg-deep);
       color: var(--text-light);
       display: grid;
       grid-template-columns: 240px 1fr;
-      height: 100vh;
+      height:100vh;
+      overflow:hidden;
     }
-
     .sidebar {
-      background-color: var(--bg-dark);
+      background: var(--bg-dark);
       border-right: 2px solid var(--accent);
       padding: 30px 20px;
       display: flex;
       flex-direction: column;
-      gap: 30px;
-      box-shadow: 4px 0 15px rgba(255, 0, 0, 0.1);
+      align-items: center;
+      gap: 40px;
+      box-shadow: 4px 0 15px rgba(255,0,0,0.1);
     }
-
-    .sidebar .logo {
-      width: 80px;
-      margin: 0 auto;
-      filter: drop-shadow(0 0 12px var(--accent));
-    }
-
-    .sidebar h1 {
-      text-align: center;
-      font-size: 1.8rem;
-      color: var(--accent);
-      text-shadow: 0 0 10px red;
-    }
-
+    .sidebar .logo { width: 80px; filter: drop-shadow(0 0 12px var(--accent)); }
+    .sidebar h1 { color: var(--accent); text-shadow: 0 0 10px red; font-size:1.8rem; text-align:center; }
     .nav-link {
-      background: none;
-      border: none;
-      color: var(--text-light);
-      font-size: 1rem;
-      padding: 12px 16px;
-      text-align: left;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      border-left: 3px solid transparent;
+      background:none; border:none; color:inherit;
+      width:100%; text-align:left; padding:12px 16px;
+      font-size:1rem; cursor:pointer; border-left:3px solid transparent;
+      transition: all .2s ease;
     }
-
     .nav-link:hover, .nav-link.active {
-      background-color: #111;
-      border-left: 3px solid var(--accent);
-      color: var(--accent);
+      background:#111; color:var(--accent);
+      border-left-color: var(--accent);
+    }
+    .main-content { padding: 40px; overflow-y:auto; position:relative; }
+    .section { display:none; animation: fadeIn .3s ease; }
+    .section.active { display:block; }
+    @keyframes fadeIn { from{opacity:0; transform: translateY(10px);} to{opacity:1; transform:none;} }
+
+    /* Scripts tab */
+    .script-grid { display:flex; flex-wrap:wrap; gap:20px; margin-top:20px; }
+    .script-card {
+      flex:1 1 250px; background:#111; border:2px solid var(--accent);
+      padding:20px; border-radius:10px; box-shadow:0 0 12px rgba(255,0,0,0.3);
+      cursor:pointer; transition: transform .2s ease, box-shadow .2s ease;
+    }
+    .script-card:hover {
+      transform: translateY(-3px);
+      box-shadow:0 0 20px rgba(255,0,0,0.6);
+    }
+    .script-card h3 { color: var(--accent); margin-bottom:6px; }
+    .viewer {
+      margin-top:30px; background:#0a0a0a; border:2px solid var(--accent);
+      padding:20px; border-radius:10px;
+    }
+    .code-box {
+      background:#000; color:#fff; padding:14px 20px; border-radius:6px;
+      font-family:monospace; white-space:pre-wrap; margin-bottom:10px;
+      user-select:all;
+    }
+    .copy-btn {
+      background: var(--accent); color:#fff; border:none;
+      padding:10px 16px; border-radius:5px; font-weight:bold;
+      cursor:pointer; transition: background .2s ease;
+    }
+    .copy-btn:hover { background:#ff5e5e; }
+
+    /* Obfuscator tab */
+    .obf-area textarea {
+      width:100%; max-width:700px; height:140px;
+      background:#111; color:#fff; border:none; padding:12px;
+      border-radius:8px; font-family:monospace; font-size:.9rem;
+      resize:vertical;
+    }
+    .obf-area select, .obf-area button {
+      margin-top:10px; padding:10px; border-radius:6px;
+      background:#111; color: var(--accent); border:1px solid var(--accent);
+      cursor:pointer;
+    }
+    .obf-area button:hover { background: var(--accent); color:#000; }
+    .obf-output {
+      margin-top:16px; padding:16px; background:#0f0f0f;
+      color:#ff5ec9; font-family:monospace; border-radius:10px;
+      white-space:pre-wrap; max-width:700px; width:100%; border:1px solid #333;
+      user-select: all;
     }
 
-    .main-content {
-      padding: 40px;
-      overflow-y: auto;
-      background: radial-gradient(circle at top left, rgba(255,0,0,0.1), transparent 70%);
+    /* Executor + Tools */
+    .centered {
+      display:flex; flex-direction:column; align-items:center;
+      gap:25px; padding:40px 20px; text-align:center;
+    }
+    .download-btn {
+      background: linear-gradient(to right, #ff3b3b, #ff1a1a);
+      color:#fff; font-weight:bold; padding:16px 32px;
+      border:none; border-radius:12px; font-size:1.2rem;
+      cursor:pointer; box-shadow:0 0 20px rgba(255,0,0,0.6);
+      transition: transform .2s ease;
+      text-decoration:none;
+    }
+    .download-btn:hover { transform: scale(1.05); }
+
+    /* Footer + Version */
+    footer {
+      margin-top:40px; text-align:center; color:#777;
+      font-size:.9rem; padding:30px 0;
+    }
+    footer a { color: var(--accent); text-decoration:none; }
+    footer a:hover { text-decoration:underline; }
+    #versionTag {
+      position:fixed; bottom:10px; right:20px;
+      font-family:monospace; color: var(--accent); opacity:.8;
     }
 
-    .section {
-      display: none;
-      animation: fadeIn 0.4s ease;
-    }
-
-    .section.active {
-      display: block;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
+    /* Responsive */
+    @media(max-width: 800px) {
+      body { grid-template-columns: 1fr; }
+      .sidebar { flex-direction:row; justify-content:space-around; padding:15px; }
+      .sidebar h1 { display:none; }
     }
   </style>
 </head>
 <body>
 
   <aside class="sidebar">
-    <img src="https://raw.githubusercontent.com/Syr0nix/RedFox-Scripts/main/Screenshot_2025-04-21_034725-removebg-preview.png" class="logo" />
+    <img src="https://raw.githubusercontent.com/Syr0nix/RedFox-Scripts/main/Screenshot_2025-04-21_034725-removebg-preview.png" class="logo"/>
     <h1>RedFoxScripts</h1>
-    <button class="nav-link active" onclick="showTab('scripts')">📜 Scripts</button>
-    <button class="nav-link" onclick="showTab('tools')">🛠️ Windows Tools</button>
-    <button class="nav-link" onclick="showTab('executor')">💻 Executor</button>
-    <button class="nav-link" onclick="showTab('obfuscator')">🔐 Obfuscator</button>
+    <button class="nav-link active" onclick="showTab('scripts', this)">📜 Scripts</button>
+    <button class="nav-link" onclick="showTab('tools', this)">🛠️ Windows Tools</button>
+    <button class="nav-link" onclick="showTab('executor', this)">💻 Executor</button>
+    <button class="nav-link" onclick="showTab('obfuscator', this)">🔐 Obfuscator</button>
   </aside>
 
   <main class="main-content">
     <section id="scripts" class="section active">
       <h2>Scripts</h2>
-      <p>Loading scripts...</p>
+      <div class="script-grid">
+        <div class="script-card" onclick="showScript('AutoFarm','https://pastebin.com/raw/xyz123')">
+          <h3>AutoFarm</h3><p>Automate your grind</p>
+        </div>
+        <div class="script-card" onclick="showScript('Murder Mystery 2','https://pastebin.com/raw/mm2abc')">
+          <h3>Murder Mystery 2</h3><p>See all kill all MM2 script</p>
+        </div>
+        <div class="script-card" onclick="showScript('Server Browser','https://pastebin.com/raw/svbrowser')">
+          <h3>Server Browser</h3><p>Join any server instantly</p>
+        </div>
+      </div>
+      <div id="viewer" class="viewer hidden">
+        <h3 id="scriptName">Selected Script</h3>
+        <div class="code-box" id="codeOutput">...</div>
+        <button onclick="copyScript()" class="copy-btn">📋 Copy Script</button>
+      </div>
     </section>
 
     <section id="tools" class="section">
       <h2>Windows Tools</h2>
-      <p>Coming soon...</p>
+      <div class="centered">
+        <p>WinOps and tools coming soon!</p>
+      </div>
     </section>
 
     <section id="executor" class="section">
       <h2>RedFox Executor</h2>
-      <p>Coming soon...</p>
+      <div class="centered">
+        <img src="https://raw.githubusercontent.com/Syr0nix/RedFox-Scripts/refs/heads/main/Screenshot%202025-06-01%20155242.png"
+             style="width:80%;max-width:400px;border-radius:12px;box-shadow:0 0 24px var(--accent),0 0 60px rgba(255,0,0,0.2);"/>
+        <p>The fastest, safest way to run Roblox scripts.</p>
+        <a href="#" class="download-btn">⬇️ Download Executor</a>
+      </div>
     </section>
 
     <section id="obfuscator" class="section">
       <h2>Luau Obfuscator</h2>
-      <p>Coming soon...</p>
+      <div class="obf-area centered">
+        <textarea id="luauInput" placeholder="-- Paste your Luau script here"></textarea>
+        <select id="obfLevel">
+          <option value="light">Light</option>
+          <option value="medium" selected>Medium</option>
+          <option value="heavy">Heavy</option>
+        </select>
+        <button onclick="runObfuscator()">⚙️ Obfuscate</button>
+        <button id="copyObf" onclick="copyObfText()" class="copy-btn" style="display:none;">📋 Copy Obfuscated</button>
+        <pre id="obfOutput" class="obf-output"></pre>
+      </div>
     </section>
+
+    <footer>
+      <p>RedFox Studio • <a href="https://discord.gg/CCzPKQfe8K" target="_blank">Join Discord</a></p>
+      <p>© 2025 Syr0nix Studio™</p>
+    </footer>
+    <div id="versionTag">Loading version...</div>
   </main>
 
   <script>
-    function showTab(tabId) {
-      document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
-      document.querySelectorAll(".nav-link").forEach(b => b.classList.remove("active"));
-      document.getElementById(tabId).classList.add("active");
-      event.currentTarget.classList.add("active");
+    function showTab(id, btn) {
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.nav-link').forEach(b => b.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      btn.classList.add('active');
     }
-  </script>
 
+    function showScript(name, url) {
+      document.getElementById('scriptName').textContent = name + ' Script';
+      document.getElementById('codeOutput').textContent = `loadstring(game:HttpGet("${url}"))()`;
+      document.getElementById('viewer').classList.remove('hidden');
+    }
+
+    function copyScript() {
+      const code = document.getElementById('codeOutput').textContent;
+      navigator.clipboard.writeText(code).then(_=> alert('📋 Script copied to clipboard!'));
+    }
+
+    function runObfuscator(){
+      const input = document.getElementById('luauInput').value.trim();
+      const output = document.getElementById('obfOutput');
+      const btn = document.getElementById('copyObf');
+      if(!input){ output.textContent = '-- Enter Luau code.'; btn.style.display='none'; return; }
+      const bytes = input.split('').map(c=>c.charCodeAt(0));
+      output.textContent = `local code = { ${bytes.join(', ')} }\nloadstring(string.char(unpack(code)))()`;
+      btn.style.display = 'inline-block';
+    }
+
+    function copyObfText(){
+      navigator.clipboard.writeText(document.getElementById('obfOutput').textContent)
+        .then(_=> alert('📋 Obfuscated script copied!'));
+    }
+
+    // version
+    function checkForUpdate(){
+      fetch('https://raw.githubusercontent.com/Syr0nix/RedFoxScripts.com/refs/heads/main/version.txt?t=' + Date.now())
+        .then(r => r.text()).then(v=> document.getElementById('versionTag').textContent = 'Version: ' + v.trim())
+        .catch(_=> document.getElementById('versionTag').textContent = 'Version: Unknown');
+    }
+    checkForUpdate(); setInterval(checkForUpdate, 15000);
+  </script>
 </body>
 </html>
