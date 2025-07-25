@@ -65,4 +65,4 @@ function checkForUpdate() {
 }
 
 checkForUpdate();
-setInterval(checkForUpdate, 15000);
+setInterval(checkForUpdate, 5000);
