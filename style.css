@@ -180,6 +180,37 @@ html, body {
   transform: scale(1.05);
 }
 
+.tool-card {
+  background: linear-gradient(145deg, #111, #1b1b1b);
+  border: 1px solid #ff0033;
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 20px;
+  color: white;
+  box-shadow: 0 0 10px #ff0033aa;
+}
+
+.tool-card h3 {
+  color: #ff0033;
+  margin-bottom: 8px;
+}
+
+.tool-card a {
+  display: inline-block;
+  margin-right: 12px;
+  margin-top: 10px;
+  padding: 8px 16px;
+  border-radius: 6px;
+  background-color: #ff0033;
+  color: white;
+  text-decoration: none;
+  transition: background-color 0.3s ease;
+}
+
+.tool-card a:hover {
+  background-color: #cc002b;
+}
+
 /* === EXECUTOR SECTION === */
 .preview-img {
   width: 500px;
