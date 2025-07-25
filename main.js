@@ -24,59 +24,160 @@ function copyScript() {
     alert("📋 Script copied to clipboard!");
   });
 }
+
 // OBFUSCATOR HELPERS
 
-function generateJunkVar(len = 5) {
-  const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  return "_" + Array.from({ length: len }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+function generateRandomName(len = 6) {
+  const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  let name = '_';
+  for (let i = 0; i < len; i++) {
+    name += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return name;
 }
 
-function scrambleCode(code) {
-  return code
-    .replace(/\blocal\s+([a-zA-Z_]\w*)/g, () => "local " + generateJunkVar())
-    .replace(/\bfunction\s+([a-zA-Z_]\w*)/g, () => "function " + generateJunkVar())
-    .replace(/\s{2,}/g, () => Math.random() > 0.5 ? "\n" : "  ");
+function renameIdentifiers(code) {
+  const varMap = {};
+  const used = new Set();
+
+  function getName(orig) {
+    if (!varMap[orig]) {
+      let newName;
+      do {
+        newName = generateRandomName();
+      } while (used.has(newName));
+      used.add(newName);
+      varMap[orig] = newName;
+    }
+    return varMap[orig];
+  }
+
+  // Rename all local and function names
+  code = code.replace(/\b(local|function)\s+([a-zA-Z_]\w*)/g, (_, kw, name) => `${kw} ${getName(name)}`);
+
+  // Rename all usage of those variables/functions
+  code = code.replace(/\b([a-zA-Z_]\w*)\b/g, (id) => varMap[id] || id);
+
+  return code;
 }
 
 function injectJunkLines(count = 5) {
   const lines = [];
   for (let i = 0; i < count; i++) {
-    const v = generateJunkVar();
-    const val = Math.random() > 0.5 ? `"${generateJunkVar(6)}"` : Math.floor(Math.random() * 99999);
-    lines.push(`local ${v} = ${val}`);
+    const varName = generateRandomName();
+    const val = Math.random() > 0.5 ? `"${generateRandomName(8)}"` : Math.floor(Math.random() * 99999);
+    lines.push(`local ${varName}=${val}`);
   }
   return lines.join(Math.random() > 0.5 ? "\n" : " ");
 }
 
-function fakeControlFlowWrap(code) {
-  const junk = generateJunkVar();
+function addVisualChaos(code) {
+  // Randomize semicolons (Lua allows optional, but some obfuscators add them)
+  code = code.replace(/;/g, () => (Math.random() > 0.5 ? ';;' : ';'));
+  // Randomize line breaks
+  code = code.replace(/\n/g, () => (Math.random() > 0.5 ? '\n\n' : '\n'));
+  // Randomize spaces and tabs
+  code = code.replace(/ {2,}/g, () => (Math.random() > 0.5 ? ' ' : '\t'));
+  return code;
+}
+
+function wrapWithFakeControlFlow(code) {
+  const junkVar1 = generateRandomName();
+  const junkVar2 = generateRandomName();
   return `
-if ${junk} ~= nil then
+if ${junkVar1}~=nil then
   while true do
-    if ${junk} == nil then break end;
+    if ${junkVar2}==nil then break end;
     ${injectJunkLines(3)};
     ${code}
     break;
   end;
-end;`;
+end;
+`;
 }
 
-function obfuscateLuau() {
-  const input = document.getElementById("luauInput").value.trim();
-  const outputBox = document.getElementById("obfuscatorOutput");
-  if (!input) {
-    outputBox.textContent = "Paste a script to obfuscate.";
-    outputBox.classList.remove("hidden");
-    return;
+function xorEncryptString(str, key) {
+  let out = '';
+  for (let i = 0; i < str.length; i++) {
+    out += String.fromCharCode(str.charCodeAt(i) ^ key.charCodeAt(i % key.length));
   }
-
-  let scrambled = scrambleCode(input);
-  let withJunk = injectJunkLines(4) + "\n" + fakeControlFlowWrap(scrambled) + "\n" + injectJunkLines(4);
-  let ugly = withJunk.replace(/;/g, () => Math.random() > 0.5 ? ";;" : ";").replace(/\n/g, () => Math.random() > 0.5 ? "\n\n" : "\n");
-
-  outputBox.textContent = "--[[RedFox Obfuscator]]\n" + ugly + "\n--[[End]]";
-  outputBox.classList.remove("hidden");
+  return out;
 }
+
+function generateRuntimeDecryptor(keyName, funcName) {
+  return `
+local function ${funcName}(str)
+  local key="${keyName}";
+  local res="";
+  for i=1,#str do
+    local k = key:byte((i-1) % #key + 1);
+    local c = str:byte(i);
+    res = res .. string.char(bit32.bxor(c,k));
+  end
+  return res;
+end
+`;
+}
+
+function escapeString(str) {
+  // Escape backslashes and quotes for Lua string literals
+  return str.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+}
+
+function encryptStringsInCode(code, key) {
+  // Replace double-quoted strings with decrypt calls
+  return code.replace(/"([^"]*)"/g, (_, str) => {
+    const encrypted = xorEncryptString(str, key);
+    return `decrypt("${escapeString(encrypted)}")`;
+  });
+}
+
+function generateAntiDebug() {
+  const checkVar = generateRandomName();
+  return `
+local ${checkVar} = tick()
+local function check()
+  if tick() - ${checkVar} > 10 then
+    error("Debugger detected")
+  end
+end
+task.spawn(function()
+  while true do
+    check()
+    task.wait(1)
+  end
+end)
+`;
+}
+
+function fullObfuscateLuau(code) {
+  // 1. Rename identifiers
+  let obf = renameIdentifiers(code);
+
+  // 2. Encrypt strings
+  const key = generateRandomName(8);
+  const decryptName = generateRandomName(6);
+  const decryptor = generateRuntimeDecryptor(key, decryptName);
+  obf = encryptStringsInCode(obf, key);
+  obf = decryptor + '\nlocal decrypt = ' + decryptName + '\n' + obf;
+
+  // 3. Insert junk lines randomly
+  const junk = injectJunkLines(7);
+  obf = junk + '\n' + obf + '\n' + injectJunkLines(5);
+
+  // 4. Wrap with fake control flow
+  obf = wrapWithFakeControlFlow(obf);
+
+  // 5. Add anti-debugging
+  const antiDebug = generateAntiDebug();
+  obf = antiDebug + '\n' + obf;
+
+  // 6. Add visual chaos
+  obf = addVisualChaos(obf);
+
+  return obf;
+}
+
 // COPY OBFUSCATED TEXT
 function copyObfText() {
   const code = document.getElementById("obfuscatorOutput").textContent;
