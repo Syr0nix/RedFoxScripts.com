@@ -24,17 +24,6 @@ function copyScript() {
   });
 }
 
-if (currentPage === "windows-tools") {
-  fetch("https://raw.githubusercontent.com/Syr0nix/WinOps/main/version.txt")
-    .then(res => res.text())
-    .then(version => {
-      document.getElementById("winops-version").innerText = version.trim();
-    })
-    .catch(() => {
-      document.getElementById("winops-version").innerText = "Unavailable";
-    });
-}
-
 // LUAU OBFUSCATOR
 function runObfuscator() {
   const input = document.getElementById("luauInput").value.trim();
@@ -76,3 +65,43 @@ function checkForUpdate() {
 
 checkForUpdate();
 setInterval(checkForUpdate, 15000);
+
+// WINDOWS TOOLS TAB
+if (currentPage === "windows-tools") {
+  const container = document.getElementById("winops-list");
+
+  fetch("https://api.github.com/repos/Syr0nix/WinOps/contents/")
+    .then(res => res.json())
+    .then(files => {
+      const tools = files.filter(f =>
+        f.name.endsWith(".exe") ||
+        f.name.endsWith(".bat") ||
+        f.name.endsWith(".ps1")
+      );
+
+      if (tools.length === 0) {
+        container.innerHTML = "<p>No tools found in WinOps repo.</p>";
+        return;
+      }
+
+      container.innerHTML = tools.map(tool => `
+        <div class="tool-box">
+          <strong>${tool.name}</strong>
+          <a href="${tool.download_url}" download class="download-btn">Download</a>
+        </div>
+      `).join("");
+    })
+    .catch(() => {
+      container.innerHTML = "<p>⚠️ Failed to load WinOps tools.</p>";
+    });
+
+  // version fetch
+  fetch("https://raw.githubusercontent.com/Syr0nix/WinOps/main/version.txt")
+    .then(res => res.text())
+    .then(version => {
+      document.getElementById("winops-version").innerText = version.trim();
+    })
+    .catch(() => {
+      document.getElementById("winops-version").innerText = "Unavailable";
+    });
+}
