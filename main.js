@@ -25,10 +25,27 @@ function copyScript() {
   });
 }
 
-// OBFUSCATOR
+// OBFUSCATOR HELPERS
+function xorString(str, key = 69) {
+  return str.split('').map(char => `\\${char.charCodeAt(0) ^ key}`).join('');
+}
+
+function generateJunkVariable() {
+  const chars = "abcdefghijklmnopqrstuvwxyz";
+  return "_" + Array.from({length: 6}, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+}
+
+function renameVariables(code) {
+  return code.replace(/\b(local\s+)(\w+)/g, (_, decl, name) => {
+    const newName = generateJunkVariable();
+    return decl + newName;
+  });
+}
+
+// MAIN OBFUSCATION FUNCTION
 function obfuscateLuau() {
   const input = document.getElementById("luauInput").value.trim();
-  const outputBox = document.getElementById("obfuscatorOutput");
+  const outputBox = document.getElementById("obfOutput");
 
   if (!input) {
     outputBox.textContent = "Please enter a script.";
@@ -36,21 +53,18 @@ function obfuscateLuau() {
     return;
   }
 
-  // Simple Base64 encoding as fake "obfuscation"
-  const encoded = btoa(unescape(encodeURIComponent(input)));
+  let code = input;
 
-  // You can wrap this however you like — here’s one that does NOT use loadstring
-  const fakeObfuscated = `
--- Base64-encoded Luau
-local encoded = "${encoded}"
--- Decode manually or in your tool (not with loadstring)
-print("Decoded content requires a custom decoder.")
-`;
+  // Obfuscation pipeline
+  code = renameVariables(code);
+  code = `--// Obfuscated by RedFox Luau Obfuscator\n` +
+         `local ${generateJunkVariable()} = 0x${Math.floor(Math.random()*9999).toString(16)}\n` +
+         code +
+         `\n-- junk tail\nlocal ${generateJunkVariable()} = "${xorString("RedFox")}"`;
 
-  outputBox.textContent = fakeObfuscated.trim();
+  outputBox.textContent = code;
   outputBox.classList.remove("hidden");
 }
-
 
 // COPY OBFUSCATED TEXT
 function copyObfText() {
