@@ -29,21 +29,24 @@ function copyScript() {
 }
 
 // === OBFUSCATOR HELPERS ===
-function runObfuscator() {
- const input = document.getElementById("luaInput");
+function obfuscateLuau() {
+  const input = document.getElementById("luauInput");
   const output = document.getElementById("obfuscatorOutput");
+
   if (!input || !output) return alert("Input or output element missing");
 
   const code = input.value.trim();
-  if (!code) return alert("Please enter Lua code to obfuscate");
+  if (!code) return alert("Please enter your Luau script.");
 
   try {
     const obfuscated = fullObfuscateLuau(code);
     output.textContent = obfuscated;
+    output.classList.remove("hidden");  // Show output div
   } catch (e) {
     alert("Error during obfuscation: " + e.message);
   }
-} 
+}
+
 
 function generateRandomName(len = 6) {
   const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
