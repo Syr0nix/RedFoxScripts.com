@@ -17,6 +17,7 @@ function showScript(name, url) {
   viewer.classList.remove("hidden");
 }
 
+// COPY SCRIPT
 function copyScript() {
   const code = document.getElementById("codeOutput").textContent;
   navigator.clipboard.writeText(code).then(() => {
@@ -24,7 +25,7 @@ function copyScript() {
   });
 }
 
-// LUAU OBFUSCATOR
+// OBFUSCATOR
 function runObfuscator() {
   const input = document.getElementById("luauInput")?.value.trim();
   const output = document.getElementById("obfOutput");
@@ -43,6 +44,7 @@ function runObfuscator() {
   if (copyBtn) copyBtn.style.display = "inline-block";
 }
 
+// COPY OBFUSCATED TEXT
 function copyObfText() {
   const code = document.getElementById("obfOutput").textContent;
   navigator.clipboard.writeText(code).then(() => {
@@ -52,8 +54,7 @@ function copyObfText() {
 
 // VERSION CHECK
 function checkForUpdate() {
-  const versionURL = "https://raw.githubusercontent.com/Syr0nix/RedFoxScripts.com/refs/heads/main/version.txt";
-  fetch(versionURL + "?t=" + Date.now())
+  fetch("https://raw.githubusercontent.com/Syr0nix/RedFoxScripts.com/refs/heads/main/version.txt?t=" + Date.now())
     .then(res => res.text())
     .then(ver => {
       document.getElementById("versionTag").textContent = "Version: " + ver.trim();
