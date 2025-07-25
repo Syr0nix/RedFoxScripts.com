@@ -1,13 +1,10 @@
 // === TAB SWITCHING ===
 function showTab(tabId, event) {
-  // Remove active from all sections and nav-links
   document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
   document.querySelectorAll(".nav-link").forEach(b => b.classList.remove("active"));
-
-  // Activate current tab and nav-link
   const tab = document.getElementById(tabId);
   if (tab) tab.classList.add("active");
-  if (event && event.currentTarget) event.currentTarget.classList.add("active");
+  if (event?.currentTarget) event.currentTarget.classList.add("active");
 }
 
 // === SCRIPT VIEWER ===
@@ -15,9 +12,7 @@ function showScript(name, url) {
   const viewer = document.getElementById("viewer");
   const output = document.getElementById("codeOutput");
   const label = document.getElementById("scriptName");
-
-  if (!viewer || !output || !label) return; // safety check
-
+  if (!viewer || !output || !label) return;
   output.textContent = `loadstring(game:HttpGet("${url}"))()`;
   label.textContent = name + " Script";
   viewer.classList.remove("hidden");
@@ -27,13 +22,10 @@ function showScript(name, url) {
 function copyScript() {
   const codeEl = document.getElementById("codeOutput");
   if (!codeEl) return;
-
   const code = codeEl.textContent;
-  navigator.clipboard.writeText(code).then(() => {
-    alert("📋 Script copied to clipboard!");
-  }).catch(() => {
-    alert("❌ Failed to copy script!");
-  });
+  navigator.clipboard.writeText(code)
+    .then(() => alert("📋 Script copied to clipboard!"))
+    .catch(() => alert("❌ Failed to copy script!"));
 }
 
 // === OBFUSCATOR HELPERS ===
@@ -50,7 +42,6 @@ function generateRandomName(len = 6) {
 function renameIdentifiers(code) {
   const varMap = {};
   const used = new Set();
-
   function getName(orig) {
     if (!varMap[orig]) {
       let newName;
@@ -62,13 +53,8 @@ function renameIdentifiers(code) {
     }
     return varMap[orig];
   }
-
-  // Rename all local and function names
   code = code.replace(/\b(local|function)\s+([a-zA-Z_]\w*)/g, (_, kw, name) => `${kw} ${getName(name)}`);
-
-  // Rename all usage of those variables/functions
-  code = code.replace(/\b([a-zA-Z_]\w*)\b/g, (id) => varMap[id] || id);
-
+  code = code.replace(/\b([a-zA-Z_]\w*)\b/g, id => varMap[id] || id);
   return code;
 }
 
@@ -83,11 +69,8 @@ function injectJunkLines(count = 5) {
 }
 
 function addVisualChaos(code) {
-  // Randomize semicolons (Lua allows optional; add randomly)
   code = code.replace(/;/g, () => (Math.random() > 0.5 ? ';;' : ';'));
-  // Randomize line breaks
   code = code.replace(/\n/g, () => (Math.random() > 0.5 ? '\n\n' : '\n'));
-  // Randomize spaces and tabs (collapse multiple spaces)
   code = code.replace(/ {2,}/g, () => (Math.random() > 0.5 ? ' ' : '\t'));
   return code;
 }
@@ -131,13 +114,10 @@ end
 }
 
 function escapeString(str) {
-  // Escape backslashes and quotes for Lua string literals
   return str.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
 }
 
 function encryptStringsInCode(code, key, decryptName) {
-  // Replace double-quoted strings with decrypt calls
-  // Slight fix: use decryptName passed as parameter (was hardcoded before)
   return code.replace(/"([^"]*)"/g, (_, str) => {
     const encrypted = xorEncryptString(str, key);
     return `${decryptName}("${escapeString(encrypted)}")`;
@@ -163,43 +143,26 @@ end)
 }
 
 function fullObfuscateLuau(code) {
-  // 1. Rename identifiers
   let obf = renameIdentifiers(code);
-
-  // 2. Encrypt strings
   const key = generateRandomName(8);
   const decryptName = generateRandomName(6);
   const decryptor = generateRuntimeDecryptor(key, decryptName);
   obf = encryptStringsInCode(obf, key, decryptName);
   obf = decryptor + '\nlocal decrypt = ' + decryptName + '\n' + obf;
-
-  // 3. Insert junk lines randomly
-  const junkBefore = injectJunkLines(7);
-  const junkAfter = injectJunkLines(5);
-  obf = junkBefore + '\n' + obf + '\n' + junkAfter;
-
-  // 4. Wrap with fake control flow
+  obf = injectJunkLines(7) + '\n' + obf + '\n' + injectJunkLines(5);
   obf = wrapWithFakeControlFlow(obf);
-
-  // 5. Add anti-debugging
-  const antiDebug = generateAntiDebug();
-  obf = antiDebug + '\n' + obf;
-
-  // 6. Add visual chaos (random spaces, semicolons, line breaks)
+  obf = generateAntiDebug() + '\n' + obf;
   obf = addVisualChaos(obf);
-
   return obf;
 }
 
 // === COPY OBFUSCATED TEXT ===
 function copyObfText() {
-  const code = document.getElementById("obfuscatorOutput").textContent;
+  const code = document.getElementById("obfuscatorOutput")?.textContent;
   if (!code) return;
-  navigator.clipboard.writeText(code).then(() => {
-    alert("📋 Obfuscated script copied!");
-  }).catch(() => {
-    alert("❌ Failed to copy obfuscated script!");
-  });
+  navigator.clipboard.writeText(code)
+    .then(() => alert("📋 Obfuscated script copied!"))
+    .catch(() => alert("❌ Failed to copy obfuscated script!"));
 }
 
 // === VERSION CHECK ===
