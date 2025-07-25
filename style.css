@@ -20,6 +20,8 @@ body {
   grid-template-columns: 240px 1fr;
   height: 100vh;
   overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .sidebar {
@@ -68,6 +70,7 @@ body {
 .main-content {
   padding: 40px;
   overflow-y: auto;
+  max-height: 100vh;
   background: radial-gradient(circle at top left, rgba(255, 0, 0, 0.05), transparent 70%);
   position: relative;
 }
@@ -94,7 +97,7 @@ body {
   margin-top: 20px;
 }
 
-/* Card (base style used by script/tool/executor cards) */
+/* Unified card styles */
 .card,
 .tool-card,
 .executor-card,
@@ -140,6 +143,8 @@ body {
   border: 2px solid var(--accent);
   padding: 20px;
   border-radius: 10px;
+  max-width: 700px;
+  width: 100%;
 }
 
 .code-box {
@@ -168,7 +173,7 @@ body {
   background-color: #ff5e5e;
 }
 
-/* Obfuscator */
+/* Obfuscator input/output */
 textarea#luauInput {
   width: 100%;
   max-width: 700px;
@@ -197,7 +202,7 @@ textarea#luauInput {
   user-select: all;
 }
 
-/* Buttons */
+/* Download Button */
 .download-btn {
   background: linear-gradient(to right, #ff3b3b, #ff1a1a);
   color: white;
@@ -215,12 +220,15 @@ textarea#luauInput {
   transform: scale(1.05);
 }
 
-/* Footer */
+/* Footer (inside sidebar) */
 .footer {
-  margin-top: 40px;
+  margin-top: auto;
   text-align: center;
   color: #777;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 0, 0, 0.2);
+  width: 100%;
 }
 
 .footer a {
@@ -264,5 +272,10 @@ textarea#luauInput {
 
   .main-content {
     padding: 20px;
+  }
+
+  .footer {
+    position: static;
+    margin-top: 40px;
   }
 }
