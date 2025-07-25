@@ -262,6 +262,17 @@ select#obfLevel {
   padding: 20px;
   margin-top: 10px;
 }
+/* === WINOPS TOOL CARD === */
+.tool-card {
+  background: #121212;
+  border: 2px solid #ff3333;
+  border-radius: 10px;
+  padding: 24px;
+  margin: 30px auto;
+  max-width: 600px;
+  box-shadow: 0 0 20px rgba(255, 0, 0, 0.3);
+  text-align: center;
+}
 
 .tool-box {
   background: #121212;
