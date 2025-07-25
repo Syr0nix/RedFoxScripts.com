@@ -2,103 +2,137 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>RedFoxScripts.com</title>
-  <link rel="stylesheet" href="style.css"/>
-  <link rel="icon" href="https://raw.githubusercontent.com/Syr0nix/RedFox-Scripts/main/Screenshot_2025-04-21_034725-removebg-preview.png"/>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@600&display=swap" rel="stylesheet"/>
+  <link rel="icon" href="https://raw.githubusercontent.com/Syr0nix/RedFox-Scripts/main/Screenshot_2025-04-21_034725-removebg-preview.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --accent: #ff3b3b;
+      --bg-dark: #0a0a0a;
+      --bg-deep: #000;
+      --text-light: #fff;
+      --text-dim: #999;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-deep);
+      color: var(--text-light);
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      height: 100vh;
+    }
+
+    .sidebar {
+      background-color: var(--bg-dark);
+      border-right: 2px solid var(--accent);
+      padding: 30px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
+      box-shadow: 4px 0 15px rgba(255, 0, 0, 0.1);
+    }
+
+    .sidebar .logo {
+      width: 80px;
+      margin: 0 auto;
+      filter: drop-shadow(0 0 12px var(--accent));
+    }
+
+    .sidebar h1 {
+      text-align: center;
+      font-size: 1.8rem;
+      color: var(--accent);
+      text-shadow: 0 0 10px red;
+    }
+
+    .nav-link {
+      background: none;
+      border: none;
+      color: var(--text-light);
+      font-size: 1rem;
+      padding: 12px 16px;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border-left: 3px solid transparent;
+    }
+
+    .nav-link:hover, .nav-link.active {
+      background-color: #111;
+      border-left: 3px solid var(--accent);
+      color: var(--accent);
+    }
+
+    .main-content {
+      padding: 40px;
+      overflow-y: auto;
+      background: radial-gradient(circle at top left, rgba(255,0,0,0.1), transparent 70%);
+    }
+
+    .section {
+      display: none;
+      animation: fadeIn 0.4s ease;
+    }
+
+    .section.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
 </head>
 <body>
-  <div class="background-glow"></div>
 
-  <header class="site-header">
-    <img src="https://raw.githubusercontent.com/Syr0nix/RedFox-Scripts/main/Screenshot_2025-04-21_034725-removebg-preview.png" class="logo"/>
-    <h1 class="site-title">RedFox<span>Scripts</span>.com</h1>
-    <p class="subtitle">Ultimate script utility hub & Windows tools</p>
-  </header>
+  <aside class="sidebar">
+    <img src="https://raw.githubusercontent.com/Syr0nix/RedFox-Scripts/main/Screenshot_2025-04-21_034725-removebg-preview.png" class="logo" />
+    <h1>RedFoxScripts</h1>
+    <button class="nav-link active" onclick="showTab('scripts')">📜 Scripts</button>
+    <button class="nav-link" onclick="showTab('tools')">🛠️ Windows Tools</button>
+    <button class="nav-link" onclick="showTab('executor')">💻 Executor</button>
+    <button class="nav-link" onclick="showTab('obfuscator')">🔐 Obfuscator</button>
+  </aside>
 
-  <div class="tab-bar">
-    <button class="tab-btn active" onclick="openTab('scripts', event)">📜 Scripts</button>
-    <button class="tab-btn" onclick="openTab('tools', event)">🛠️ Windows Tools</button>
-    <button class="tab-btn" onclick="openTab('executor', event)">💻 Executor</button>
-    <button class="tab-btn" onclick="openTab('obfuscator', event)">🔐 Obfuscator</button>
-  </div>
+  <main class="main-content">
+    <section id="scripts" class="section active">
+      <h2>Scripts</h2>
+      <p>Loading scripts...</p>
+    </section>
 
-  <!-- === SCRIPTS TAB === -->
-  <section id="tab-scripts" class="tab-content">
-    <h2>Scripts</h2>
-    <div class="card-grid">
-      <div class="card" onclick="showScript('AutoFarm', 'https://pastebin.com/raw/xyz123')">
-        <h3>AutoFarm</h3>
-        <p>Automate your grind</p>
-      </div>
-      <div class="card" onclick="showScript('Murder Mystery 2', 'https://pastebin.com/raw/mm2abc')">
-        <h3>Murder Mystery 2</h3>
-        <p>See all kill all MM2 script</p>
-      </div>
-      <div class="card" onclick="showScript('Server Browser', 'https://pastebin.com/raw/svbrowser')">
-        <h3>Server Browser</h3>
-        <p>Join any Roblox server instantly</p>
-      </div>
-    </div>
+    <section id="tools" class="section">
+      <h2>Windows Tools</h2>
+      <p>Coming soon...</p>
+    </section>
 
-    <div class="viewer hidden" id="viewer">
-      <h3 id="scriptName">Selected Script</h3>
-      <div class="code-box" id="codeOutput">...</div>
-      <button onclick="copyScript()" class="copy-button">📋 Copy Script</button>
-    </div>
-  </section>
+    <section id="executor" class="section">
+      <h2>RedFox Executor</h2>
+      <p>Coming soon...</p>
+    </section>
 
-<!-- === WINDOWS TOOLS TAB === -->
-<section id="tab-tools" class="tab-content hidden">
-  <h2>Windows Tools</h2>
+    <section id="obfuscator" class="section">
+      <h2>Luau Obfuscator</h2>
+      <p>Coming soon...</p>
+    </section>
+  </main>
 
-  <div class="tool-card">
-    <h3>🧰 WinOps Utility Suite</h3>
-    <p>A full set of RedFox Windows optimization tools: Game Mode toggles, Network Optimizer, RAM Cleaner, Activation, and more.</p>
-    <p><strong>Latest Version:</strong> <span id="winops-version">Loading...</span></p>
-    <a href="https://github.com/Syr0nix/WinOps/archive/refs/heads/main.zip" class="download-btn" target="_blank">⬇ Download Now</a>
-    <a href="https://github.com/Syr0nix/WinOps" class="download-btn" target="_blank">🌐 View on GitHub</a>
-  </div>
+  <script>
+    function showTab(tabId) {
+      document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
+      document.querySelectorAll(".nav-link").forEach(b => b.classList.remove("active"));
+      document.getElementById(tabId).classList.add("active");
+      event.currentTarget.classList.add("active");
+    }
+  </script>
 
-  <div id="winops-list" class="tool-container"></div>
-</section>
-
-
-
-  <!-- === EXECUTOR TAB === -->
-  <section id="tab-executor" class="tab-content hidden">
-    <h2>RedFox Executor</h2>
-    <div class="centered">
-      <img src="https://raw.githubusercontent.com/Syr0nix/RedFox-Scripts/refs/heads/main/Screenshot%202025-06-01%20155242.png"
-           class="preview-img"/>
-      <p>The fastest, safest way to run Roblox scripts.</p>
-      <a href="#" class="download-btn">⬇️ Download Executor</a>
-    </div>
-  </section>
-
-  <!-- === LUAU OBFUSCATOR TAB === -->
-  <section id="tab-obfuscator" class="tab-content hidden">
-    <h2>Luau Obfuscator</h2>
-    <div class="centered obf-area">
-      <textarea id="luauInput" placeholder="-- Paste your Luau script here"></textarea>
-      <select id="obfLevel">
-        <option value="light">Light</option>
-        <option value="medium" selected>Medium</option>
-        <option value="heavy">Heavy</option>
-      </select>
-      <button onclick="runObfuscator()">⚙️ Obfuscate</button>
-      <button id="copyObf" onclick="copyObfText()" class="copy-button" style="display:none;">📋 Copy Obfuscated</button>
-      <pre id="obfOutput" class="output-box"></pre>
-    </div>
-  </section>
-
-  <footer class="footer">
-    <p>RedFox Studio • <a href="https://discord.gg/CCzPKQfe8K" target="_blank">Join Discord</a></p>
-    <p>© 2025 Syr0nix Studio™</p>
-  </footer>
-  <div id="versionTag">Loading version...</div>
-
-  <script src="main.js"></script>
 </body>
 </html>
