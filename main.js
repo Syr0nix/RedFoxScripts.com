@@ -1,9 +1,9 @@
 // TAB SWITCHING
-function openTab(tabId, event) {
-  document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
-  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-  document.getElementById(`tab-${tabId}`).classList.remove('hidden');
-  event.currentTarget.classList.add('active');
+function showTab(tabId) {
+  document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
+  document.querySelectorAll(".nav-link").forEach(b => b.classList.remove("active"));
+  document.getElementById(tabId).classList.add("active");
+  event.currentTarget.classList.add("active");
 }
 
 // SCRIPT VIEWER
@@ -17,6 +17,7 @@ function showScript(name, url) {
   viewer.classList.remove("hidden");
 }
 
+// COPY SCRIPT TO CLIPBOARD
 function copyScript() {
   const code = document.getElementById("codeOutput").textContent;
   navigator.clipboard.writeText(code).then(() => {
@@ -50,10 +51,22 @@ function copyObfText() {
   });
 }
 
-// VERSION CHECK
+// WINDOWS TOOLS VERSION FETCH (if present)
+const winopsVersionTag = document.getElementById("winops-version");
+if (winopsVersionTag) {
+  fetch("https://raw.githubusercontent.com/Syr0nix/WinOps/main/version.txt")
+    .then(res => res.text())
+    .then(ver => {
+      winopsVersionTag.textContent = ver.trim();
+    })
+    .catch(() => {
+      winopsVersionTag.textContent = "Unavailable";
+    });
+}
+
+// SITE VERSION CHECKER
 function checkForUpdate() {
-  const versionURL = "https://raw.githubusercontent.com/Syr0nix/RedFoxScripts.com/refs/heads/main/version.txt";
-  fetch(versionURL + "?t=" + Date.now())
+  fetch("https://raw.githubusercontent.com/Syr0nix/RedFoxScripts.com/refs/heads/main/version.txt?t=" + Date.now())
     .then(res => res.text())
     .then(ver => {
       document.getElementById("versionTag").textContent = "Version: " + ver.trim();
@@ -64,55 +77,4 @@ function checkForUpdate() {
 }
 
 checkForUpdate();
-setInterval(checkForUpdate, 15000);
-
-// WINDOWS TOOLS TAB
-document.addEventListener("DOMContentLoaded", () => {
-  const versionTag = document.getElementById("winops-version");
-  const toolList = document.getElementById("winops-list");
-
-  fetch("https://raw.githubusercontent.com/Syr0nix/WinOps/main/version.txt")
-    .then(res => res.text())
-    .then(version => {
-      versionTag.textContent = version.trim();
-    })
-    .catch(() => {
-      versionTag.textContent = "Unavailable";
-    });
-
-  fetch("https://api.github.com/repos/Syr0nix/WinOps/contents/")
-    .then(res => res.json())
-    .then(files => {
-      const tools = files.filter(f =>
-        f.name.endsWith(".exe") ||
-        f.name.endsWith(".bat") ||
-        f.name.endsWith(".ps1")
-      );
-
-      if (tools.length === 0) {
-        toolList.innerHTML = "<p>No downloadable tools found in the repository.</p>";
-        return;
-      }
-
-      toolList.innerHTML = tools.map(tool => `
-        <div class="tool-box">
-          <strong>${tool.name}</strong>
-          <a href="${tool.download_url}" download class="download-btn">Download</a>
-        </div>
-      `).join("");
-    })
-    .catch(() => {
-      toolList.innerHTML = "<p>⚠️ Failed to load WinOps tools from GitHub.</p>";
-    });
-});
-
-  // version fetch
-  fetch("https://raw.githubusercontent.com/Syr0nix/WinOps/main/version.txt")
-    .then(res => res.text())
-    .then(version => {
-      document.getElementById("winops-version").innerText = version.trim();
-    })
-    .catch(() => {
-      document.getElementById("winops-version").innerText = "Unavailable";
-    });
-}
+setInterval(checkForUpdate, 30000);
