@@ -26,50 +26,51 @@ function copyScript() {
 }
 
 // OBFUSCATOR HELPERS
-function xorString(str, key = 69) {
-  return str.split('').map(char => `\\${char.charCodeAt(0) ^ key}`).join('');
-}
-
-function generateJunkVariable() {
-  const chars = "abcdefghijklmnopqrstuvwxyz";
-  return "_" + Array.from({length: 6}, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+function generateJunkVar() {
+  const chars = 'abcdefghijklmnopqrstuvwxyz';
+  return '_' + Array.from({ length: 6 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
 }
 
 function renameVariables(code) {
-  return code.replace(/\b(local\s+)(\w+)/g, (_, decl, name) => {
-    const newName = generateJunkVariable();
-    return decl + newName;
+  let varIndex = 0;
+  const varMap = {};
+  return code.replace(/\blocal\s+(\w+)/g, (_, name) => {
+    if (!varMap[name]) varMap[name] = generateJunkVar();
+    return `local ${varMap[name]}`;
+  }).replace(/\b(\w+)\b/g, (match) => {
+    return varMap[match] || match;
   });
+}
+
+function injectJunkLines(count = 3) {
+  const lines = [];
+  for (let i = 0; i < count; i++) {
+    const v = generateJunkVar();
+    const value = Math.random() > 0.5 ? `"${generateJunkVar()}"` : Math.floor(Math.random() * 9999);
+    lines.push(`local ${v} = ${value}`);
+  }
+  return lines.join("\n");
 }
 
 function obfuscateLuau() {
   const input = document.getElementById("luauInput").value.trim();
   const outputBox = document.getElementById("obfuscatorOutput");
-
   if (!input) {
-    outputBox.textContent = "⚠️ Please enter a script.";
+    outputBox.textContent = "Please enter a script.";
     outputBox.classList.remove("hidden");
     return;
   }
 
-  let code = input;
+  let obf = "-- Obfuscated by RedFox Obfuscator for Wave\n";
+  obf += injectJunkLines(4) + "\n\n";
+  obf += renameVariables(input) + "\n\n";
+  obf += injectJunkLines(3);
+  obf += "\n-- End Obfuscation";
 
-  // Obfuscation pipeline
-  code = renameVariables(code);
-
-  // Add XOR junk variable
-  const junkVar = generateJunkVariable();
-  const xor = xorString("RedFox");
-
-  code = `--// Obfuscated by RedFox Luau Obfuscator\n` +
-         `local ${generateJunkVariable()} = 0x${Math.floor(Math.random()*9999).toString(16)}\n` +
-         `local ${junkVar} = "${xor}"\n` +
-         code +
-         `\n-- junk tail\nlocal ${generateJunkVariable()} = "${xorString("EndOfScript")}"`;
-
-  outputBox.textContent = code;
+  outputBox.textContent = obf;
   outputBox.classList.remove("hidden");
 }
+
 
 
 // COPY OBFUSCATED TEXT
