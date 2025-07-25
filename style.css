@@ -82,18 +82,11 @@ body {
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-/* Card grid for scripts */
+/* Grid container shared by scripts, tools, etc. */
 .card-grid {
   display: flex;
   flex-wrap: wrap;
@@ -101,7 +94,11 @@ body {
   margin-top: 20px;
 }
 
-.card {
+/* Card (base style used by script/tool/executor cards) */
+.card,
+.tool-card,
+.executor-card,
+.obfuscator-card {
   background-color: #111;
   border: 2px solid var(--accent);
   border-radius: 10px;
@@ -112,17 +109,31 @@ body {
   cursor: pointer;
 }
 
-.card:hover {
+.card:hover,
+.tool-card:hover,
+.executor-card:hover,
+.obfuscator-card:hover {
   transform: translateY(-3px);
   box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
 }
 
-.card h3 {
+.card h3,
+.tool-card h3,
+.executor-card h3,
+.obfuscator-card h3 {
   color: var(--accent);
   margin-bottom: 6px;
 }
 
-/* Script viewer */
+.card p,
+.tool-card p,
+.executor-card p,
+.obfuscator-card p {
+  color: var(--text-dim);
+  font-size: 0.95rem;
+}
+
+/* Viewer Output */
 .viewer {
   margin-top: 30px;
   background-color: #0a0a0a;
@@ -184,35 +195,6 @@ textarea#luauInput {
   max-width: 700px;
   width: 100%;
   user-select: all;
-}
-
-/* Tools */
-.tool-card {
-  background-color: #111;
-  border: 2px solid var(--accent);
-  border-radius: 10px;
-  padding: 20px;
-  box-shadow: 0 0 12px rgba(255, 0, 0, 0.3);
-  margin-top: 20px;
-  max-width: 700px;
-}
-
-.tool-card h3 {
-  color: var(--accent);
-  margin-bottom: 10px;
-}
-
-.tool-card a {
-  display: inline-block;
-  margin-right: 20px;
-  margin-top: 10px;
-  color: var(--accent);
-  text-decoration: none;
-  font-weight: bold;
-}
-
-.tool-card a:hover {
-  text-decoration: underline;
 }
 
 /* Buttons */
