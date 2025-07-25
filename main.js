@@ -1,31 +1,42 @@
-// TAB SWITCHING
+// === TAB SWITCHING ===
 function showTab(tabId, event) {
+  // Remove active from all sections and nav-links
   document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
   document.querySelectorAll(".nav-link").forEach(b => b.classList.remove("active"));
-  document.getElementById(tabId).classList.add("active");
-  event.currentTarget.classList.add("active");
+
+  // Activate current tab and nav-link
+  const tab = document.getElementById(tabId);
+  if (tab) tab.classList.add("active");
+  if (event && event.currentTarget) event.currentTarget.classList.add("active");
 }
 
-// SCRIPT VIEWER
+// === SCRIPT VIEWER ===
 function showScript(name, url) {
   const viewer = document.getElementById("viewer");
   const output = document.getElementById("codeOutput");
   const label = document.getElementById("scriptName");
+
+  if (!viewer || !output || !label) return; // safety check
 
   output.textContent = `loadstring(game:HttpGet("${url}"))()`;
   label.textContent = name + " Script";
   viewer.classList.remove("hidden");
 }
 
-// COPY SCRIPT
+// === COPY SCRIPT ===
 function copyScript() {
-  const code = document.getElementById("codeOutput").textContent;
+  const codeEl = document.getElementById("codeOutput");
+  if (!codeEl) return;
+
+  const code = codeEl.textContent;
   navigator.clipboard.writeText(code).then(() => {
     alert("📋 Script copied to clipboard!");
+  }).catch(() => {
+    alert("❌ Failed to copy script!");
   });
 }
 
-// OBFUSCATOR HELPERS
+// === OBFUSCATOR HELPERS ===
 
 function generateRandomName(len = 6) {
   const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -72,11 +83,11 @@ function injectJunkLines(count = 5) {
 }
 
 function addVisualChaos(code) {
-  // Randomize semicolons (Lua allows optional, but some obfuscators add them)
+  // Randomize semicolons (Lua allows optional; add randomly)
   code = code.replace(/;/g, () => (Math.random() > 0.5 ? ';;' : ';'));
   // Randomize line breaks
   code = code.replace(/\n/g, () => (Math.random() > 0.5 ? '\n\n' : '\n'));
-  // Randomize spaces and tabs
+  // Randomize spaces and tabs (collapse multiple spaces)
   code = code.replace(/ {2,}/g, () => (Math.random() > 0.5 ? ' ' : '\t'));
   return code;
 }
@@ -124,11 +135,12 @@ function escapeString(str) {
   return str.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
 }
 
-function encryptStringsInCode(code, key) {
+function encryptStringsInCode(code, key, decryptName) {
   // Replace double-quoted strings with decrypt calls
+  // Slight fix: use decryptName passed as parameter (was hardcoded before)
   return code.replace(/"([^"]*)"/g, (_, str) => {
     const encrypted = xorEncryptString(str, key);
-    return `decrypt("${escapeString(encrypted)}")`;
+    return `${decryptName}("${escapeString(encrypted)}")`;
   });
 }
 
@@ -158,12 +170,13 @@ function fullObfuscateLuau(code) {
   const key = generateRandomName(8);
   const decryptName = generateRandomName(6);
   const decryptor = generateRuntimeDecryptor(key, decryptName);
-  obf = encryptStringsInCode(obf, key);
+  obf = encryptStringsInCode(obf, key, decryptName);
   obf = decryptor + '\nlocal decrypt = ' + decryptName + '\n' + obf;
 
   // 3. Insert junk lines randomly
-  const junk = injectJunkLines(7);
-  obf = junk + '\n' + obf + '\n' + injectJunkLines(5);
+  const junkBefore = injectJunkLines(7);
+  const junkAfter = injectJunkLines(5);
+  obf = junkBefore + '\n' + obf + '\n' + junkAfter;
 
   // 4. Wrap with fake control flow
   obf = wrapWithFakeControlFlow(obf);
@@ -172,29 +185,34 @@ function fullObfuscateLuau(code) {
   const antiDebug = generateAntiDebug();
   obf = antiDebug + '\n' + obf;
 
-  // 6. Add visual chaos
+  // 6. Add visual chaos (random spaces, semicolons, line breaks)
   obf = addVisualChaos(obf);
 
   return obf;
 }
 
-// COPY OBFUSCATED TEXT
+// === COPY OBFUSCATED TEXT ===
 function copyObfText() {
   const code = document.getElementById("obfuscatorOutput").textContent;
+  if (!code) return;
   navigator.clipboard.writeText(code).then(() => {
     alert("📋 Obfuscated script copied!");
+  }).catch(() => {
+    alert("❌ Failed to copy obfuscated script!");
   });
 }
 
-// VERSION CHECK
+// === VERSION CHECK ===
 function checkForUpdate() {
   fetch("https://raw.githubusercontent.com/Syr0nix/RedFoxScripts.com/refs/heads/main/version.txt?t=" + Date.now())
     .then(res => res.text())
     .then(ver => {
-      document.getElementById("versionTag").textContent = "Version: " + ver.trim();
+      const el = document.getElementById("versionTag");
+      if (el) el.textContent = "Version: " + ver.trim();
     })
     .catch(() => {
-      document.getElementById("versionTag").textContent = "Version: Unknown";
+      const el = document.getElementById("versionTag");
+      if (el) el.textContent = "Version: Unknown";
     });
 }
 
