@@ -106,7 +106,28 @@
   <main class="main-content">
     <section id="scripts" class="section active">
       <h2>Scripts</h2>
-      <p>Loading scripts...</p>
+<div class="script-grid">
+  <div class="script-card" onclick="showScript('AutoFarm', 'https://pastebin.com/raw/xyz123')">
+    <h3>AutoFarm</h3>
+    <p>Automate your grind</p>
+  </div>
+
+  <div class="script-card" onclick="showScript('Murder Mystery 2', 'https://pastebin.com/raw/mm2abc')">
+    <h3>Murder Mystery 2</h3>
+    <p>See all kill all MM2 script</p>
+  </div>
+
+  <div class="script-card" onclick="showScript('Server Browser', 'https://pastebin.com/raw/svbrowser')">
+    <h3>Server Browser</h3>
+    <p>Join any Roblox server instantly</p>
+  </div>
+</div>
+
+<div class="viewer hidden" id="viewer">
+  <h3 id="scriptName">Selected Script</h3>
+  <div class="code-box" id="codeOutput">...</div>
+  <button onclick="copyScript()" class="copy-btn">📋 Copy Script</button>
+</div>
     </section>
 
     <section id="tools" class="section">
