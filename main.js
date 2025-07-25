@@ -42,13 +42,12 @@ function renameVariables(code) {
   });
 }
 
-// MAIN OBFUSCATION FUNCTION
 function obfuscateLuau() {
   const input = document.getElementById("luauInput").value.trim();
-  const outputBox = document.getElementById("obfOutput");
+  const outputBox = document.getElementById("obfuscatorOutput");
 
   if (!input) {
-    outputBox.textContent = "Please enter a script.";
+    outputBox.textContent = "⚠️ Please enter a script.";
     outputBox.classList.remove("hidden");
     return;
   }
@@ -57,14 +56,21 @@ function obfuscateLuau() {
 
   // Obfuscation pipeline
   code = renameVariables(code);
+
+  // Add XOR junk variable
+  const junkVar = generateJunkVariable();
+  const xor = xorString("RedFox");
+
   code = `--// Obfuscated by RedFox Luau Obfuscator\n` +
          `local ${generateJunkVariable()} = 0x${Math.floor(Math.random()*9999).toString(16)}\n` +
+         `local ${junkVar} = "${xor}"\n` +
          code +
-         `\n-- junk tail\nlocal ${generateJunkVariable()} = "${xorString("RedFox")}"`;
+         `\n-- junk tail\nlocal ${generateJunkVariable()} = "${xorString("EndOfScript")}"`;
 
   outputBox.textContent = code;
   outputBox.classList.remove("hidden");
 }
+
 
 // COPY OBFUSCATED TEXT
 function copyObfText() {
