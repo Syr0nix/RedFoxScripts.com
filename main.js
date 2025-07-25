@@ -8,16 +8,11 @@ function openTab(tabId, event) {
 
 // SCRIPT VIEWER
 function showScript(name, url) {
+  const viewer = document.getElementById("viewer");
   const output = document.getElementById("codeOutput");
   const label = document.getElementById("scriptName");
-  const viewer = document.getElementById("viewer");
 
-  if (url === 'Coming Soon!') {
-    output.textContent = "-- Script is not yet available.";
-  } else {
-    output.textContent = `loadstring(game:HttpGet("${url}"))()`;
-  }
-
+  output.textContent = `loadstring(game:HttpGet("${url}"))()`;
   label.textContent = name + " Script";
   viewer.classList.remove("hidden");
 }
@@ -25,7 +20,7 @@ function showScript(name, url) {
 function copyScript() {
   const code = document.getElementById("codeOutput").textContent;
   navigator.clipboard.writeText(code).then(() => {
-    alert("📋 Copied to clipboard!");
+    alert("📋 Script copied to clipboard!");
   });
 }
 
