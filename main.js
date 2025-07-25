@@ -26,23 +26,31 @@ function copyScript() {
 }
 
 // OBFUSCATOR
-function runObfuscator() {
-  const input = document.getElementById("luauInput")?.value.trim();
-  const output = document.getElementById("obfOutput");
-  const copyBtn = document.getElementById("copyObf");
+function obfuscateLuau() {
+  const input = document.getElementById("luauInput").value.trim();
+  const outputBox = document.getElementById("obfuscatorOutput");
 
   if (!input) {
-    if (output) output.textContent = "-- Please enter Luau code.";
-    if (copyBtn) copyBtn.style.display = "none";
+    outputBox.textContent = "Please enter a script.";
+    outputBox.classList.remove("hidden");
     return;
   }
 
-  const bytes = input.split('').map(c => c.charCodeAt(0));
-  const encoded = `local code = { ${bytes.join(", ")} }\nloadstring(string.char(unpack(code)))()`;
+  // Simple Base64 encoding as fake "obfuscation"
+  const encoded = btoa(unescape(encodeURIComponent(input)));
 
-  if (output) output.textContent = encoded;
-  if (copyBtn) copyBtn.style.display = "inline-block";
+  // You can wrap this however you like — here’s one that does NOT use loadstring
+  const fakeObfuscated = `
+-- Base64-encoded Luau
+local encoded = "${encoded}"
+-- Decode manually or in your tool (not with loadstring)
+print("Decoded content requires a custom decoder.")
+`;
+
+  outputBox.textContent = fakeObfuscated.trim();
+  outputBox.classList.remove("hidden");
 }
+
 
 // COPY OBFUSCATED TEXT
 function copyObfText() {
