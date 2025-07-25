@@ -24,58 +24,62 @@ function copyScript() {
     alert("📋 Script copied to clipboard!");
   });
 }
-
 // OBFUSCATOR HELPERS
-function generateJunkVar() {
-  const chars = 'abcdefghijklmnopqrstuvwxyz';
-  return '_' + Array.from({ length: 6 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+
+function generateJunkVar(len = 5) {
+  const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  return "_" + Array.from({ length: len }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
 }
 
-function renameVariables(code) {
-  let varIndex = 0;
-  const varMap = {};
-  return code.replace(/\blocal\s+(\w+)/g, (_, name) => {
-    if (!varMap[name]) varMap[name] = generateJunkVar();
-    return `local ${varMap[name]}`;
-  }).replace(/\b(\w+)\b/g, (match) => {
-    return varMap[match] || match;
-  });
+function scrambleCode(code) {
+  return code
+    .replace(/\blocal\s+([a-zA-Z_]\w*)/g, () => "local " + generateJunkVar())
+    .replace(/\bfunction\s+([a-zA-Z_]\w*)/g, () => "function " + generateJunkVar())
+    .replace(/\s{2,}/g, () => Math.random() > 0.5 ? "\n" : "  ");
 }
 
-function injectJunkLines(count = 3) {
+function injectJunkLines(count = 5) {
   const lines = [];
   for (let i = 0; i < count; i++) {
     const v = generateJunkVar();
-    const value = Math.random() > 0.5 ? `"${generateJunkVar()}"` : Math.floor(Math.random() * 9999);
-    lines.push(`local ${v} = ${value}`);
+    const val = Math.random() > 0.5 ? `"${generateJunkVar(6)}"` : Math.floor(Math.random() * 99999);
+    lines.push(`local ${v} = ${val}`);
   }
-  return lines.join("\n");
+  return lines.join(Math.random() > 0.5 ? "\n" : " ");
+}
+
+function fakeControlFlowWrap(code) {
+  const junk = generateJunkVar();
+  return `
+if ${junk} ~= nil then
+  while true do
+    if ${junk} == nil then break end;
+    ${injectJunkLines(3)};
+    ${code}
+    break;
+  end;
+end;`;
 }
 
 function obfuscateLuau() {
   const input = document.getElementById("luauInput").value.trim();
   const outputBox = document.getElementById("obfuscatorOutput");
   if (!input) {
-    outputBox.textContent = "Please enter a script.";
+    outputBox.textContent = "Paste a script to obfuscate.";
     outputBox.classList.remove("hidden");
     return;
   }
 
-  let obf = "-- Obfuscated by RedFox Obfuscator for Wave\n";
-  obf += injectJunkLines(4) + "\n\n";
-  obf += renameVariables(input) + "\n\n";
-  obf += injectJunkLines(3);
-  obf += "\n-- End Obfuscation";
+  let scrambled = scrambleCode(input);
+  let withJunk = injectJunkLines(4) + "\n" + fakeControlFlowWrap(scrambled) + "\n" + injectJunkLines(4);
+  let ugly = withJunk.replace(/;/g, () => Math.random() > 0.5 ? ";;" : ";").replace(/\n/g, () => Math.random() > 0.5 ? "\n\n" : "\n");
 
-  outputBox.textContent = obf;
+  outputBox.textContent = "--[[RedFox Obfuscator]]\n" + ugly + "\n--[[End]]";
   outputBox.classList.remove("hidden");
 }
-
-
-
 // COPY OBFUSCATED TEXT
 function copyObfText() {
-  const code = document.getElementById("obfOutput").textContent;
+  const code = document.getElementById("obfuscatorOutput").textContent;
   navigator.clipboard.writeText(code).then(() => {
     alert("📋 Obfuscated script copied!");
   });
