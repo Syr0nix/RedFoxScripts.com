@@ -71,14 +71,13 @@
     </section>
 
     <!-- Obfuscator Tab -->
-    <section id="obfuscator" class="section">
-      <h2>Luau Obfuscator</h2>
-      <textarea id="luauInput" placeholder="Enter your Luau code here..."></textarea>
-      <br><br>
-      <button class="download-btn" onclick="runObfuscator()">🔐 Obfuscate</button>
-      <pre id="obfOutput" class="output-box"></pre>
-      <button id="copyObf" class="copy-button" style="display:none;" onclick="copyObfText()">📋 Copy Obfuscated</button>
-    </section>
+   <section id="obfuscator" class="section">
+  <h2>Luau Obfuscator</h2>
+  <textarea id="luauInput" placeholder="Enter your Luau script here..."></textarea>
+  <button class="download-btn" onclick="obfuscateLuau()">Obfuscate</button>
+  <div id="obfuscatorOutput" class="output-box hidden"></div>
+</section>
+
     <div id="versionTag">Loading version...</div>
   </main>
 
