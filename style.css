@@ -180,37 +180,6 @@ html, body {
   transform: scale(1.05);
 }
 
-.tool-card {
-  background: linear-gradient(145deg, #111, #1b1b1b);
-  border: 1px solid #ff0033;
-  border-radius: 12px;
-  padding: 20px;
-  margin-top: 20px;
-  color: white;
-  box-shadow: 0 0 10px #ff0033aa;
-}
-
-.tool-card h3 {
-  color: #ff0033;
-  margin-bottom: 8px;
-}
-
-.tool-card a {
-  display: inline-block;
-  margin-right: 12px;
-  margin-top: 10px;
-  padding: 8px 16px;
-  border-radius: 6px;
-  background-color: #ff0033;
-  color: white;
-  text-decoration: none;
-  transition: background-color 0.3s ease;
-}
-
-.tool-card a:hover {
-  background-color: #cc002b;
-}
-
 /* === EXECUTOR SECTION === */
 .preview-img {
   width: 500px;
@@ -284,6 +253,58 @@ select#obfLevel {
   width: 100%;
 }
 
+/* === WINOPS TOOL LIST === */
+.tool-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  justify-content: center;
+  padding: 20px;
+  margin-top: 10px;
+}
+
+.tool-box {
+  background: #121212;
+  border: 1px solid #ff0033;
+  border-radius: 12px;
+  padding: 20px;
+  min-width: 260px;
+  max-width: 320px;
+  box-shadow: 0 0 15px rgba(255, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.tool-box strong {
+  color: #ff4444;
+  font-size: 1.1rem;
+  margin-bottom: 12px;
+}
+
+.tool-box .download-btn {
+  padding: 10px 20px;
+  font-size: 0.95rem;
+  background: linear-gradient(to right, #ff3b3b, #cc0000);
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(255, 0, 0, 0.4);
+}
+
+.tool-box .download-btn:hover {
+  background: #aa0000;
+  transform: scale(1.05);
+}
+
+/* === VERSION TAG === */
+#winops-version {
+  text-align: center;
+  font-size: 0.95rem;
+  margin-top: 20px;
+  color: #999;
+  font-family: monospace;
+}
+
 /* === FOOTER === */
 .footer {
   text-align: center;
@@ -301,15 +322,4 @@ select#obfLevel {
 
 .footer a:hover {
   text-decoration: underline;
-}
-
-/* === VERSION TAG === */
-#versionTag {
-  position: fixed;
-  bottom: 10px;
-  right: 20px;
-  font-size: 0.85rem;
-  color: #ff4444;
-  opacity: 0.8;
-  font-family: monospace;
 }
