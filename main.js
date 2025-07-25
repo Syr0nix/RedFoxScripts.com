@@ -1,5 +1,5 @@
 // TAB SWITCHING
-function showTab(tabId) {
+function showTab(tabId, event) {
   document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
   document.querySelectorAll(".nav-link").forEach(b => b.classList.remove("active"));
   document.getElementById(tabId).classList.add("active");
