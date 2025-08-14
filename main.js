@@ -18,6 +18,17 @@ function showScript(name, url) {
   viewer.classList.remove("hidden");
 }
 
+// === SCRIPT VIEWER (RAW CODE) ===
+function showRawScript(name, code) {
+  const viewer = document.getElementById("viewer");
+  const output = document.getElementById("codeOutput");
+  const label = document.getElementById("scriptName");
+  if (!viewer || !output || !label) return;
+  output.textContent = code; 
+  label.textContent = name + " Script";
+  viewer.classList.remove("hidden");
+}
+
 // === COPY SCRIPT ===
 function copyScript() {
   const codeEl = document.getElementById("codeOutput");
