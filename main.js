@@ -7,7 +7,7 @@ function showTab(tabId, event) {
   if (event?.currentTarget) event.currentTarget.classList.add("active");
 }
 
-// === SCRIPT VIEWER ===
+// === SCRIPT VIEWER (URL-based) ===
 function showScript(name, url) {
   const viewer = document.getElementById("viewer");
   const output = document.getElementById("codeOutput");
