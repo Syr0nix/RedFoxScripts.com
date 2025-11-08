@@ -251,9 +251,9 @@
 
         const options = {
             encryptStrings: document.getElementById('opt-str-encrypt').checked,
-            renameVars: document.getElementById('opt-var-rename').checked,
+            variableRenaming: document.getElementById('opt-var-rename').checked,
             antiDebug: document.getElementById('opt-anti-debug').checked,
-            minify: document.getElementById('opt-minify').checked
+            minify: document.getElementById('opt-compact')?.checked || false
         };
 
         try {
@@ -280,8 +280,14 @@
         obf = `${decryptor}\n${obf}`;
     }
 
-    if (options.renameVars) obf = renameLocalIdentifiers(obf);
-    if (options.antiDebug) obf = `${generateAntiDebug()}\n${obf}`;
+        if (options.variableRenaming) {
+            try {
+                obf = renameLocalIdentifiers(obf);
+            } catch (e) {
+                console.warn("Variable rename skipped due to error:", e);
+            }
+        }  
+        if (options.antiDebug) obf = `${generateAntiDebug()}\n${obf}`;
 
     // Compact mode
     if (options.minify) obf = minifyLua(obf);
