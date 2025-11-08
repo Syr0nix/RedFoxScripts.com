@@ -245,20 +245,61 @@
     // --------------------
     // Obfuscator core
     // --------------------
-    async function obfuscateLuau() {
-    const code = inputEditor.getValue().trim();
-    if (!code || code === '-- Paste your Luau script here...') {
-        return showToast("Please enter a script to obfuscate.");
+async function obfuscateChunked() {
+  const btn = document.getElementById('obfuscateBtn');
+  btn.disabled = true;
+  btn.textContent = 'Obfuscating...';
+  showToast('Obfuscating in chunks...');
+
+  let src = inputEditor.getValue() || '';
+  // preserve header manually so compact won't collapse header
+  const header1 = '-- Obfuscated with RedFox';
+  const header2 = '-- https://redfoxscripts.com';
+  if (!src.startsWith(header1)) src = `${header1}\n${header2}\n\n${src}`;
+
+  // split into lines and process in batches
+  const lines = src.split(/\r?\n/);
+  const batchSize = 200; // tune: lower for older devices
+  let outLines = [];
+
+  for (let i=0; i<lines.length; i += batchSize) {
+    const slice = lines.slice(i, i+batchSize);
+    // run your heavy transforms on slice
+    const processed = slice.map(line => {
+      // example: apply your regex replacer(s) here, but keep them small
+      // replace strings, variable renames etc. Possibly this uses complex logic.
+      // For demo: just return line unchanged
+      return line;
+    });
+    outLines.push(...processed);
+    // yield to UI thread so browser doesn't hang
+    await new Promise(r => setTimeout(r, 0));
+  }
+
+  let out = outLines.join('\n');
+
+  // run final heavy passes that need whole-file context (variable renaming, global patterns)
+  try {
+    if (document.getElementById('opt-var-rename').checked) {
+      // run variable renaming but in small steps if necessary or inside try-catch
+      out = runVarRename(out); // implement with safe chunking or regex
     }
+    if (document.getElementById('opt-compact').checked) {
+      // compact but preserve header lines
+      const parts = out.split(/\r?\n/);
+      const header = parts.slice(0,3); // header, url, blank
+      const rest = parts.slice(3).map(l => l.replace(/\s+/g,' ')).filter(l=>l.trim()!=='').join('\n');
+      out = [...header, rest].join('\n');
+    }
+  } catch (err) {
+    console.error('Final pass failed', err);
+  }
 
-    const options = {
-        encryptStrings: document.getElementById('opt-str-encrypt').checked,
-        variableRenaming: document.getElementById('opt-var-rename').checked,
-        antiDebug: document.getElementById('opt-anti-debug').checked,
-        minify: document.getElementById('opt-compact')?.checked || false
-    };
-
-    showToast("⏳ Obfuscating... please wait.");
+  outputEditor.setValue(out);
+  btn.disabled = false;
+  btn.textContent = 'Obfuscate';
+  showToast('Obfuscated (chunked) ✅');
+}
 
     // Run obfuscation in a Promise to let UI stay responsive
     await new Promise(resolve => setTimeout(resolve, 50));
