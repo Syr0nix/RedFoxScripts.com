@@ -245,29 +245,40 @@
     // --------------------
     // Obfuscator core
     // --------------------
-    function obfuscateLuau(){
-        const code = inputEditor.getValue().trim();
-        if(!code || code === '-- Paste your Luau script here...') return showToast('Please enter a script to obfuscate.');
-
-        const options = {
-            encryptStrings: document.getElementById('opt-str-encrypt').checked,
-            variableRenaming: document.getElementById('opt-var-rename').checked,
-            antiDebug: document.getElementById('opt-anti-debug').checked,
-            minify: document.getElementById('opt-compact')?.checked || false
-        };
-
-        try {
-            setTimeout(()=>{
-                const out = fullObfuscateLuau(code, options);
-                outputEditor.setValue(out);
-                showToast('✅ Script obfuscated successfully!');
-            }, 10);
-        } catch (err){
-            console.error(err);
-            outputEditor.setValue('-- OBFUSCATION ERROR:\n-- ' + err.message);
-            showToast('❌ Error during obfuscation');
-        }
+    async function obfuscateLuau() {
+    const code = inputEditor.getValue().trim();
+    if (!code || code === '-- Paste your Luau script here...') {
+        return showToast("Please enter a script to obfuscate.");
     }
+
+    const options = {
+        encryptStrings: document.getElementById('opt-str-encrypt').checked,
+        variableRenaming: document.getElementById('opt-var-rename').checked,
+        antiDebug: document.getElementById('opt-anti-debug').checked,
+        minify: document.getElementById('opt-compact')?.checked || false
+    };
+
+    showToast("⏳ Obfuscating... please wait.");
+
+    // Run obfuscation in a Promise to let UI stay responsive
+    await new Promise(resolve => setTimeout(resolve, 50));
+
+    try {
+        const obfuscated = await new Promise(resolve => {
+            setTimeout(() => {
+                const result = fullObfuscateLuau(code, options);
+                resolve(result);
+            }, 0);
+        });
+
+        outputEditor.setValue(obfuscated);
+        showToast("✅ Script obfuscated successfully!");
+    } catch (e) {
+        console.error("Obfuscation Error:", e);
+        showToast("❌ Error during obfuscation: " + e.message);
+        outputEditor.setValue(`-- OBFUSCATION FAILED:\n-- ${e.message}`);
+    }
+}
 
     function fullObfuscateLuau(code, options) {
     let obf = code;
