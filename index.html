@@ -541,10 +541,17 @@
             return obfuscatedCode;
         }
 
-        function generateRuntimeDecryptor(key, funcName) {
-            return `local function ${funcName}(s) local k="${key}" local r="" for i=1,#s do r=r..string.char(bit32.bxor(s:byte(i),k:byte((i-1)%#k+1))) end return r end`;
+       function generateRuntimeDecryptor(key, funcName) {
+            return `local function ${funcName}(s)
+                local k="${key}" local r=""
+                for hex in s:gmatch("\\\\x(%x%x)") do
+                    local c = tonumber(hex,16)
+                    r = r .. string.char(bit32.bxor(c, k:byte((#r)%#k+1)))
+                end
+                return r
+            end`
         }
-        
+                
         function encryptStringsInCode(code, key, decryptName) {
             return code.replace(/"((?:[^"\\]|\\.)*)"|'((?:[^'\\]|\\.)*)'/g, (_, dblStr, snglStr) => {
                 if (dblStr === null && snglStr === null) return '';
@@ -553,7 +560,7 @@
                 let encryptedBytes = '';
                 for (let i = 0; i < str.length; i++) {
                     const charCode = str.charCodeAt(i) ^ key.charCodeAt(i % key.length);
-                    encryptedBytes += '\\' + charCode;
+                    encryptedBytes += '\\x' + charCode.toString(16).padStart(2, '0');
                 }
                 return `${decryptName}("${encryptedBytes}")`;
             });
