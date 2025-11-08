@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>RedFox</title>
+    <link rel="icon" href="https://raw.githubusercontent.com/Syr0nix/RedFox-Scripts/main/Screenshot_2025-04-21_034725-removebg-preview.png">
+
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web" async></script>
+
+    <!-- Monaco Editor Loader -->
+    <link rel="stylesheet" data-name="vs/editor/editor.main" href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/editor/editor.main.css">
+
+    <style>
+        :root {
+            --primary-color: #FF4B2B;
+            --secondary-color: #FF416C;
+            --background-color: #0d0d0d;
+            --surface-color: #1a1a1a;
+            --text-color: #E0E0E0;
+            --muted-text-color: #A0A0A0;
+            --border-color: #2f2f2f;
+            --glow-color: rgba(255,75,43,0.4);
+        }
+        *{margin:0;padding:0;box-sizing:border-box}
+        html{scrollbar-width:thin;scrollbar-color:var(--primary-color) var(--background-color)}
+        ::-webkit-scrollbar{width:8px}::-webkit-scrollbar-track{background:var(--background-color)}::-webkit-scrollbar-thumb{background:var(--primary-color);border-radius:4px}
+        body{font-family:'Poppins',sans-serif;background:var(--background-color);color:var(--text-color);display:flex;height:100vh;overflow:hidden}
+        .sidebar{width:260px;background:linear-gradient(180deg,var(--surface-color),#141414);border-right:1px solid var(--border-color);padding:2rem 1.5rem;display:flex;flex-direction:column}
+        .logo-group{display:flex;align-items:center;gap:12px}.sidebar-logo{width:45px}.sidebar-title{font-size:1.4rem;font-weight:700}
+        .nav-container{margin-top:12px;display:flex;flex-direction:column;gap:6px}
+        .nav-link{background:transparent;border:none;color:var(--muted-text-color);padding:10px;border-radius:8px;text-align:left;font-weight:600;cursor:pointer}
+        .nav-link.active,.nav-link:hover{color:white;background:linear-gradient(90deg,var(--primary-color),var(--secondary-color));box-shadow:0 0 18px var(--glow-color)}
+        .sidebar-footer{margin-top:auto;font-size:0.8rem;color:var(--muted-text-color);text-align:center}
+        main{flex:1;overflow:auto;padding:28px 36px}
+        h2{font-size:2rem;background:linear-gradient(90deg,var(--primary-color),var(--secondary-color));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px}
+        .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;margin-top:16px}
+        .card{background:var(--surface-color);padding:16px;border-radius:10px;border:1px solid var(--border-color);cursor:pointer}
+        .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:2000}
+        .modal-overlay.visible{display:flex}
+        .modal-content{background:var(--surface-color);width:95%;max-width:900px;border-radius:10px;border:1px solid var(--border-color);overflow:hidden;display:flex;flex-direction:column;max-height:90vh}
+        .modal-header{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--border-color)}
+        .modal-body{padding:12px;display:flex;flex-direction:column;gap:8px}
+        .editor-container{height:55vh;border:1px solid var(--border-color);border-radius:8px;overflow:hidden}
+        .obfuscator-grid{display:grid;grid-template-columns:3fr 2fr;gap:16px;align-items:start}
+        .option-group{background:var(--surface-color);border:1px solid var(--border-color);padding:12px;border-radius:8px}
+        .checkbox-wrapper{display:flex;align-items:center;margin-bottom:8px}
+        .checkbox-wrapper input{margin-right:8px}
+        .action-button{padding:10px 12px;background:linear-gradient(90deg,var(--primary-color),var(--secondary-color));border:none;color:#fff;border-radius:8px;font-weight:700;cursor:pointer}
+        #versionTag{position:fixed;right:12px;bottom:12px;background:var(--surface-color);padding:6px 10px;border-radius:6px;border:1px solid var(--border-color);color:var(--muted-text-color)}
+        .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:-100px;background:linear-gradient(90deg,var(--primary-color),var(--secondary-color));color:#fff;padding:10px 16px;border-radius:8px;transition:bottom .35s}
+        .toast.show{bottom:24px}
+        @media(max-width:1000px){.obfuscator-grid{grid-template-columns:1fr}}
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="logo-group">
+            <img class="sidebar-logo" src="https://raw.githubusercontent.com/Syr0nix/RedFox-Scripts/main/Screenshot_2025-04-21_034725-removebg-preview.png" alt="logo">
+            <div>
+                <div class="sidebar-title">RedFox</div>
+                <div style="font-size:12px;color:var(--muted-text-color)">RedFox Studio</div>
+            </div>
+        </div>
+
+        <div class="nav-container" id="nav-container">
+            <button class="nav-link active" onclick="showTab('scripts', this)">Script Library</button>
+            <button class="nav-link" onclick="showTab('tools', this)">Power Tools</button>
+            <button class="nav-link" onclick="showTab('executor', this)">Executor</button>
+            <button class="nav-link" onclick="showTab('obfuscator', this)">Obfuscator</button>
+        </div>
+
+        <div class="sidebar-footer">
+            <div>© <span id="copyright-year">2024</span> RedFox Studio™</div>
+            <div style="margin-top:6px"><a href="https://discord.gg/redfox" target="_blank" style="color:var(--primary-color);text-decoration:none">Join Discord</a></div>
+        </div>
+    </aside>
+
+    <main>
+        <section id="scripts" class="section active">
+            <h2>Script Library</h2>
+            <p style="color:var(--muted-text-color);max-width:680px">Paste a script into the editor or choose a demo card to open the viewer. Use the Obfuscator tab to generate compact/unreadable output.</p>
+
+            <div class="card-grid">
+                <div class="card" onclick="showScriptModal('Build A Boat For Treasure','https://rawscripts.net/raw/Build-A-Boat-For-Treasure-auto-farm-38247')">
+                    <h3>Build A Boat For Treasure</h3><p style="color:var(--muted-text-color)">Auto-farm example</p>
+                </div>
+                <div class="card" onclick="showScriptModal('Murder Mystery 2','https://raw.githubusercontent.com/Syr0nix/scripts/refs/heads/main/MM2')">
+                    <h3>Murder Mystery 2</h3><p style="color:var(--muted-text-color)">MM2 utility</p>
+                </div>
+                <div class="card" onclick="showScriptModal('Server Browser','https://raw.githubusercontent.com/Syr0nix/RedFoxServerBowser/refs/heads/main/Mainlua')">
+                    <h3>Server Browser</h3><p style="color:var(--muted-text-color)">Join by Job ID</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="tools" class="section" style="display:none">
+            <h2>Power Tools</h2>
+            <p style="color:var(--muted-text-color)">Utilities like WinOps and FoxStrap — downloads and links.</p>
+        </section>
+
+        <section id="executor" class="section" style="display:none">
+            <h2>Executor</h2>
+            <p style="color:var(--muted-text-color)">Preview and loader generator.</p>
+            <img src="https://raw.githubusercontent.com/Syr0nix/RedFoxScripts.com/main/%7B2CA209B1-4839-4547-A0BB-F392DA76E091%7D.png" style="max-width:600px;border-radius:10px;margin-top:12px" alt="executor">
+        </section>
+
+        <section id="obfuscator" class="section" style="margin-top:8px">
+            <h2>Obfuscator</h2>
+            <p style="color:var(--muted-text-color);max-width:680px">String encryption (hex), variable renaming, anti-debug, and compact/minified output. Paste script on the left and click Obfuscate.</p>
+
+            <div class="obfuscator-grid" style="margin-top:12px">
+                <div>
+                    <div id="input-editor" class="editor-container"></div>
+                    <div style="display:flex;gap:8px;margin-top:8px">
+                        <button id="obfuscateBtn" class="action-button"><i class="ph ph-gear"></i>&nbsp;Obfuscate</button>
+                        <button id="copyObfBtn" class="action-button" style="background:linear-gradient(90deg,#4b8,#2a6)"><i class="ph ph-clipboard-text"></i>&nbsp;Copy Output</button>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="option-group">
+                        <h4 style="margin-bottom:8px">Protection</h4>
+                        <div class="checkbox-wrapper"><input id="opt-str-encrypt" type="checkbox" checked><label for="opt-str-encrypt" style="color:var(--muted-text-color)">String Encryption (hex)</label></div>
+                        <div class="checkbox-wrapper"><input id="opt-var-rename" type="checkbox" checked><label for="opt-var-rename" style="color:var(--muted-text-color)">Variable Renaming</label></div>
+                        <div class="checkbox-wrapper"><input id="opt-anti-debug" type="checkbox" checked><label for="opt-anti-debug" style="color:var(--muted-text-color)">Anti-Debug</label></div>
+                        <div class="checkbox-wrapper"><input id="opt-minify" type="checkbox" checked><label for="opt-minify" style="color:var(--muted-text-color)">Compact / Remove spaces</label></div>
+                    </div>
+
+                    <div style="height:16px"></div>
+                    <div id="output-editor" class="editor-container"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Script viewer modal -->
+    <div id="scriptModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div id="modalScriptName">Script</div>
+                <button onclick="closeScriptModal()" style="background:none;border:none;color:var(--muted-text-color);cursor:pointer">Close ✕</button>
+            </div>
+            <div class="modal-body">
+                <div id="loader-viewer-container" class="editor-container"></div>
+                <div id="raw-viewer-container" class="editor-container" style="margin-top:8px"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="versionTag">Loading...</div>
+    <div id="toast" class="toast">Test</div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/loader.min.js"></script>
+    <script>
+    // --------------------
+    // Editors & Monaco
+    // --------------------
+    let inputEditor, outputEditor, rawViewerEditor, loaderViewerEditor;
+
+    require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs' }});
+    window.MonacoEnvironment = { getWorkerUrl: () => `data:text/javascript;charset=utf-8,${encodeURIComponent(`
+        self.MonacoEnvironment = { baseUrl: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/' };
+        importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/base/worker/workerMain.min.js');`
+    )}`};
+
+    require(['vs/editor/editor.main'], function() {
+        const opts = { language:'lua', theme:'vs-dark', automaticLayout:true, wordWrap:'on', minimap:{enabled:true} };
+        inputEditor = monaco.editor.create(document.getElementById('input-editor'), {...opts, value: "-- Paste your Luau script here...\n"});
+        outputEditor = monaco.editor.create(document.getElementById('output-editor'), {...opts, readOnly:true, value: "-- Obfuscated output will appear here."});
+        rawViewerEditor = monaco.editor.create(document.getElementById('raw-viewer-container'), {...opts, readOnly:true});
+        loaderViewerEditor = monaco.editor.create(document.getElementById('loader-viewer-container'), {...opts, readOnly:true});
+
+        // small Lua tokenizer fix for nicer highlighting (optional)
+        monaco.languages.setMonarchTokensProvider('lua', {
+            defaultToken: 'invalid',
+            keywords: ['and','break','do','else','elseif','end','false','for','function','if','in','local','nil','not','or','repeat','return','then','true','until','while','continue','game','workspace','script'],
+            brackets: [{open:'{',close:'}',token:'delimiter.bracket'},{open:'[',close:']',token:'delimiter.array'},{open:'(',close:')',token:'delimiter.parenthesis'}],
+            tokenizer: {
+                root: [
+                    [/[a-zA-Z_]\w*/, { cases: { '@keywords':'keyword', '@default':'identifier' } }],
+                    [/\d*\.\d+([eE][\-+]?\d+)?/, 'number.float'],
+                    [/0[xX][0-9a-fA-F]+/, 'number.hex'],
+                    [/\d+/, 'number'],
+                    [/[;,.]/,'delimiter'],
+                    [/[<>=!~]=?/,'operator'],
+                    [/--\[\[/, { token:'comment', next:'@comment' }],
+                    [/--.*$/,'comment'],
+                    [/"/, { token:'string.quote', bracket:'@open', next:'@string_double' }],
+                    [/'/, { token:'string.quote', bracket:'@open', next:'@string_single' }],
+                ],
+                comment: [[/[^\]]+/, 'comment'], [/\]\]/, { token:'comment', next:'@pop' }]],
+                string_double: [[/[^\\"]+/, 'string'], [/\\./, 'string.escape.invalid'], [/"/, { token:'string.quote', next:'@pop' }]],
+                string_single: [[/[^\\']+/, 'string'], [/\\./, 'string.escape.invalid'], [/'/, { token:'string.quote', next:'@pop' }]]
+            }
+        });
+    });
+
+    // --------------------
+    // UI Helpers
+    // --------------------
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('obfuscateBtn').addEventListener('click', obfuscateLuau);
+        document.getElementById('copyObfBtn').addEventListener('click', () => copyMonacoContent(outputEditor, 'Obfuscated script copied!'));
+        document.getElementById('copyright-year').textContent = new Date().getFullYear();
+        checkForUpdate();
+        setInterval(checkForUpdate, 60_000);
+    });
+
+    function showTab(id, btn){
+        document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+        document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
+        document.getElementById(id).style.display = '';
+        if(btn) btn.classList.add('active');
+    }
+
+    function showToast(msg){
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.classList.add('show');
+        setTimeout(()=> t.classList.remove('show'), 3000);
+    }
+
+    function copyMonacoContent(editor, msg){
+        const content = editor.getValue();
+        if(!content || !content.trim()) return showToast('❌ Nothing to copy!');
+        navigator.clipboard.writeText(content).then(()=> showToast('📋 ' + msg)).catch(()=> showToast('❌ Failed to copy!'));
+    }
+
+    function showScriptModal(name, url){
+        document.getElementById('modalScriptName').textContent = name;
+        document.getElementById('scriptModal').classList.add('visible');
+        loaderViewerEditor && loaderViewerEditor.setValue(`-- Loader: loadstring(game:HttpGet("${url}"))()`);
+        rawViewerEditor && rawViewerEditor.setValue('-- Fetching...');
+        if(!url) return rawViewerEditor && rawViewerEditor.setValue('-- No URL provided.');
+        fetch(url).then(r => r.ok ? r.text() : Promise.reject('HTTP ' + r.status)).then(txt => rawViewerEditor.setValue(txt)).catch(e => rawViewerEditor.setValue('-- Error fetching script: ' + e));
+    }
+
+    function closeScriptModal(){ document.getElementById('scriptModal').classList.remove('visible'); }
+
+    // --------------------
+    // Obfuscator core
+    // --------------------
+    function obfuscateLuau(){
+        const code = inputEditor.getValue().trim();
+        if(!code || code === '-- Paste your Luau script here...') return showToast('Please enter a script to obfuscate.');
+
+        const options = {
+            encryptStrings: document.getElementById('opt-str-encrypt').checked,
+            renameVars: document.getElementById('opt-var-rename').checked,
+            antiDebug: document.getElementById('opt-anti-debug').checked,
+            minify: document.getElementById('opt-minify').checked
+        };
+
+        try {
+            setTimeout(()=>{
+                const out = fullObfuscateLuau(code, options);
+                outputEditor.setValue(out);
+                showToast('✅ Script obfuscated successfully!');
+            }, 10);
+        } catch (err){
+            console.error(err);
+            outputEditor.setValue('-- OBFUSCATION ERROR:\n-- ' + err.message);
+            showToast('❌ Error during obfuscation');
+        }
+    }
+
+    function fullObfuscateLuau(code, opts){
+        let obf = code;
+        const key = generateRandomName(12);
+        const decryptName = generateRandomName(8);
+
+        if(opts.encryptStrings){
+            const decryptor = generateRuntimeDecryptor(key, decryptName);
+            obf = encryptStringsInCode(obf, key, decryptName);
+            obf = decryptor + '\n' + obf;
+        }
+
+        if(opts.renameVars) obf = renameLocalIdentifiers(obf);
+        if(opts.antiDebug) obf = generateAntiDebug() + '\n' + obf;
+        if(opts.minify) obf = minifyLua(obf);
+
+        // If minified, put a compact prefix; otherwise include header
+        return opts.minify ? `--ObfRedFox${obf}` : `-- Obfuscated with RedFox\n-- https://redfoxscripts.com\n\n${obf.trim()}`;
+    }
+
+    // --------------------
+    // Helpers: random names, rename, encrypt, decryptor, minify
+    // --------------------
+    function generateRandomName(len = 8){
+        const chars = 'Il';
+        let s = '';
+        for(let i=0;i<len;i++) s += chars.charAt(Math.floor(Math.random()*chars.length));
+        return '_' + s;
+    }
+
+    function renameLocalIdentifiers(code){
+        const keywords = new Set(['and','break','do','else','elseif','end','false','for','function','if','in','local','nil','not','or','repeat','return','then','true','until','while','continue','game','workspace','script','print','wait','task','Instance','Vector3','CFrame','Color3','UDim2','BrickColor','Enum','os','math','string','table','coroutine','bit32','utf8']);
+        const declarations = new Map();
+        const used = new Set(keywords);
+
+        const findDecl = (re, src) => {
+            let m;
+            while((m = re.exec(src)) !== null){
+                if(m[1]){
+                    m[1].split(',').forEach(v=>{
+                        const t = v.trim();
+                        if(t && !keywords.has(t) && !declarations.has(t)){
+                            let newN;
+                            do { newN = generateRandomName(); } while (used.has(newN));
+                            used.add(newN);
+                            declarations.set(t, newN);
+                        }
+                    });
+                }
+            }
+        };
+
+        findDecl(/\blocal\s+(?:function\s+)?([a-zA-Z_]\w*(?:\s*,\s*[a-zA-Z_]\w*)*)/g, code);
+        findDecl(/function\s*(?:[a-zA-Z_]\w*\s*)?\(([^)]*)\)/g, code);
+        findDecl(/for\s+([a-zA-Z_]\w*(?:\s*,\s*[a-zA-Z_]\w*)*)\s+in/g, code);
+
+        let out = code;
+        declarations.forEach((newN, oldN) => {
+            const re = new RegExp(`\\b${oldN}\\b`, 'g');
+            out = out.replace(re, newN);
+        });
+        return out;
+    }
+
+    function generateRuntimeDecryptor(key, funcName){
+        // decryptor expects a hex string like "4f1a..." and converts each pair to a byte
+        return `local function ${funcName}(hexstr)
+local k="${key}"
+local out=""
+for i=1,#hexstr,2 do
+    local pair = hexstr:sub(i,i+1)
+    local byte = tonumber(pair,16)
+    if byte then
+        local x = bit32.bxor(byte, k:byte(((#out)%#k)+1))
+        out = out .. string.char(x)
+    end
+end
+return out
+end`;
+    }
+
+    function encryptStringsInCode(code, key, decryptName){
+        // match double or single quoted strings (handles escaped quotes)
+        return code.replace(/"((?:[^"\\]|\\.)*)"|'((?:[^'\\]|\\.)*)'/g, (m, dbl, sng) => {
+            const raw = dbl !== undefined ? dbl : sng;
+            const str = raw.replace(/\\"/g,'"').replace(/\\'/g,"'").replace(/\\\\/g,'\\');
+            let hex = '';
+            for(let i=0;i<str.length;i++){
+                const c = str.charCodeAt(i) ^ key.charCodeAt(i % key.length);
+                hex += c.toString(16).padStart(2,'0');
+            }
+            return `${decryptName}("${hex}")`;
+        });
+    }
+
+    function generateAntiDebug(){
+        return `task.spawn(function()local a=os.clock()while task.wait(0.5)do if (os.clock()-a)>1.5 then getfenv(0).game=nil;error('Debugger Detected') end;a=os.clock()end end)`;
+    }
+
+    function minifyLua(code){
+        return code
+            .replace(/--\[\[[\s\S]*?\]\]/g, "")       // block comments
+            .replace(/--[^\n\r]*/g, "")               // line comments
+            .replace(/\r\n|\r/g,"\n")
+            .replace(/\n+/g," ")                      // collapse newlines
+            .replace(/\s*([=+\-*/%^#<>(){}\[\],;:])\s*/g, "$1") // trim space around operators
+            .replace(/\s+/g,"")                       // remove remaining spaces for compactness
+            .trim();
+    }
+
+    // --------------------
+    // Version check
+    // --------------------
+    function checkForUpdate(){
+        fetch("https://raw.githubusercontent.com/Syr0nix/RedFoxScripts.com/main/version.txt?t=" + Date.now())
+            .then(r => r.ok ? r.text() : Promise.reject('network'))
+            .then(v => document.getElementById('versionTag').textContent = 'v' + v.trim())
+            .catch(() => document.getElementById('versionTag').textContent = 'v-unknown');
+    }
+    </script>
+</body>
+</html>
