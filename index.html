@@ -269,24 +269,26 @@
         }
     }
 
-    function fullObfuscateLuau(code, opts){
-        let obf = code;
-        const key = generateRandomName(12);
-        const decryptName = generateRandomName(8);
+    function fullObfuscateLuau(code, options) {
+    let obf = code;
+    const key = generateRandomName(12);
+    const decryptName = generateRandomName(8);
 
-        if(opts.encryptStrings){
-            const decryptor = generateRuntimeDecryptor(key, decryptName);
-            obf = encryptStringsInCode(obf, key, decryptName);
-            obf = decryptor + '\n' + obf;
-        }
-
-        if(opts.renameVars) obf = renameLocalIdentifiers(obf);
-        if(opts.antiDebug) obf = generateAntiDebug() + '\n' + obf;
-        if(opts.minify) obf = minifyLua(obf);
-
-        // If minified, put a compact prefix; otherwise include header
-        return opts.minify ? `--ObfRedFox${obf}` : `-- Obfuscated with RedFox\n-- https://redfoxscripts.com\n\n${obf.trim()}`;
+    if (options.encryptStrings) {
+        const decryptor = generateRuntimeDecryptor(key, decryptName);
+        obf = encryptStringsInCode(obf, key, decryptName);
+        obf = `${decryptor}\n${obf}`;
     }
+
+    if (options.renameVars) obf = renameLocalIdentifiers(obf);
+    if (options.antiDebug) obf = `${generateAntiDebug()}\n${obf}`;
+
+    // Compact mode
+    if (options.minify) obf = minifyLua(obf);
+
+    // Final formatted result — exact two-line header, then code
+    return `-- Obfuscated with RedFox\n-- https://redfoxscripts.com\n${obf.trim()}`;
+}
 
     // --------------------
     // Helpers: random names, rename, encrypt, decryptor, minify
