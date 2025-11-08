@@ -367,17 +367,25 @@ end`;
         return `task.spawn(function()local a=os.clock()while task.wait(0.5)do if (os.clock()-a)>1.5 then getfenv(0).game=nil;error('Debugger Detected') end;a=os.clock()end end)`;
     }
 
-    function minifyLua(code){
-        return code
-            .replace(/--\[\[[\s\S]*?\]\]/g, "")       // block comments
-            .replace(/--[^\n\r]*/g, "")               // line comments
-            .replace(/\r\n|\r/g,"\n")
-            .replace(/\n+/g," ")                      // collapse newlines
-            .replace(/\s*([=+\-*/%^#<>(){}\[\],;:])\s*/g, "$1") // trim space around operators
-            .replace(/\s+/g,"")                       // remove remaining spaces for compactness
-            .trim();
-    }
-
+    function minifyLua(code) {
+    return code
+        // remove block comments
+        .replace(/--\[\[[\s\S]*?\]\]/g, "")
+        // remove single-line comments
+        .replace(/--[^\n\r]*/g, "")
+        // normalize whitespace
+        .replace(/\r?\n+/g, " ")
+        .replace(/[ \t]+/g, " ")
+        // remove spaces around punctuation (except before keywords)
+        .replace(/\s*([=+\-*/%^#<>(){}\[\],;:])\s*/g, "$1")
+        // keep a space before 'then', 'do', 'function', 'elseif', 'until'
+        .replace(/([^\s])\b(then|do|function|elseif|until)\b/g, "$1 $2")
+        // ensure space after 'end' and 'else'
+        .replace(/\bend\b([^\s])/g, "end $1")
+        .replace(/\belse\b([^\s])/g, "else $1")
+        // trim
+        .trim();
+}
     // --------------------
     // Version check
     // --------------------
