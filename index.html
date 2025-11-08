@@ -81,7 +81,7 @@
     </aside>
 
     <main>
-        <section id="scripts" class="section active">
+        <section id="scripts" class="section">
             <h2>Script Library</h2>
             <p style="color:var(--muted-text-color);max-width:680px">Paste a script into the editor or choose a demo card to open the viewer. Use the Obfuscator tab to generate compact/unreadable output.</p>
 
@@ -89,10 +89,10 @@
                 <div class="card" onclick="showScriptModal('Build A Boat For Treasure','https://rawscripts.net/raw/Build-A-Boat-For-Treasure-auto-farm-38247')">
                     <h3>Build A Boat For Treasure</h3><p style="color:var(--muted-text-color)">Auto-farm example</p>
                 </div>
-                <div class="card" onclick="showScriptModal('Murder Mystery 2','https://raw.githubusercontent.com/Syr0nix/scripts/refs/heads/main/MM2')">
+                <div class="card" onclick="showScriptModal('Murder Mystery 2','https://raw.githubusercontent.com/Syr0nix/scripts/main/MM2')">
                     <h3>Murder Mystery 2</h3><p style="color:var(--muted-text-color)">MM2 utility</p>
                 </div>
-                <div class="card" onclick="showScriptModal('Server Browser','https://raw.githubusercontent.com/Syr0nix/RedFoxServerBowser/refs/heads/main/Mainlua')">
+                <div class="card" onclick="showScriptModal('Server Browser','https://raw.githubusercontent.com/Syr0nix/RedFoxServerBowser/main/Mainlua')">
                     <h3>Server Browser</h3><p style="color:var(--muted-text-color)">Join by Job ID</p>
                 </div>
             </div>
@@ -109,7 +109,7 @@
             <img src="https://raw.githubusercontent.com/Syr0nix/RedFoxScripts.com/main/%7B2CA209B1-4839-4547-A0BB-F392DA76E091%7D.png" style="max-width:600px;border-radius:10px;margin-top:12px" alt="executor">
         </section>
 
-        <section id="obfuscator" class="section" style="margin-top:8px">
+        <section id="obfuscator" class="section" style="display:none;margin-top:8px">
             <h2>Obfuscator</h2>
             <p style="color:var(--muted-text-color);max-width:680px">String encryption (hex), variable renaming, anti-debug, and compact/minified output. Paste script on the left and click Obfuscate.</p>
 
@@ -209,12 +209,14 @@
         document.getElementById('copyright-year').textContent = new Date().getFullYear();
         checkForUpdate();
         setInterval(checkForUpdate, 60_000);
+        // show the first tab by default
+        showTab('scripts', document.querySelector('.nav-link.active'));
     });
 
     function showTab(id, btn){
         document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
         document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
-        document.getElementById(id).style.display = '';
+        document.getElementById(id).style.display = 'block';
         if(btn) btn.classList.add('active');
     }
 
@@ -246,50 +248,49 @@
     // Obfuscator core
     // --------------------
     async function obfuscateLuau() {
-    const code = inputEditor.getValue().trim();
-    if (!code || code === '-- Paste your Luau script here...') {
-        return showToast("Please enter a script to obfuscate.");
+        const code = inputEditor.getValue().trim();
+        if (!code || code === '-- Paste your Luau script here...') {
+            return showToast("Please enter a script to obfuscate.");
+        }
+
+        const options = {
+            encryptStrings: document.getElementById('opt-str-encrypt').checked,
+            variableRenaming: document.getElementById('opt-var-rename').checked,
+            antiDebug: document.getElementById('opt-anti-debug').checked,
+            minify: document.getElementById('opt-minify').checked
+        };
+
+        showToast("⏳ Obfuscating... please wait.");
+
+        await new Promise(resolve => setTimeout(resolve, 50));
+
+        try {
+            const obfuscated = await new Promise(resolve => {
+                setTimeout(() => {
+                    const result = fullObfuscateLuau(code, options);
+                    resolve(result);
+                }, 0);
+            });
+
+            outputEditor.setValue(obfuscated);
+            showToast("✅ Script obfuscated successfully!");
+        } catch (e) {
+            console.error("Obfuscation Error:", e);
+            showToast("❌ Error during obfuscation: " + e.message);
+            outputEditor.setValue(`-- OBFUSCATION FAILED:\n-- ${e.message}`);
+        }
     }
-
-    const options = {
-        encryptStrings: document.getElementById('opt-str-encrypt').checked,
-        variableRenaming: document.getElementById('opt-var-rename').checked,
-        antiDebug: document.getElementById('opt-anti-debug').checked,
-        minify: document.getElementById('opt-compact')?.checked || false
-    };
-
-    showToast("⏳ Obfuscating... please wait.");
-
-    // Run obfuscation in a Promise to let UI stay responsive
-    await new Promise(resolve => setTimeout(resolve, 50));
-
-    try {
-        const obfuscated = await new Promise(resolve => {
-            setTimeout(() => {
-                const result = fullObfuscateLuau(code, options);
-                resolve(result);
-            }, 0);
-        });
-
-        outputEditor.setValue(obfuscated);
-        showToast("✅ Script obfuscated successfully!");
-    } catch (e) {
-        console.error("Obfuscation Error:", e);
-        showToast("❌ Error during obfuscation: " + e.message);
-        outputEditor.setValue(`-- OBFUSCATION FAILED:\n-- ${e.message}`);
-    }
-}
 
     function fullObfuscateLuau(code, options) {
-    let obf = code;
-    const key = generateRandomName(12);
-    const decryptName = generateRandomName(8);
+        let obf = code;
+        const key = generateRandomName(12);
+        const decryptName = generateRandomName(8);
 
-    if (options.encryptStrings) {
-        const decryptor = generateRuntimeDecryptor(key, decryptName);
-        obf = encryptStringsInCode(obf, key, decryptName);
-        obf = `${decryptor}\n${obf}`;
-    }
+        if (options.encryptStrings) {
+            const decryptor = generateRuntimeDecryptor(key, decryptName);
+            obf = encryptStringsInCode(obf, key, decryptName);
+            obf = `${decryptor}\n${obf}`;
+        }
 
         if (options.variableRenaming) {
             try {
@@ -297,15 +298,13 @@
             } catch (e) {
                 console.warn("Variable rename skipped due to error:", e);
             }
-        }  
+        }
         if (options.antiDebug) obf = `${generateAntiDebug()}\n${obf}`;
 
-    // Compact mode
-    if (options.minify) obf = minifyLua(obf);
+        if (options.minify) obf = minifyLua(obf);
 
-    // Final formatted result — exact two-line header, then code
-    return `-- Obfuscated with RedFox\n-- https://redfoxscripts.com\n${obf.trim()}`;
-}
+        return `-- Obfuscated with RedFox\n-- https://redfoxscripts.com\n${obf.trim()}`;
+    }
 
     // --------------------
     // Helpers: random names, rename, encrypt, decryptor, minify
@@ -352,7 +351,6 @@
     }
 
     function generateRuntimeDecryptor(key, funcName){
-        // decryptor expects a hex string like "4f1a..." and converts each pair to a byte
         return `local function ${funcName}(hexstr)
 local k="${key}"
 local out=""
@@ -369,9 +367,9 @@ end`;
     }
 
     function encryptStringsInCode(code, key, decryptName){
-        // match double or single quoted strings (handles escaped quotes)
         return code.replace(/"((?:[^"\\]|\\.)*)"|'((?:[^'\\]|\\.)*)'/g, (m, dbl, sng) => {
             const raw = dbl !== undefined ? dbl : sng;
+            if (raw === undefined) return m;
             const str = raw.replace(/\\"/g,'"').replace(/\\'/g,"'").replace(/\\\\/g,'\\');
             let hex = '';
             for(let i=0;i<str.length;i++){
@@ -383,28 +381,19 @@ end`;
     }
 
     function generateAntiDebug(){
-        return `task.spawn(function()local a=os.clock()while task.wait(0.5)do if (os.clock()-a)>1.5 then getfenv(0).game=nil;error('Debugger Detected') end;a=os.clock()end end)`;
+        return `task.spawn(function()local a=os.clock()while task.wait(0.5)do if(os.clock()-a)>1.5 then getfenv(0).game=nil;error('Debugger Detected')end;a=os.clock()end end)`;
     }
 
     function minifyLua(code) {
-    return code
-        // remove block comments
-        .replace(/--\[\[[\s\S]*?\]\]/g, "")
-        // remove single-line comments
-        .replace(/--[^\n\r]*/g, "")
-        // normalize whitespace
-        .replace(/\r?\n+/g, " ")
-        .replace(/[ \t]+/g, " ")
-        // remove spaces around punctuation (except before keywords)
-        .replace(/\s*([=+\-*/%^#<>(){}\[\],;:])\s*/g, "$1")
-        // keep a space before 'then', 'do', 'function', 'elseif', 'until'
-        .replace(/([^\s])\b(then|do|function|elseif|until)\b/g, "$1 $2")
-        // ensure space after 'end' and 'else'
-        .replace(/\bend\b([^\s])/g, "end $1")
-        .replace(/\belse\b([^\s])/g, "else $1")
-        // trim
-        .trim();
-}
+        return code
+            .replace(/--\[\[[\s\S]*?\]\]/g, "")
+            .replace(/--[^\n\r]*/g, "")
+            .replace(/\s+/g, " ")
+            .replace(/\s*([=+\-*/%^#<>(){}\[\]\.,;:])\s*/g, "$1")
+            .replace(/\b(and|or|not|in|local|function|then|do|else|elseif|end|return|for|while|repeat|until|break)\b/g, " $1 ")
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
     // --------------------
     // Version check
     // --------------------
