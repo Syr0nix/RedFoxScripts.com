@@ -541,17 +541,21 @@
             return obfuscatedCode;
         }
 
-       function generateRuntimeDecryptor(key, funcName) {
-            return `local function ${funcName}(s)
-                local k="${key}" local r=""
-                for hex in s:gmatch("\\\\x(%x%x)") do
-                    local c = tonumber(hex,16)
-                    r = r .. string.char(bit32.bxor(c, k:byte((#r)%#k+1)))
-                end
-                return r
-            end`
-        }
-                
+      function generateRuntimeDecryptor(key, funcName) {
+    return `local function ${funcName}(s)
+        local k="${key}"
+        local r=""
+        for hex in s:gmatch("\\\\x(%x%x)") do
+            local byte = tonumber(hex,16)
+            if byte then
+                local x = bit32.bxor(byte, k:byte(((#r) % #k) + 1))
+                r = r .. string.char(x)
+            end
+        end
+        return r
+    end`
+}
+              
         function encryptStringsInCode(code, key, decryptName) {
             return code.replace(/"((?:[^"\\]|\\.)*)"|'((?:[^'\\]|\\.)*)'/g, (_, dblStr, snglStr) => {
                 if (dblStr === null && snglStr === null) return '';
