@@ -11,6 +11,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Roboto+Mono&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web" async></script>
+    <script src="https://unpkg.com/luaparse@0.3.0/lib/luaparse.js"></script>
+
 
     <!-- Monaco Editor CSS -->
     <link rel="stylesheet" data-name="vs/editor/editor.main" href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/editor/editor.main.css">
@@ -746,28 +748,212 @@
     // WARNING: This regex-based approach is fragile and not a proper parser.
     // It's easily broken by complex scoping, comments, or strings containing keywords.
     // Kept as per the original logic, but it's the source of the "broken" behavior.
-    function renameLocalIdentifiers(code){
-        const keywords = new Set(['and','break','do','else','elseif','end','false','for','function','if','in','local','nil','not','or','repeat','return','then','true','until','while','continue','game','workspace','script','print','wait','task','Instance','Vector3','CFrame','Color3','UDim2','BrickColor','Enum','os','math','string','table','coroutine','bit32','utf8','getfenv', 'setfenv', 'pcall', 'xpcall']);
-        const declarations = new Map();
-        const usedNames = new Set(keywords);
-    
-        const findDeclarations = (regex, source) => {
-            let match;
-            while ((match = regex.exec(source)) !== null) {
-                if (match[1]) {
-                    match[1].split(',').forEach(v => {
-                        const trimmedVar = v.trim();
-                        if (trimmedVar && !keywords.has(trimmedVar) && !declarations.has(trimmedVar)) {
-                            let newName;
-                            do { newName = generateRandomName(); } while (usedNames.has(newName));
-                            usedNames.add(newName);
-                            declarations.set(trimmedVar, newName);
+    // Replace your old renameLocalIdentifiers with this full implementation.
+// It will use luaparse (if loaded) for AST-based safe renaming, otherwise falls back to a safer regex method.
+
+async function renameLocalIdentifiers(code) {
+    // Helper: reserved keywords and known globals we should NOT rename
+    const RESERVED = new Set([
+        'and','break','do','else','elseif','end','false','for','function','if','in','local','nil','not','or','repeat','return',
+        'then','true','until','while','continue','game','workspace','script','print','wait','task','Instance','Vector3','CFrame',
+        'Color3','UDim2','BrickColor','Enum','os','math','string','table','coroutine','bit32','utf8','getfenv','setfenv','pcall',
+        'xpcall', 'require', 'error', 'warn', 'pairs', 'ipairs', 'next', 'type', 'tonumber', 'tostring', 'rawget', 'rawset'
+    ]);
+
+    // Helper: generate confusing-but-valid identifier
+    function generateRandomName(len = 10) {
+        const chars = 'Il'; // visually similar characters, keeps names short and stealthy
+        let s = '_';
+        for (let i = 0; i < len; i++) s += chars.charAt(Math.floor(Math.random() * chars.length));
+        return s;
+    }
+
+    // --- If luaparse is available, use AST-based renaming (preferred) ---
+    if (typeof luaparse !== 'undefined' && luaparse && typeof luaparse.parse === 'function') {
+        try {
+            // Parse with luaparse
+            const ast = luaparse.parse(code, {
+                comments: true,
+                locations: false,
+                ranges: true,
+                scope: true,
+                luaVersion: "5.1"
+            });
+
+            // Map oldName -> newName
+            const renameMap = new Map();
+            const usedNames = new Set(RESERVED);
+
+            function getUniqueName() {
+                let n;
+                do { n = generateRandomName(); } while (usedNames.has(n));
+                usedNames.add(n);
+                return n;
+            }
+
+            // Walk AST to find local declarations and function params
+            function collectLocals(node) {
+                if (!node || typeof node !== 'object') return;
+                if (node.type === 'LocalStatement') {
+                    for (const v of node.variables || []) {
+                        if (v.type === 'Identifier' && !RESERVED.has(v.name) && !renameMap.has(v.name)) {
+                            renameMap.set(v.name, getUniqueName());
                         }
-                    });
+                    }
+                } else if (node.type === 'FunctionDeclaration') {
+                    // Function parameters
+                    for (const p of node.parameters || []) {
+                        if (p.type === 'Identifier' && !RESERVED.has(p.name) && !renameMap.has(p.name)) {
+                            renameMap.set(p.name, getUniqueName());
+                        }
+                    }
+                    // Also consider named local function (local function foo() ...)
+                    if (node.isLocal && node.identifier && node.identifier.type === 'Identifier') {
+                        const n = node.identifier.name;
+                        if (!RESERVED.has(n) && !renameMap.has(n)) renameMap.set(n, getUniqueName());
+                    }
+                }
+                // Recurse children
+                for (const key in node) {
+                    const child = node[key];
+                    if (Array.isArray(child)) child.forEach(collectLocals);
+                    else if (child && typeof child === 'object') collectLocals(child);
                 }
             }
-        };
-    
+
+            collectLocals(ast);
+
+            if (renameMap.size === 0) return code; // nothing to rename
+
+            // Now we will perform replacements on code by ranges — safest method
+            // Build an array of replacements [ {start, end, text} ] using identifier node ranges
+            const replacements = [];
+
+            // Visitor to find identifier usages and replace them if mapped
+            function collectReplacements(node) {
+                if (!node || typeof node !== 'object') return;
+                // Identifier nodes (var usage, function name, etc.) have type 'Identifier'
+                if (node.type === 'Identifier' && renameMap.has(node.name) && node.range && node.range.length === 2) {
+                    // Important: Avoid replacing table keys in index expressions like obj["key"] or obj.key when key is a string literal or property
+                    // Here we replace raw identifier tokens that are variable usages.
+                    const [start, end] = node.range;
+                    replacements.push({ start, end, text: renameMap.get(node.name) });
+                }
+                // Recurse
+                for (const key in node) {
+                    const child = node[key];
+                    if (Array.isArray(child)) child.forEach(collectReplacements);
+                    else if (child && typeof child === 'object') collectReplacements(child);
+                }
+            }
+
+            collectReplacements(ast);
+
+            // Sort replacements by start descending to perform safe in-place replacements
+            replacements.sort((a, b) => b.start - a.start);
+
+            let newCode = code;
+            for (const r of replacements) {
+                newCode = newCode.slice(0, r.start) + r.text + newCode.slice(r.end);
+            }
+
+            return newCode;
+        } catch (err) {
+            console.warn("AST renamer failed, falling back to regex renamer:", err);
+            // fall through to regex fallback
+        }
+    }
+
+    // --- Fallback: improved regex-based renamer (best-effort) ---
+    // Strategy:
+    // 1) Find local declarations (`local a, b = ...`, `local function foo(...)`, `for i in ... do`) and function params.
+    // 2) Build map old->new but avoid reserved names and common globals.
+    // 3) Replace with word-boundary regex, but attempt to avoid replacements inside strings/comments by splitting code into safe segments.
+
+    // Basic helpers to remove strings/comments temporarily
+    const tokenPlaceholders = [];
+    function maskStringsAndComments(src) {
+        // Replace long comments --[[ ... ]] and single-line comments --... and string literals "..." '...' with placeholders
+        return src.replace(/(--\[\[[\s\S]*?\]\])|(--[^\n\r]*)|("(?:[^"\\]|\\.)*")|('(?:[^'\\]|\\.)*')/g, (m, longc, linec, dquote, squote) => {
+            tokenPlaceholders.push(m);
+            return `\u0001${tokenPlaceholders.length - 1}\u0001`; // placeholder token with index
+        });
+    }
+    function unmaskPlaceholders(src) {
+        return src.replace(/\u0001(\d+)\u0001/g, (m, idx) => tokenPlaceholders[Number(idx)] || '');
+    }
+
+    const masked = maskStringsAndComments(code);
+
+    // Find local declarations and function params via regex
+    const declarations = new Map();
+    const usedNames = new Set(RESERVED);
+
+    // Helper to add declaration names found
+    function addDeclarationsFromList(listStr) {
+        listStr.split(',').forEach(v => {
+            const name = v.trim();
+            if (!name) return;
+            // ignore destructured/table accesses or dot-names
+            if (/[^a-zA-Z0-9_]/.test(name)) return;
+            if (RESERVED.has(name) || declarations.has(name)) return;
+            let newName;
+            do { newName = generateRandomName(); } while (usedNames.has(newName));
+            usedNames.add(newName);
+            declarations.set(name, newName);
+        });
+    }
+
+    // local a, b = ...
+    let m;
+    const localRegex = /\blocal\s+(?:function\s+)?([a-zA-Z_]\w*(?:\s*,\s*[a-zA-Z_]\w*)*)/g;
+    while ((m = localRegex.exec(masked)) !== null) {
+        if (m[1]) addDeclarationsFromList(m[1]);
+    }
+
+    // function foo(a, b)
+    const funcParamRegex = /function\s*(?:[a-zA-Z_][\w:.]*)?\s*\(([^)]*)\)/g;
+    while ((m = funcParamRegex.exec(masked)) !== null) {
+        if (m[1]) {
+            const params = m[1].split(',').map(s => s.trim()).filter(Boolean);
+            params.forEach(p => {
+                if (/^[a-zA-Z_]\w*$/.test(p) && !RESERVED.has(p) && !declarations.has(p)) {
+                    let newName;
+                    do { newName = generateRandomName(); } while (usedNames.has(newName));
+                    usedNames.add(newName);
+                    declarations.set(p, newName);
+                }
+            });
+        }
+    }
+
+    // for i = 1,10 do  OR for k,v in pairs(t) do
+    const forIterRegex = /\bfor\s+([a-zA-Z_]\w*(?:\s*,\s*[a-zA-Z_]\w*)*)\s*(?:=|in)\b/g;
+    while ((m = forIterRegex.exec(masked)) !== null) {
+        if (m[1]) addDeclarationsFromList(m[1]);
+    }
+
+    // If nothing found, return original code unmodified
+    if (declarations.size === 0) {
+        return code;
+    }
+
+    // Perform replacements on the masked source (so strings/comments won't get mangled)
+    let result = masked;
+    // Sort keys by length descending to avoid partial overlapping replacements
+    const keys = Array.from(declarations.keys()).sort((a, b) => b.length - a.length);
+    for (const oldName of keys) {
+        const newName = declarations.get(oldName);
+        // Replace by word boundary ensuring we don't touch property access like obj.oldName (but if oldName is used as property, it's less important)
+        const wordRegex = new RegExp(`\\b${oldName}\\b`, 'g');
+        result = result.replace(wordRegex, newName);
+    }
+
+    // Restore masked strings/comments
+    const final = unmaskPlaceholders(result);
+    return final;
+}
+   
         // Find local variables, function arguments, and for-loop iterators
         findDeclarations(/\blocal\s+(?:function\s+)?([a-zA-Z_]\w*(?:\s*,\s*[a-zA-Z_]\w*)*)/g, code);
         findDeclarations(/function\s*(?:[a-zA-Z_][\w.:]*)?\(([^)]*)\)/g, code);
