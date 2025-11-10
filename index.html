@@ -1,592 +1,1168 @@
 <!DOCTYPE html>
+
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-  <title>RedFox Studio</title>
-  <link rel="icon" href="https://raw.githubusercontent.com/Syr0nix/RedFox-Scripts/main/Screenshot_2025-04-21_034725-removebg-preview.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Roboto+Mono&display=swap" rel="stylesheet">
-  <script src="https://unpkg.com/@phosphor-icons/web"></script>
-  <link rel="stylesheet" data-name="vs/editor/editor.main" href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/editor/editor.main.css">
-  <style>
-    :root {
-      --primary-color: #FF4B2B;
-      --secondary-color: #FF416C;
-      --success-color: #28a745;
-      --error-color: #dc3545;
-      --info-color: #17a2b8;
-      --background-color: #0d0d0d;
-      --surface-color: #1a1a1a;
-      --text-color: #E0E0E0;
-      --muted-text-color: #A0A0A0;
-      --border-color: #2f2f2f;
-      --glow-color: rgba(255, 75, 43, 0.4);
-      --font-family-main: 'Poppins', sans-serif;
-      --font-family-mono: 'Roboto Mono', monospace;
-    }
-    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
-    html{scrollbar-width:thin;scrollbar-color:var(--primary-color) var(--background-color);}
-    ::-webkit-scrollbar{width:8px;}
-    ::-webkit-scrollbar-track{background:var(--background-color);}
-    ::-webkit-scrollbar-thumb{background:var(--primary-color);border-radius:4px;}
-    ::-webkit-scrollbar-thumb:hover{background:var(--secondary-color);}
-    body{
-      font-family:var(--font-family-main);
-      background:var(--background-color);
-      color:var(--text-color);
-      display:flex;height:100vh;overflow:hidden;
-    }
-    .sidebar{
-      width:260px;background:var(--surface-color);
-      border-right:1px solid var(--border-color);
-      padding:2rem 1.5rem;display:flex;flex-direction:column;
-      transition:width .3s ease;
-    }
-    .logo-group{display:flex;align-items:center;gap:12px;}
-    .sidebar-logo{width:45px;}
-    .sidebar-title{font-size:1.4rem;font-weight:700;color:#fff;}
-    .nav-container{margin-top:2rem;display:flex;flex-direction:column;gap:8px;}
-    .nav-link{
-      display:flex;align-items:center;gap:12px;background:transparent;border:none;
-      color:var(--muted-text-color);padding:12px;border-radius:8px;text-align:left;
-      font-weight:500;font-family:var(--font-family-main);font-size:1rem;
-      cursor:pointer;transition:all .25s ease;
-    }
-    .nav-link i{font-size:1.25rem;}
-    .nav-link.active,.nav-link:hover{
-      color:white;
-      background:linear-gradient(90deg,var(--primary-color),var(--secondary-color));
-      box-shadow:0 0 20px var(--glow-color);
-      transform:translateY(-2px);
-    }
-    .sidebar-footer{margin-top:auto;font-size:.8rem;color:var(--muted-text-color);text-align:center;}
-    .sidebar-footer a{color:var(--primary-color);text-decoration:none;font-weight:600;transition:color .2s;}
-    .sidebar-footer a:hover{color:var(--secondary-color);}
-    main{flex:1;overflow-y:auto;padding:28px 36px;}
-    .section-header{display:flex;align-items:center;gap:12px;margin-bottom:8px;}
-    .section-header h2{
-      font-size:2rem;
-      background:linear-gradient(90deg,var(--primary-color),var(--secondary-color));
-      -webkit-background-clip:text;-webkit-text-fill-color:transparent;margin:0;
-    }
-    .section-header i{font-size:2rem;color:var(--primary-color);}
-    main p{color:var(--muted-text-color);max-width:720px;line-height:1.6;}
-    .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;margin-top:24px;}
-    .card{
-      background:var(--surface-color);padding:20px;border-radius:10px;
-      border:1px solid var(--border-color);cursor:pointer;transition:all .3s ease;
-      position:relative;overflow:hidden;
-    }
-    .card::before{
-      content:'';position:absolute;top:-50%;left:-50%;width:100%;height:100%;
-      background:radial-gradient(circle,var(--glow-color)0%,transparent 80%);
-      opacity:0;transition:opacity .4s ease;transform:scale(2.5);
-    }
-    .card:hover{
-      transform:translateY(-5px);
-      box-shadow:0 10px 30px rgba(0,0,0,.2),0 0 20px var(--glow-color);
-      border-color:var(--primary-color);
-    }
-    .card:hover::before{opacity:.3;}
-    .card h3{color:var(--text-color);font-size:1.2rem;margin-bottom:6px;}
-    .modal-overlay{
-      position:fixed;inset:0;background:rgba(0,0,0,.7);
-      backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;
-      z-index:2000;opacity:0;transition:opacity .3s ease;
-    }
-    .modal-overlay.visible{display:flex;opacity:1;}
-    .modal-content{
-      background:var(--surface-color);width:95%;max-width:900px;border-radius:12px;
-      border:1px solid var(--border-color);overflow:hidden;display:flex;flex-direction:column;
-      max-height:90vh;transform:scale(.95);opacity:0;transition:transform .3s ease,opacity .3s ease;
-    }
-    .modal-overlay.visible .modal-content{transform:scale(1);opacity:1;}
-    .modal-header{
-      display:flex;justify-content:space-between;align-items:center;
-      padding:12px 20px;border-bottom:1px solid var(--border-color);
-      font-size:1.1rem;font-weight:600;
-    }
-    .modal-body{padding:16px;display:flex;flex-direction:column;gap:16px;}
-    .close-button{background:none;border:none;color:var(--muted-text-color);cursor:pointer;font-size:1.5rem;transition:.2s;}
-    .close-button:hover{color:var(--primary-color);transform:rotate(90deg);}
-    .editor-container{height:55vh;border:1px solid var(--border-color);border-radius:8px;overflow:hidden;}
-    .obfuscator-grid{display:grid;grid-template-columns:3fr 2fr;gap:16px;align-items:start;margin-top:24px;}
-    .option-group{background:#111;border:1px solid var(--border-color);padding:16px;border-radius:8px;}
-    .option-group h4{margin-bottom:12px;font-size:1.1rem;}
-    .action-button{
-      padding:10px 16px;background:linear-gradient(90deg,var(--primary-color),var(--secondary-color));
-      border:none;color:#fff;border-radius:8px;font-weight:600;cursor:pointer;
-      font-family:var(--font-family-main);display:inline-flex;align-items:center;gap:8px;
-      transition:all .25s ease;box-shadow:0 0 15px transparent;
-    }
-    .action-button:hover{transform:translateY(-2px);box-shadow:0 0 20px var(--glow-color);}
-    .action-button:disabled{opacity:0.5;cursor:not-allowed;}
-    .checkbox-wrapper{display:flex;align-items:center;margin-bottom:12px;cursor:pointer;position:relative;}
-    .checkbox-wrapper label{color:var(--muted-text-color);cursor:pointer;user-select:none;padding-left:40px;}
-    .checkbox-wrapper input[type="checkbox"]{display:none;}
-    .checkbox-wrapper label::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:34px;height:20px;background:#333;border-radius:10px;transition:background-color .2s;}
-    .checkbox-wrapper label::after{content:'';position:absolute;left:2px;top:50%;transform:translateY(-50%);width:16px;height:16px;background:#fff;border-radius:50%;transition:transform .2s;}
-    .checkbox-wrapper input:checked+label::before{background-color:var(--primary-color);}
-    .checkbox-wrapper input:checked+label::after{transform:translate(14px,-50%);}
-    .checkbox-wrapper input:disabled+label{cursor:not-allowed;opacity:.6;}
-    #versionTag{position:fixed;right:12px;bottom:12px;background:var(--surface-color);padding:6px 10px;border-radius:6px;border:1px solid var(--border-color);color:var(--muted-text-color);font-size:.8rem;}
-    .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:-100px;background:linear-gradient(90deg,#333,#444);color:#fff;padding:12px 20px;border-radius:8px;transition:all .35s cubic-bezier(.68,-.55,.27,1.55);display:flex;align-items:center;gap:10px;z-index:3000;box-shadow:0 5px 20px rgba(0,0,0,.3);border-left:4px solid #555;}
-    .toast.show{bottom:24px;}
-    .toast.success{border-left-color:var(--success-color);}
-    .toast.error{border-left-color:var(--error-color);}
-    .toast.info{border-left-color:var(--info-color);}
-    @media(max-width:1000px){
-      .obfuscator-grid{grid-template-columns:1fr;}
-      body{flex-direction:column;}
-      .sidebar{width:100%;height:auto;border-right:none;border-bottom:1px solid var(--border-color);flex-direction:row;justify-content:space-between;align-items:center;padding:1rem;}
-      .sidebar-title,.sidebar-footer,#nav-container{display:none;}
-    }
-  </style>
+
+<meta charset="UTF-8" />
+
+<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+
+<title>RedFox Studio</title>
+
+<link rel="icon" href="https://raw.githubusercontent.com/Syr0nix/RedFox-Scripts/main/Screenshot_2025-04-21_034725-removebg-preview.png">
+
+
+
+
+<!-- Fonts & Icons -->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Roboto+Mono&display=swap" rel="stylesheet">
+
+<script src="https://unpkg.com/@phosphor-icons/web" async></script>
+
+
+
+
+
+<!-- luaparse (safe variable renaming) -->
+
+<script src="https://unpkg.com/luaparse@0.3.0/dist/luaparse.js"></script>
+
+
+
+
+<!-- Monaco Editor CSS -->
+
+<link rel="stylesheet" data-name="vs/editor/editor.main" href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/editor/editor.main.css">
+
+
+
+
+<style>
+
+:root {
+
+    --primary-color: #FF4B2B;
+
+    --secondary-color: #FF416C;
+
+    --success-color: #28a745;
+
+    --error-color: #dc3545;
+
+    --info-color: #17a2b8;
+
+    --background-color: #0d0d0d;
+
+    --surface-color: #1a1a1a;
+
+    --text-color: #E0E0E0;
+
+    --muted-text-color: #A0A0A0;
+
+    --border-color: #2f2f2f;
+
+    --glow-color: rgba(255, 75, 43, 0.4);
+
+    --font-family-main: 'Poppins', sans-serif;
+
+    --font-family-mono: 'Roboto Mono', monospace;
+
+}
+
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+
+html{scrollbar-width:thin;scrollbar-color:var(--primary-color) var(--background-color);}
+
+::-webkit-scrollbar{width:8px;}
+
+::-webkit-scrollbar-track{background:var(--background-color);}
+
+::-webkit-scrollbar-thumb{background:var(--primary-color);border-radius:4px;}
+
+::-webkit-scrollbar-thumb:hover{background:var(--secondary-color);}
+
+body{
+
+    font-family:var(--font-family-main);
+
+    background:var(--background-color);
+
+    color:var(--text-color);
+
+    display:flex;height:100vh;overflow:hidden;
+
+}
+
+.sidebar{
+
+    width:260px;background:var(--surface-color);
+
+    border-right:1px solid var(--border-color);
+
+    padding:2rem 1.5rem;display:flex;flex-direction:column;
+
+    transition:width .3s ease;
+
+}
+
+.logo-group{display:flex;align-items:center;gap:12px;}
+
+.sidebar-logo{width:45px;}
+
+.sidebar-title{font-size:1.4rem;font-weight:700;color:#fff;}
+
+.nav-container{margin-top:2rem;display:flex;flex-direction:column;gap:8px;}
+
+.nav-link{
+
+    display:flex;align-items:center;gap:12px;background:transparent;border:none;
+
+    color:var(--muted-text-color);padding:12px;border-radius:8px;text-align:left;
+
+    font-weight:500;font-family:var(--font-family-main);font-size:1rem;
+
+    cursor:pointer;transition:all .25s ease;
+
+}
+
+.nav-link i{font-size:1.25rem;}
+
+.nav-link.active,.nav-link:hover{
+
+    color:white;
+
+    background:linear-gradient(90deg,var(--primary-color),var(--secondary-color));
+
+    box-shadow:0 0 20px var(--glow-color);
+
+    transform:translateY(-2px);
+
+}
+
+.sidebar-footer{margin-top:auto;font-size:.8rem;color:var(--muted-text-color);text-align:center;}
+
+.sidebar-footer a{color:var(--primary-color);text-decoration:none;font-weight:600;transition:color .2s;}
+
+.sidebar-footer a:hover{color:var(--secondary-color);}
+
+main{flex:1;overflow-y:auto;padding:28px 36px;}
+
+.section-header{display:flex;align-items:center;gap:12px;margin-bottom:8px;}
+
+.section-header h2{
+
+    font-size:2rem;
+
+    background:linear-gradient(90deg,var(--primary-color),var(--secondary-color));
+
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;margin:0;
+
+}
+
+.section-header i{font-size:2rem;color:var(--primary-color);}
+
+main p{color:var(--muted-text-color);max-width:720px;line-height:1.6;}
+
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;margin-top:24px;}
+
+.card{
+
+    background:var(--surface-color);padding:20px;border-radius:10px;
+
+    border:1px solid var(--border-color);cursor:pointer;transition:all .3s ease;
+
+    position:relative;overflow:hidden;
+
+}
+
+.card::before{
+
+    content:'';position:absolute;top:-50%;left:-50%;width:100%;height:100%;
+
+    background:radial-gradient(circle,var(--glow-color)0%,transparent 80%);
+
+    opacity:0;transition:opacity .4s ease;transform:scale(2.5);
+
+}
+
+.card:hover{
+
+    transform:translateY(-5px);
+
+    box-shadow:0 10px 30px rgba(0,0,0,.2),0 0 20px var(--glow-color);
+
+    border-color:var(--primary-color);
+
+}
+
+.card:hover::before{opacity:.3;}
+
+.card h3{color:var(--text-color);font-size:1.2rem;margin-bottom:6px;}
+
+.modal-overlay{
+
+    position:fixed;inset:0;background:rgba(0,0,0,.7);
+
+    backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;
+
+    z-index:2000;opacity:0;transition:opacity .3s ease;
+
+}
+
+.modal-overlay.visible{display:flex;opacity:1;}
+
+.modal-content{
+
+    background:var(--surface-color);width:95%;max-width:900px;border-radius:12px;
+
+    border:1px solid var(--border-color);overflow:hidden;display:flex;flex-direction:column;
+
+    max-height:90vh;transform:scale(.95);opacity:0;transition:transform .3s ease,opacity .3s ease;
+
+}
+
+.modal-overlay.visible .modal-content{transform:scale(1);opacity:1;}
+
+.modal-header{
+
+    display:flex;justify-content:space-between;align-items:center;
+
+    padding:12px 20px;border-bottom:1px solid var(--border-color);
+
+    font-size:1.1rem;font-weight:600;
+
+}
+
+.modal-body{padding:16px;display:flex;flex-direction:column;gap:16px;}
+
+.close-button{background:none;border:none;color:var(--muted-text-color);cursor:pointer;font-size:1.5rem;transition:.2s;}
+
+.close-button:hover{color:var(--primary-color);transform:rotate(90deg);}
+
+.editor-container{height:55vh;border:1px solid var(--border-color);border-radius:8px;overflow:hidden;}
+
+.obfuscator-grid{display:grid;grid-template-columns:3fr 2fr;gap:16px;align-items:start;margin-top:24px;}
+
+.option-group{background:#111;border:1px solid var(--border-color);padding:16px;border-radius:8px;}
+
+.option-group h4{margin-bottom:12px;font-size:1.1rem;}
+
+.action-button{
+
+    padding:10px 16px;background:linear-gradient(90deg,var(--primary-color),var(--secondary-color));
+
+    border:none;color:#fff;border-radius:8px;font-weight:600;cursor:pointer;
+
+    font-family:var(--font-family-main);display:inline-flex;align-items:center;gap:8px;
+
+    transition:all .25s ease;box-shadow:0 0 15px transparent;
+
+}
+
+.action-button:hover{transform:translateY(-2px);box-shadow:0 0 20px var(--glow-color);}
+
+.checkbox-wrapper{display:flex;align-items:center;margin-bottom:12px;cursor:pointer;position:relative;}
+
+.checkbox-wrapper label{color:var(--muted-text-color);cursor:pointer;user-select:none;padding-left:40px;}
+
+.checkbox-wrapper input[type="checkbox"]{display:none;}
+
+.checkbox-wrapper label::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:34px;height:20px;background:#333;border-radius:10px;transition:background-color .2s;}
+
+.checkbox-wrapper label::after{content:'';position:absolute;left:2px;top:50%;transform:translateY(-50%);width:16px;height:16px;background:#fff;border-radius:50%;transition:transform .2s;}
+
+.checkbox-wrapper input:checked+label::before{background-color:var(--primary-color);}
+
+.checkbox-wrapper input:checked+label::after{transform:translate(14px,-50%);}
+
+.checkbox-wrapper input:disabled+label{cursor:not-allowed;opacity:.6;}
+
+#versionTag{position:fixed;right:12px;bottom:12px;background:var(--surface-color);padding:6px 10px;border-radius:6px;border:1px solid var(--border-color);color:var(--muted-text-color);font-size:.8rem;}
+
+
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:-100px;background:linear-gradient(90deg,#333,#444);color:#fff;padding:12px 20px;border-radius:8px;transition:all .35s cubic-bezier(.68,-.55,.27,1.55);display:flex;align-items:center;gap:10px;z-index:3000;box-shadow:0 5px 20px rgba(0,0,0,.3);border-left:4px solid #555;}
+
+.toast.show{bottom:24px;}
+
+.toast.success{border-left-color:var(--success-color);}
+
+.toast.error{border-left-color:var(--error-color);}
+
+.toast.info{border-left-color:var(--info-color);}
+
+@media(max-width:1000px){
+
+.obfuscator-grid{grid-template-columns:1fr;}
+
+body{flex-direction:column;}
+
+.sidebar{width:100%;height:auto;border-right:none;border-bottom:1px solid var(--border-color);flex-direction:row;justify-content:space-between;align-items:center;padding:1rem;}
+
+.sidebar-title,.sidebar-footer,#nav-container{display:none;}
+
+}
+
+</style>
+
 </head>
+
 <body>
-  <aside class="sidebar">
-    <div class="logo-group">
-      <img class="sidebar-logo" src="https://raw.githubusercontent.com/Syr0nix/RedFox-Scripts/main/Screenshot_2025-04-21_034725-removebg-preview.png" alt="logo">
-      <div>
-        <div class="sidebar-title">RedFox</div>
-        <div style="font-size:12px;color:var(--muted-text-color)">RedFox Studio</div>
-      </div>
-    </div>
-    <div class="nav-container" id="nav-container">
-      <button class="nav-link active" onclick="showTab('scripts',this)"><i class="ph-duotone ph-scroll"></i>Script Library</button>
-      <button class="nav-link" onclick="showTab('tools',this)"><i class="ph-duotone ph-wrench"></i>Power Tools</button>
-      <button class="nav-link" onclick="showTab('executor',this)"><i class="ph-duotone ph-play-circle"></i>Executor</button>
-      <button class="nav-link" onclick="showTab('obfuscator',this)"><i class="ph-duotone ph-gear-six"></i>Obfuscator</button>
-    </div>
-    <div class="sidebar-footer">
-      <div>© <span id="copyright-year">2025</span> RedFox Studio™</div>
-      <div style="margin-top:6px"><a href="https://discord.gg/redfox" target="_blank">Join Discord</a></div>
-    </div>
-  </aside>
 
-  <main>
-    <section id="scripts" class="section">
-      <div class="section-header"><i class="ph-duotone ph-scroll"></i><h2>Script Library</h2></div>
-      <p>Paste a script or open one from the library.</p>
-      <div class="card-grid">
-        <div class="card" onclick="showScriptModal('Build A Boat','https://rawscripts.net/raw/Build-A-Boat-For-Treasure-auto-farm-38247')"><h3>Build A Boat</h3><p>Auto farm example</p></div>
-        <div class="card" onclick="showScriptModal('Murder Mystery 2','https://raw.githubusercontent.com/Syr0nix/scripts/main/MM2')"><h3>Murder Mystery 2</h3><p>MM2 utility</p></div>
-      </div>
-    </section>
+<aside class="sidebar">
 
-    <section id="tools" class="section" style="display:none">
-      <div class="section-header"><i class="ph-duotone ph-wrench"></i><h2>Power Tools</h2></div>
-      <p>Utilities like WinOps and FoxStrap.</p>
-    </section>
+<div class="logo-group">
 
-    <section id="executor" class="section" style="display:none">
-      <div class="section-header"><i class="ph-duotone ph-play-circle"></i><h2>Executor</h2></div>
-      <p>Preview and loader generator.</p>
-      <img src="https://raw.githubusercontent.com/Syr0nix/RedFoxScripts.com/main/%7B2CA209B1-4839-4547-A0BB-F392DA76E091%7D.png" style="max-width:600px;border-radius:10px;margin-top:12px">
-    </section>
+<img class="sidebar-logo" src="https://raw.githubusercontent.com/Syr0nix/RedFox-Scripts/main/Screenshot_2025-04-21_034725-removebg-preview.png" alt="logo">
 
-    <section id="obfuscator" class="section" style="display:none">
-      <div class="section-header"><i class="ph-duotone ph-gear-six"></i><h2>Obfuscator</h2></div>
-      <p>Maximum protection: string encryption, variable renaming, control-flow flattening, junk code, anti-debug, anti-tamper, number obfuscation, and minification.</p>
-      <div class="obfuscator-grid">
-        <div>
-          <div id="input-editor" class="editor-container"></div>
-          <div style="display:flex;gap:8px;margin-top:12px">
-            <button id="obfuscateBtn" class="action-button" disabled><i class="ph ph-gear"></i>Obfuscate</button>
-            <button id="copyObfBtn" class="action-button" style="background:linear-gradient(90deg,#4b8,#2a6)"><i class="ph ph-clipboard-text"></i>Copy Output</button>
-          </div>
-        </div>
-        <div>
-          <div class="option-group">
-            <h4>Obfuscation Settings</h4>
-            <div class="checkbox-wrapper"><input id="opt-str-encrypt" type="checkbox" checked><label for="opt-str-encrypt">String Encryption (XOR + Base64)</label></div>
-            <div class="checkbox-wrapper"><input id="opt-var-rename" type="checkbox" checked><label for="opt-var-rename">Variable Renaming</label></div>
-            <div class="checkbox-wrapper"><input id="opt-anti-debug" type="checkbox" checked><label for="opt-anti-debug">Anti-Debug</label></div>
-            <div class="checkbox-wrapper"><input id="opt-minify" type="checkbox" checked><label for="opt-minify">Compact / Minify Output</label></div>
-            <div class="checkbox-wrapper"><input id="opt-control-flow" type="checkbox"><label for="opt-control-flow">Control-Flow Flattening (Heavy)</label></div>
-            <div class="checkbox-wrapper"><input id="opt-num-obf" type="checkbox" checked><label for="opt-num-obf">Number Obfuscation</label></div>
-            <div class="checkbox-wrapper"><input id="opt-junk-code" type="checkbox" checked><label for="opt-junk-code">Junk Code (300-500 lines)</label></div>
-            <div class="checkbox-wrapper"><input id="opt-anti-tamper" type="checkbox"><label for="opt-anti-tamper">Anti-Tamper (Self-Hash)</label></div>
-          </div>
-          <div style="height:16px"></div>
-          <div id="output-editor" class="editor-container"></div>
-        </div>
-      </div>
-    </section>
-  </main>
+<div>
 
-  <div id="scriptModal" class="modal-overlay">
-    <div class="modal-content">
-      <div class="modal-header">
-        <div id="modalScriptName">Script</div>
-        <button onclick="closeScriptModal()" class="close-button"><i class="ph ph-x"></i></button>
-      </div>
-      <div class="modal-body">
-        <div id="loader-viewer-container" class="editor-container"></div>
-        <div id="raw-viewer-container" class="editor-container"></div>
-      </div>
-    </div>
-  </div>
+<div class="sidebar-title">RedFox</div>
 
-  <div id="versionTag">v1.0</div>
-  <div id="toast" class="toast"><i id="toast-icon" class="ph"></i><span id="toast-msg"></span></div>
+<div style="font-size:12px;color:var(--muted-text-color)">RedFox Studio</div>
 
-  <!-- Monaco Loader -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/loader.min.js"></script>
+</div>
 
-  <!-- LUAPARSE FROM CDN (fixes "luaparse not loaded") -->
-  <script>
-    // Load luaparse asynchronously and expose it globally
-    (function(){
-      const script = document.createElement('script');
-      script.src = 'https://cdn.jsdelivr.net/npm/luaparse@0.3.2/luaparse.min.js';
-      script.onload = () => { window.luaparse = luaparse; };
-      script.onerror = () => console.error('Failed to load luaparse');
-      document.head.appendChild(script);
-    })();
-  </script>
+</div>
 
-  <!-- MAIN APP SCRIPT -->
-  <script>
-    'use strict';
+<div class="nav-container" id="nav-container">
 
-    let inputEditor, outputEditor, rawViewerEditor, loaderViewerEditor;
-    let isEditorReady = false;
+<button class="nav-link active" onclick="showTab('scripts',this)"><i class="ph-duotone ph-scroll"></i>Script Library</button>
 
-    require.config({
-      paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs' }
-    });
+<button class="nav-link" onclick="showTab('tools',this)"><i class="ph-duotone ph-wrench"></i>Power Tools</button>
 
-    window.MonacoEnvironment = {
-      getWorkerUrl: () => `data:text/javascript;charset=utf-8,${encodeURIComponent(
-        `self.MonacoEnvironment={baseUrl:'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/'};
-         importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/base/worker/workerMain.min.js');`
-      )}`
-    };
+<button class="nav-link" onclick="showTab('executor',this)"><i class="ph-duotone ph-play-circle"></i>Executor</button>
 
-    function waitForEditorAndParser() {
-      return new Promise((resolve) => {
-        require(['vs/editor/editor.main'], () => {
-          // Wait a tick for luaparse to be loaded
-          const check = () => {
-            if (window.luaparse) {
-              initEditors();
-              resolve();
-            } else {
-              setTimeout(check, 50);
-            }
-          };
-          check();
-        });
-      });
+<button class="nav-link" onclick="showTab('obfuscator',this)"><i class="ph-duotone ph-gear-six"></i>Obfuscator</button>
+
+</div>
+
+<div class="sidebar-footer">
+
+
+<div>© <span id="copyright-year">2024</span> RedFox Studio™</div>
+
+<div style="margin-top:6px"><a href="https://discord.gg/redfox" target="_blank">Join Discord</a></div>
+
+</div>
+
+</aside>
+
+
+
+
+<main>
+
+<section id="scripts" class="section">
+
+<div class="section-header"><i class="ph-duotone ph-scroll"></i><h2>Script Library</h2></div>
+
+<p>Paste a script or open one from the library.</p>
+
+<div class="card-grid">
+
+<div class="card" onclick="showScriptModal('Build A Boat','https://rawscripts.net/raw/Build-A-Boat-For-Treasure-auto-farm-38247')"><h3>Build A Boat</h3><p>Auto farm example</p></div>
+
+<div class="card" onclick="showScriptModal('Murder Mystery 2','https://raw.githubusercontent.com/Syr0nix/scripts/main/MM2')"><h3>Murder Mystery 2</h3><p>MM2 utility</p></div>
+
+</div>
+
+</section>
+
+
+
+
+<section id="tools" class="section" style="display:none">
+
+<div class="section-header"><i class="ph-duotone ph-wrench"></i><h2>Power Tools</h2></div>
+
+<p>Utilities like WinOps and FoxStrap.</p>
+
+</section>
+
+
+
+
+<section id="executor" class="section" style="display:none">
+
+<div class="section-header"><i class="ph-duotone ph-play-circle"></i><h2>Executor</h2></div>
+
+<p>Preview and loader generator.</p>
+
+<img src="https://raw.githubusercontent.com/Syr0nix/RedFoxScripts.com/main/%7B2CA209B1-4839-4547-A0BB-F392DA76E091%7D.png" style="max-width:600px;border-radius:10px;margin-top:12px">
+
+</section>
+
+
+
+
+<section id="obfuscator" class="section" style="display:none">
+
+<div class="section-header"><i class="ph-duotone ph-gear-six"></i><h2>Obfuscator</h2></div>
+
+
+<p>String encryption, variable renaming, anti-debug, and minification.</p>
+
+<div class="obfuscator-grid">
+
+<div>
+
+<div id="input-editor" class="editor-container"></div>
+
+<div style="display:flex;gap:8px;margin-top:12px">
+
+<button id="obfuscateBtn" class="action-button"><i class="ph ph-gear"></i>Obfuscate</button>
+
+<button id="copyObfBtn" class="action-button" style="background:linear-gradient(90deg,#4b8,#2a6)"><i class="ph ph-clipboard-text"></i>Copy Output</button>
+
+</div>
+
+</div>
+
+<div>
+
+<div class="option-group">
+
+<h4>Obfuscation Settings</h4>
+
+
+<div class="checkbox-wrapper"><input id="opt-str-encrypt" type="checkbox" checked><label for="opt-str-encrypt">String Encryption (XOR)</label></div>
+
+
+<div class="checkbox-wrapper"><input id="opt-var-rename" type="checkbox"><label for="opt-var-rename">Variable Renaming</label></div>
+
+<div class="checkbox-wrapper"><input id="opt-anti-debug" type="checkbox" checked><label for="opt-anti-debug">Anti-Debug</label></div>
+
+<div class="checkbox-wrapper"><input id="opt-minify" type="checkbox" checked><label for="opt-minify">Compact / Minify Output</label></div>
+
+
+
+
+
+</div>
+
+<div style="height:16px"></div>
+
+<div id="output-editor" class="editor-container"></div>
+
+</div>
+
+</div>
+
+</section>
+
+</main>
+
+
+
+<div id="scriptModal" class="modal-overlay">
+
+<div class="modal-content">
+
+<div class="modal-header">
+
+<div id="modalScriptName">Script</div>
+
+<button onclick="closeScriptModal()" class="close-button"><i class="ph ph-x"></i></button>
+
+</div>
+
+<div class="modal-body">
+
+<div id="loader-viewer-container" class="editor-container"></div>
+
+<div id="raw-viewer-container" class="editor-container"></div>
+
+</div>
+
+</div>
+
+</div>
+
+
+
+<div id="versionTag">Loading...</div>
+
+<div id="toast" class="toast"><i id="toast-icon" class="ph"></i><span id="toast-msg"></span></div>
+
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/loader.min.js"></script>
+
+<script>
+
+'use strict';
+
+let inputEditor, outputEditor, rawViewerEditor, loaderViewerEditor;
+
+
+
+/* ==================== Monaco Editor Setup ==================== */
+
+require.config({paths:{'vs':'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs'}});
+
+window.MonacoEnvironment = {getWorkerUrl:()=>`data:text/javascript;charset=utf-8,${encodeURIComponent(
+
+  "self.MonacoEnvironment={baseUrl:'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/'};"+
+
+  "importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/base/worker/workerMain.min.js');")}`};
+
+
+
+
+require(['vs/editor/editor.main'], () => {
+
+  monaco.editor.defineTheme('redfox-theme', {
+
+    base: 'vs-dark', inherit: true,
+
+    rules: [
+
+      {token: 'keyword', foreground: 'FF4B2B'},
+
+      {token: 'comment', foreground: '6A9955'},
+
+      {token: 'string', foreground: 'CE9178'},
+
+      {token: 'number', foreground: 'B5CEA8'}
+
+    ],
+
+    colors: {
+
+      'editor.background': '#1A1A1A',
+
+      'editor.foreground': '#E0E0E0',
+
+      'editorLineNumber.foreground': '#5A5A5A',
+
+      'editor.selectionBackground': '#FF4B2B40'
+
     }
 
-    function initEditors() {
-      monaco.editor.defineTheme('redfox-theme', {
-        base: 'vs-dark', inherit: true,
-        rules: [
-          { token: 'keyword', foreground: 'FF4B2B' },
-          { token: 'comment', foreground: '6A9955' },
-          { token: 'string', foreground: 'CE9178' },
-          { token: 'number', foreground: 'B5CEA8' }
-        ],
-        colors: {
-          'editor.background': '#1A1A1A',
-          'editor.foreground': '#E0E0E0',
-          'editorLineNumber.foreground': '#5A5A5A',
-          'editor.selectionBackground': '#FF4B2B40'
+  });
+
+  const opt = {
+
+    language: 'lua', theme: 'redfox-theme', automaticLayout: true,
+
+    wordWrap: 'on', minimap: {enabled: true}, fontLigatures: true,
+
+    fontFamily: 'Roboto Mono'
+
+  };
+
+
+  inputEditor   = monaco.editor.create(document.getElementById('input-editor'),   {...opt, value: '-- Paste your Luau script here...'});
+
+
+  outputEditor  = monaco.editor.create(document.getElementById('output-editor'),  {...opt, readOnly: true, value: '-- Obfuscated output will appear here.'});
+
+
+  rawViewerEditor   = monaco.editor.create(document.getElementById('raw-viewer-container'),   {...opt, readOnly: true});
+
+
+  loaderViewerEditor= monaco.editor.create(document.getElementById('loader-viewer-container'),{...opt, readOnly: true});
+
+});
+
+
+
+/* ==================== UI Helpers ==================== */
+
+document.addEventListener('DOMContentLoaded', () => {
+
+  document.getElementById('obfuscateBtn').addEventListener('click', obfuscateLuau);
+
+  document.getElementById('copyObfBtn').addEventListener('click', () => copyMonacoContent(outputEditor, 'Obfuscated script copied!'));
+
+  document.getElementById('copyright-year').textContent = new Date().getFullYear();
+
+  checkForUpdate();
+
+});
+
+
+
+
+function showTab(id, btn) {
+
+  document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+
+  document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
+
+  document.getElementById(id).style.display = 'block';
+
+  btn?.classList.add('active');
+
+}
+
+
+
+
+function showToast(msg, type = 'info') {
+
+  const toast = document.getElementById('toast'), icon = document.getElementById('toast-icon'), text = document.getElementById('toast-msg');
+
+  text.textContent = msg; toast.className = 'toast show ' + type;
+
+  const icons = {success: 'ph-duotone ph-check-circle', error: 'ph-duotone ph-x-circle', info: 'ph-duotone ph-info'};
+
+  icon.className = icons[type] || icons.info;
+
+  setTimeout(() => toast.classList.remove('show'), 3000);
+
+}
+
+
+
+
+function copyMonacoContent(editor, msg) {
+
+  const code = editor.getValue();
+
+  if (!code.trim()) return showToast('Nothing to copy!', 'error');
+
+  navigator.clipboard.writeText(code).then(() => showToast(msg, 'success'));
+
+}
+
+
+
+
+/* ==================== Obfuscator Core ==================== */
+
+
+async function obfuscateLuau() {
+
+
+  const src = inputEditor.getValue().trim();
+
+
+  if (!src || src === '-- Paste your Luau script here...') return showToast('Enter a script.', 'error');
+
+
+
+
+
+  const opts = {
+
+
+    encryptStrings: opt('str-encrypt'),
+
+
+    variableRenaming: opt('var-rename'),
+
+
+    antiDebug: opt('anti-debug'),
+
+
+    minify: opt('minify')
+
+
+  };
+
+
+
+
+  showToast('Obfuscating...', 'info');
+
+
+  await new Promise(r => setTimeout(r, 30));
+
+
+
+
+  try {
+
+
+    const result = fullObfuscate(src, opts);
+
+
+    outputEditor.setValue(result);
+
+
+    showToast('Obfuscation complete!', 'success');
+
+
+  } catch (e) {
+
+
+    showToast('Error: ' + e.message, 'error');
+
+
+
+
+
+
+  }
+
+
+
+}
+
+
+
+
+function opt(id) { return document.getElementById('opt-' + id).checked; }
+
+
+
+
+
+/* ---------- Helper Functions ---------- */
+
+
+const RESERVED = new Set(['and','break','do','else','elseif','end','false','for','function','if','in','local','nil','not','or','repeat','return','then','true','until','while','game','workspace','script','print','wait','task','Instance','Vector3','CFrame','Color3','UDim2','BrickColor','Enum','os','math','string','table','coroutine','bit32','utf8']);
+
+
+function randName() { const c = 'Il'; let s = '_'; for (let i = 0; i < 10; i++) s += c[Math.floor(Math.random() * 2)]; return s; }
+
+
+function randKey(len) { const c = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'; let s = ''; for (let i = 0; i < len; i++) s += c[Math.floor(Math.random() * c.length)]; return s; }
+
+
+
+
+
+/* ---------- 1. Variable Renaming ---------- */
+
+
+function renameLocals(code) {
+
+
+  if (typeof luaparse === 'undefined') return code;
+
+
+  try {
+
+
+    const ast = luaparse.parse(code, {scope: true, ranges: true});
+
+
+    const map = new Map();
+
+
+    const used = new Set(RESERVED);
+
+
+
+
+
+    function unique() { let n; do { n = randName(); } while (used.has(n)); used.add(n); return n; }
+
+
+
+
+
+    function walk(node) {
+
+
+      if (!node) return;
+
+
+      if (node.type === 'LocalStatement') {
+
+
+        for (const v of node.variables || []) {
+
+
+          if (v.type === 'Identifier' && !RESERVED.has(v.name)) map.set(v.name, unique());
+
+
         }
-      });
 
-      const opt = {
-        language: 'lua',
-        theme: 'redfox-theme',
-        automaticLayout: true,
-        wordWrap: 'on',
-        minimap: { enabled: true },
-        fontLigatures: true,
-        fontFamily: 'Roboto Mono'
-      };
 
-      inputEditor = monaco.editor.create(document.getElementById('input-editor'), {
-        ...opt,
-        value: '-- Paste your Luau script here...'
-      });
+      }
 
-      outputEditor = monaco.editor.create(document.getElementById('output-editor'), {
-        ...opt,
-        readOnly: true,
-        value: '-- Obfuscated output will appear here.'
-      });
 
-      rawViewerEditor = monaco.editor.create(document.getElementById('raw-viewer-container'), {
-        ...opt,
-        readOnly: true
-      });
+      if (node.type === 'FunctionDeclaration') {
 
-      loaderViewerEditor = monaco.editor.create(document.getElementById('loader-viewer-container'), {
-        ...opt,
-        readOnly: true
-      });
 
-      document.getElementById('obfuscateBtn').disabled = false;
-      isEditorReady = true;
-      showToast('RedFox Studio Ready!', 'success');
-    }
+        if (node.isLocal && node.identifier?.type === 'Identifier') map.set(node.identifier.name, unique());
 
-    // ---------- OBFUSCATOR CORE ----------
-    const RESERVED = new Set(['and','break','do','else','elseif','end','false','for','function','if','in','local','nil','not','or','repeat','return','then','true','until','while','game','workspace','script','print','wait','task','Instance','Vector3','CFrame','Color3','UDim2','BrickColor','Enum','os','math','string','table','coroutine','bit32','utf8','debug','getfenv','setfenv','rawget','rawset','rawlen','select','tonumber','tostring','type','unpack','pairs','ipairs','next','pcall','xpcall','loadstring','spawn','delay','wait']);
-    function randName() { const c = 'Il1'; let s = '_'; for (let i = 0; i < 12; i++) s += c[Math.floor(Math.random()*c.length)]; return s; }
-    function randKey(len=20) { const c = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'; let s=''; for (let i=0;i<len;i++) s+=c[Math.floor(Math.random()*c.length)]; return s; }
 
-    function buildScopeAST(code) {
-      if (!window.luaparse) throw new Error('luaparse not loaded');
-      return window.luaparse.parse(code, {scope:true, locations:true, ranges:true});
-    }
+        for (const p of node.parameters || []) {
 
-    function renameVariables(ast) {
-      const map = new Map(), used = new Set(RESERVED);
-      function uniq() { let n; do n=randName(); while(used.has(n)); used.add(n); return n; }
-      function walk(node) {
-        if (!node) return;
-        if (node.type==='LocalStatement' || node.type==='AssignmentStatement') {
-          (node.variables||node.init||[]).forEach(v=>{ if(v.type==='Identifier' && !RESERVED.has(v.name)) map.set(v.name,uniq()); });
+
+          if (p.type === 'Identifier' && !RESERVED.has(p.name)) map.set(p.name, unique());
+
+
         }
-        if (node.type==='FunctionDeclaration' && node.isLocal && node.identifier) map.set(node.identifier.name,uniq());
-        if (node.type==='FunctionDeclaration') (node.parameters||[]).forEach(p=>{ if(p.type==='Identifier' && !RESERVED.has(p.name)) map.set(p.name,uniq()); });
-        for (const k in node) { const c=node[k]; if(Array.isArray(c)) c.forEach(walk); else if(c && typeof c==='object') walk(c); }
+
+
       }
-      walk(ast);
-      return map;
-    }
 
-    function flattenControlFlow(ast, varMap) {
-      let stateVar = randName(), dispatcher = randName();
-      let states = [], counter = 0;
-      function newState() { return ++counter; }
-      function collectBlocks(node, exit) {
-        if (!node) return exit;
-        if (node.type==='Chunk') { node.body.forEach(b=>collectBlocks(b,exit)); return exit; }
-        const cur = newState();
-        states[cur] = {code: '', next: exit};
-        if (node.type==='IfStatement') {
-          const thenExit = collectBlocks(node.consequent, exit);
-          const elseExit = node.alternate ? collectBlocks(node.alternate, exit) : exit;
-          states[cur].code = `if ${genNode(node.test)} then ${stateVar}=${thenExit} else ${stateVar}=${elseExit} end`;
-          states[cur].next = null;
-        } else if (node.type==='WhileStatement') {
-          const bodyExit = collectBlocks(node.body, cur);
-          states[cur].code = `if ${genNode(node.test)} then ${stateVar}=${bodyExit} else ${stateVar}=${exit} end`;
-          states[cur].next = null;
-        } else if (node.type==='RepeatStatement') {
-          const bodyExit = collectBlocks(node.body, cur);
-          states[cur].code = `${stateVar}=${bodyExit}`;
-          states[bodyExit].code += `if not (${genNode(node.test)}) then ${stateVar}=${bodyExit} else ${stateVar}=${exit} end`;
-          states[cur].next = null;
-        } else {
-          states[cur].code = genNode(node);
-          states[cur].next = exit;
-        }
-        return cur;
+
+      for (const k in node) {
+
+
+        const child = node[k];
+
+
+        if (Array.isArray(child)) child.forEach(walk);
+
+
+        else if (child && typeof child === 'object') walk(child);
+
+
       }
-      function genNode(n) {
-        if (!n) return '';
-        if (n.type==='Identifier') return varMap.get(n.name)||n.name;
-        if (n.type==='StringLiteral') return `"${n.value}"`;
-        if (n.type==='NumericLiteral') return n.raw || n.value;
-        if (n.type==='BinaryExpression') return `(${genNode(n.left)} ${n.operator} ${genNode(n.right)})`;
-        if (n.type==='UnaryExpression') return `${n.operator}${genNode(n.argument)}`;
-        if (n.type==='CallExpression') return `${genNode(n.base)}(${n.arguments.map(genNode).join(',')})`;
-        if (n.type==='ReturnStatement') return `return ${n.arguments.map(genNode).join(',')}`;
-        return '';
+
+    }
+
+
+    walk(ast);
+
+
+
+
+
+    const replacements = [];
+
+
+    function collect(node) {
+
+
+      if (!node) return;
+
+
+      if (node.type === 'Identifier' && map.has(node.name) && node.range) {
+
+
+        replacements.push({start: node.range[0], end: node.range[1], new: map.get(node.name)});
+
+
       }
-      const entry = newState();
-      collectBlocks(ast, 0);
-      let flat = `local ${stateVar}=${entry} local ${dispatcher}=function() while true do if ${stateVar}==0 then break end `;
-      for (let i=1;i<states.length;i++) {
-        const s=states[i];
-        flat += `if ${stateVar}==${i} then ${s.code} ${s.next!==null?`${stateVar}=${s.next}`:''} end `;
+
+
+      for (const k in node) {
+
+
+        const child = node[k];
+
+
+        if (Array.isArray(child)) child.forEach(collect);
+
+
+        else if (child && typeof child === 'object') collect(child);
+
+
       }
-      flat += `end end `;
-      return {code: flat + dispatcher + '()', extraLocals:[stateVar,dispatcher]};
+
+
     }
 
-    function obfuscateNumbers(code) {
-      return code.replace(/\b\d+\b/g, n => {
-        const v = Number(n);
-        if (v===0) return '0';
-        const a = Math.floor(Math.random()*12)+1, b = Math.floor(Math.random()*12)+1;
-        const op = ['+','-','*','/','%'][Math.floor(Math.random()*5)];
-        let expr = `${a}${op}${b}`;
-        if (op==='/' && b===0) expr = `${a}+${b}`;
-        return `((${expr})-${v<0?-v:0})`;
-      });
+
+    collect(ast);
+
+
+    replacements.sort((a, b) => b.start - a.start);
+
+
+
+
+    let out = code;
+
+
+    for (const r of replacements) {
+
+
+      out = out.slice(0, r.start) + r.new + out.slice(r.end);
+
+
     }
 
-    function encryptStringsMax(code, key, decName) {
-      const regex = /(["'])(?:(?=(\\?))\2.)*?\1/g;
-      return code.replace(regex, lit => {
-        const raw = lit.slice(1,-1);
-        let xor = '';
-        for (let i=0;i<raw.length;i++) xor += String.fromCharCode(raw.charCodeAt(i) ^ key.charCodeAt(i%key.length));
-        const b64 = btoa(xor).replace(/=/g,'').replace(/\+/g,'-').replace(/\//g,'_');
-        return `${decName}("${b64}")`;
-      });
+
+    return out;
+
+
+  } catch (e) {
+
+
+    console.warn('luaparse rename failed', e);
+
+
+    return code;
+
+  }
+
+
+
+}
+
+
+
+
+/* ---------- 2. String Encryption ---------- */
+
+
+function encryptStrings(code, key, decoderName) {
+
+
+  const regex = /"((?:[^"\\]|\\.)*)"|'((?:[^'\\]|\\.)*)'/g;
+
+
+  return code.replace(regex, (match, p1, p2) => {
+
+
+    const str = p1 ?? p2;
+
+
+    let hex = '';
+
+
+    for (let i = 0; i < str.length; i++) {
+
+
+      const byte = str.charCodeAt(i) ^ key.charCodeAt(i % key.length);
+
+
+      hex += byte.toString(16).padStart(2, '0');
+
+
     }
 
-    function decoderMax(key, name) {
-      return `local function ${name}(b)local k="${key}"local d=string.gsub(string.gsub(b,"-","+"),"_","/")local pad=#d%4 if pad>0 then d=d..string.rep("=",4-pad)end local s=""for i=1,#d,4 do local c=string.byte(d,i,i+3) if c then s=s..string.char(bit32.bxor(c,k:byte((#s)%#k+1)))end end return s end`;
-    }
 
-    function injectJunk() {
-      const count = 300 + Math.floor(Math.random()*200);
-      let junk = '';
-      for (let i=0;i<count;i++) {
-        const op = ['+','-','*','/'][Math.floor(Math.random()*4)];
-        const a = Math.floor(Math.random()*100), b = Math.floor(Math.random()*100);
-        const dummy = randName();
-        junk += `local ${dummy}=${a}${op}${b};`;
-      }
-      return junk;
-    }
+    return `${decoderName}("${hex}")`;
 
-    function antiTamper() {
-      const hashVar = randName();
-      const payload = `local ${hashVar}="${randKey(32)}" local _=function() local src=debug.getinfo(1,"S").source if src:sub(1,1)=="@" then local f=io.open(src:sub(2),"r") if f then local c=f:read("*a") f:close() local h=0 for i=1,#c do h=(h*31+string.byte(c,i))%2^32 end if tostring(h)~=${hashVar} then error("Tampered") end end end end _()`;
-      return payload;
-    }
+  });
 
-    function antiDebugMax() {
-      return `task.spawn(function()local s=os.clock()while true do task.wait(0.3) if os.clock()-s>1.2 then getfenv().debug=nil error("dbg") end s=os.clock()end end)`;
-    }
+}
 
-    function minifyMax(code) {
-      return code
-        .replace(/--\[\[[\s\S]*?\]\]/g,'')
-        .replace(/--[^\n]*/g,'')
-        .replace(/\s+/g,' ')
-        .replace(/\s*([=+\-*/%^#<>(){}\[\].,;:])\s*/g,'$1')
-        .trim();
-    }
 
-    function fullObfuscate(src, opts) {
-      let out = src;
-      let ast;
-      try {
-        ast = buildScopeAST(out);
-      } catch (e) {
-        throw new Error("Parse failed: " + e.message);
-      }
-      const varMap = opts.variableRenaming ? renameVariables(ast) : new Map();
-      if (opts.variableRenaming) {
-        const reps = [];
-        function collect(node) {
-          if (node.type==='Identifier' && varMap.has(node.name) && node.range) reps.push({s:node.range[0],e:node.range[1],n:varMap.get(node.name)});
-          for (const k in node) { const c=node[k]; if(Array.isArray(c)) c.forEach(collect); else if(c && typeof c==='object') collect(c); }
-        }
-        collect(ast);
-        reps.sort((a,b)=>b.s-a.s);
-        for (const r of reps) out = out.slice(0,r.s)+r.n+out.slice(r.e);
-      }
-      if (opts.controlFlow) {
-        const flat = flattenControlFlow(ast, varMap);
-        out = flat.code;
-      }
-      if (opts.numberObf) out = obfuscateNumbers(out);
-      let decoder = '';
-      if (opts.encryptStrings) {
-        const key = randKey(20);
-        const decName = randName();
-        decoder = decoderMax(key, decName);
-        out = encryptStringsMax(out, key, decName);
-      }
-      if (opts.junk) out = injectJunk() + out;
-      if (opts.antiDebug) out = antiDebugMax() + '\n' + out;
-      if (opts.antiTamper) out = antiTamper() + '\n' + out;
-      if (opts.minify) out = minifyMax(out);
-      const header = `-- OBFUSCATED BY REDFOX STUDIO | MAX PROTECTION`;
-      return `${header}\n${decoder}\n${out}`;
-    }
+function decoderFunc(key, name) {
 
-    async function obfuscateLuau() {
-      if (!isEditorReady) return showToast('Editor not ready yet...', 'error');
-      const src = inputEditor.getValue().trim();
-      if (!src || src.startsWith('-- Paste')) return showToast('Paste a script first','error');
-      const opts = {
-        encryptStrings: opt('str-encrypt'),
-        variableRenaming: opt('var-rename'),
-        antiDebug: opt('anti-debug'),
-        minify: opt('minify'),
-        controlFlow: opt('control-flow'),
-        numberObf: opt('num-obf'),
-        junk: opt('junk-code'),
-        antiTamper: opt('anti-tamper')
-      };
-      showToast('Running MAX obfuscation…','info');
-      await new Promise(r=>setTimeout(r,50));
-      try {
-        const result = fullObfuscate(src, opts);
-        outputEditor.setValue(result);
-        showToast('MAX OBFUSCATION DONE!','success');
-      } catch(e){
-        showToast('Error: '+e.message,'error');
-        console.error(e);
-      }
-    }
 
-    function opt(id) { return document.getElementById('opt-' + id).checked; }
+  return `local function ${name}(h)local k="${key}"local o=""for i=1,#h,2 do local b=tonumber(h:sub(i,i+1),16)if b then o=o..string.char(bit32.bxor(b,k:byte((#o)%#k+1)))end end return o end`;
 
-    // ---------- UI ----------
-    document.addEventListener('DOMContentLoaded', () => {
-      document.getElementById('obfuscateBtn').addEventListener('click', obfuscateLuau);
-      document.getElementById('copyObfBtn').addEventListener('click', () => {
-        if (!isEditorReady) return showToast('Editor not ready', 'error');
-        copyMonacoContent(outputEditor, 'Obfuscated script copied!');
-      });
-      document.getElementById('copyright-year').textContent = new Date().getFullYear();
-      waitForEditorAndParser().catch(console.error);
-    });
 
-    function showTab(id, btn) {
-      document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
-      document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
-      document.getElementById(id).style.display = 'block';
-      btn?.classList.add('active');
-    }
 
-    function showToast(msg, type = 'info') {
-      const toast = document.getElementById('toast'), icon = document.getElementById('toast-icon'), text = document.getElementById('toast-msg');
-      text.textContent = msg; toast.className = 'toast show ' + type;
-      const icons = {success: 'ph-duotone ph-check-circle', error: 'ph-duotone ph-x-circle', info: 'ph-duotone ph-info'};
-      icon.className = icons[type] || icons.info;
-      setTimeout(() => toast.classList.remove('show'), 3000);
-    }
 
-    function copyMonacoContent(editor, msg) {
-      const code = editor.getValue();
-      if (!code.trim()) return showToast('Nothing to copy!', 'error');
-      navigator.clipboard.writeText(code).then(() => showToast(msg, 'success'));
-    }
 
-    async function showScriptModal(name, url) {
-      document.getElementById('modalScriptName').textContent = name;
-      document.getElementById('scriptModal').classList.add('visible');
-      loaderViewerEditor.setValue(`-- Loader:\nloadstring(game:HttpGet("${url}"))()`);
-      rawViewerEditor.setValue('-- Fetching...');
-      try {
-        const r = await fetch(url);
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        rawViewerEditor.setValue(await r.text());
-      } catch (e) {
-        rawViewerEditor.setValue('-- Error:\n' + e.message);
-      }
-    }
 
-    function closeScriptModal() {
-      document.getElementById('scriptModal').classList.remove('visible');
-    }
-  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+}
+
+
+
+
+/* ---------- 3. Anti-Debug ---------- */
+
+
+function antiDebug() {
+
+
+  return `task.spawn(function()local t=os.clock()while task.wait(.5)do if os.clock()-t>1.5 then getfenv(0).game=nil error('Debugger detected')end t=os.clock()end end)`;
+
+
+
+
+
+
+}
+
+
+
+
+/* ---------- 4. Minify ---------- */
+
+
+function minify(code) {
+
+  return code
+
+
+    .replace(/--\[\[[\s\S]*?\]\]/g, '')
+
+
+    .replace(/--[^\n\r]*/g, '')
+
+
+    .replace(/\s+/g, ' ')
+
+
+    .replace(/\s*([=+\-*/%^#<>(){}\[\].,;:])\s*/g, '$1')
+
+    .trim();
+
+}
+
+
+
+
+/* ---------- 5. Full Obfuscation Pipeline ---------- */
+
+function fullObfuscate(src, opts) {
+
+  let out = src;
+
+
+
+
+
+
+  if (opts.variableRenaming) out = renameLocals(out);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  let decoder = '';
+
+  if (opts.encryptStrings) {
+
+
+    const key = randKey(12);
+
+    const decName = randName();
+
+
+    decoder = decoderFunc(key, decName);
+
+
+    out = encryptStrings(out, key, decName);
+
+  }
+
+
+
+
+  if (opts.antiDebug) out = antiDebug() + '\n' + out;
+
+
+  if (opts.minify) out = minify(out);
+
+
+
+
+
+
+  const header = `-- Obfuscated with RedFox Studio | https://redfoxscripts.com`;
+
+
+  const payload = decoder ? decoder + '\n' + out : out;
+
+
+  return `${header}\n${payload}`;
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ==================== Modal & Misc ==================== */
+
+async function showScriptModal(name, url) {
+
+  document.getElementById('modalScriptName').textContent = name;
+
+  document.getElementById('scriptModal').classList.add('visible');
+
+  loaderViewerEditor.setValue(`-- Loader:\nloadstring(game:HttpGet("${url}"))()`);
+
+  rawViewerEditor.setValue('-- Fetching...');
+
+  try {
+
+    const r = await fetch(url);
+
+    rawViewerEditor.setValue(await r.text());
+
+  } catch (e) {
+
+    rawViewerEditor.setValue('-- Error:\n' + e.message);
+
+  }
+
+}
+
+function closeScriptModal() { document.getElementById('scriptModal').classList.remove('visible'); }
+
+
+
+
+function checkForUpdate() {
+
+  fetch("https://raw.githubusercontent.com/Syr0nix/RedFoxScripts.com/main/version.txt?t=" + Date.now())
+
+    .then(r => r.ok ? r.text() : Promise.reject())
+
+    .then(v => document.getElementById('versionTag').textContent = 'v' + v.trim())
+
+    .catch(() => document.getElementById('versionTag').textContent = 'v-unknown');
+
+}
+
+</script>
+
 </body>
+
 </html>
