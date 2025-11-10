@@ -5,19 +5,15 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0" />
 <title>RedFox Studio</title>
 <link rel="icon" href="https://raw.githubusercontent.com/Syr0nix/RedFox-Scripts/main/Screenshot_2025-04-21_034725-removebg-preview.png">
-
 <!-- Fonts & Icons -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Roboto+Mono&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/@phosphor-icons/web" async></script>
-
-<!-- luaparse (safe variable renaming) -->
+<!-- luaparse -->
 <script src="https://unpkg.com/luaparse@0.3.0/dist/luaparse.js"></script>
-
 <!-- Monaco Editor CSS -->
 <link rel="stylesheet" data-name="vs/editor/editor.main" href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/editor/editor.main.css">
-
 <style>
 :root {
     --primary-color: #FF4B2B;
@@ -139,7 +135,7 @@ main p{color:var(--muted-text-color);max-width:720px;line-height:1.6;}
 .checkbox-wrapper input:checked+label::after{transform:translate(14px,-50%);}
 .checkbox-wrapper input:disabled+label{cursor:not-allowed;opacity:.6;}
 #versionTag{position:fixed;right:12px;bottom:12px;background:var(--surface-color);padding:6px 10px;border-radius:6px;border:1px solid var(--border-color);color:var(--muted-text-color);font-size:.8rem;}
-.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:-100px;background:linear-gradient(90deg,#333,#444);color:#fff;padding:12px 20px;border-radius:8px;transition:all .35s cubic-bezier(.68,-.55,.27,1.55);display:flex;align-items:center;gap:10px;z-index:3000;box-shadow:0 5px 20px rgba(0,0,0,.3);border-left:4px solid #555;}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:-100px;background:linear-gradient(90deg,#333,#444);color:#fff;padding:12px 20pxpx;border-radius:8px;transition:all .35s cubic-bezier(.68,-.55,.27,1.55);display:flex;align-items:center;gap:10px;z-index:3000;box-shadow:0 5px 20px rgba(0,0,0,.3);border-left:4px solid #555;}
 .toast.show{bottom:24px;}
 .toast.success{border-left-color:var(--success-color);}
 .toast.error{border-left-color:var(--error-color);}
@@ -168,11 +164,10 @@ body{flex-direction:column;}
 <button class="nav-link" onclick="showTab('obfuscator',this)"><i class="ph-duotone ph-gear-six"></i>Obfuscator</button>
 </div>
 <div class="sidebar-footer">
-<div>© <span id="copyright-year">2024</span> RedFox Studio™</div>
+<div>© <span id="copyright-year">2025</span> RedFox Studio™</div>
 <div style="margin-top:6px"><a href="https://discord.gg/redfox" target="_blank">Join Discord</a></div>
 </div>
 </aside>
-
 <main>
 <section id="scripts" class="section">
 <div class="section-header"><i class="ph-duotone ph-scroll"></i><h2>Script Library</h2></div>
@@ -182,21 +177,18 @@ body{flex-direction:column;}
 <div class="card" onclick="showScriptModal('Murder Mystery 2','https://raw.githubusercontent.com/Syr0nix/scripts/main/MM2')"><h3>Murder Mystery 2</h3><p>MM2 utility</p></div>
 </div>
 </section>
-
 <section id="tools" class="section" style="display:none">
 <div class="section-header"><i class="ph-duotone ph-wrench"></i><h2>Power Tools</h2></div>
 <p>Utilities like WinOps and FoxStrap.</p>
 </section>
-
 <section id="executor" class="section" style="display:none">
 <div class="section-header"><i class="ph-duotone ph-play-circle"></i><h2>Executor</h2></div>
 <p>Preview and loader generator.</p>
 <img src="https://raw.githubusercontent.com/Syr0nix/RedFoxScripts.com/main/%7B2CA209B1-4839-4547-A0BB-F392DA76E091%7D.png" style="max-width:600px;border-radius:10px;margin-top:12px">
 </section>
-
 <section id="obfuscator" class="section" style="display:none">
 <div class="section-header"><i class="ph-duotone ph-gear-six"></i><h2>Obfuscator</h2></div>
-<p>String encryption, variable renaming, anti-debug, and minification.</p>
+<p>Maximum protection: string encryption, variable renaming, control-flow flattening, junk code, anti-debug, anti-tamper, number obfuscation, and minification.</p>
 <div class="obfuscator-grid">
 <div>
 <div id="input-editor" class="editor-container"></div>
@@ -208,10 +200,14 @@ body{flex-direction:column;}
 <div>
 <div class="option-group">
 <h4>Obfuscation Settings</h4>
-<div class="checkbox-wrapper"><input id="opt-str-encrypt" type="checkbox" checked><label for="opt-str-encrypt">String Encryption (XOR)</label></div>
-<div class="checkbox-wrapper"><input id="opt-var-rename" type="checkbox"><label for="opt-var-rename">Variable Renaming</label></div>
+<div class="checkbox-wrapper"><input id="opt-str-encrypt" type="checkbox" checked><label for="opt-str-encrypt">String Encryption (XOR + Base64)</label></div>
+<div class="checkbox-wrapper"><input id="opt-var-rename" type="checkbox" checked><label for="opt-var-rename">Variable Renaming</label></div>
 <div class="checkbox-wrapper"><input id="opt-anti-debug" type="checkbox" checked><label for="opt-anti-debug">Anti-Debug</label></div>
 <div class="checkbox-wrapper"><input id="opt-minify" type="checkbox" checked><label for="opt-minify">Compact / Minify Output</label></div>
+<div class="checkbox-wrapper"><input id="opt-control-flow" type="checkbox"><label for="opt-control-flow">Control-Flow Flattening (Heavy)</label></div>
+<div class="checkbox-wrapper"><input id="opt-num-obf" type="checkbox" checked><label for="opt-num-obf">Number Obfuscation</label></div>
+<div class="checkbox-wrapper"><input id="opt-junk-code" type="checkbox" checked><label for="opt-junk-code">Junk Code (300-500 lines)</label></div>
+<div class="checkbox-wrapper"><input id="opt-anti-tamper" type="checkbox"><label for="opt-anti-tamper">Anti-Tamper (Self-Hash)</label></div>
 </div>
 <div style="height:16px"></div>
 <div id="output-editor" class="editor-container"></div>
@@ -246,7 +242,6 @@ require.config({paths:{'vs':'https://cdnjs.cloudflare.com/ajax/libs/monaco-edito
 window.MonacoEnvironment = {getWorkerUrl:()=>`data:text/javascript;charset=utf-8,${encodeURIComponent(
   "self.MonacoEnvironment={baseUrl:'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/'};"+
   "importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/base/worker/workerMain.min.js');")}`};
-
 require(['vs/editor/editor.main'], () => {
   monaco.editor.defineTheme('redfox-theme', {
     base: 'vs-dark', inherit: true,
@@ -268,10 +263,10 @@ require(['vs/editor/editor.main'], () => {
     wordWrap: 'on', minimap: {enabled: true}, fontLigatures: true,
     fontFamily: 'Roboto Mono'
   };
-  inputEditor   = monaco.editor.create(document.getElementById('input-editor'),   {...opt, value: '-- Paste your Luau script here...'});
-  outputEditor  = monaco.editor.create(document.getElementById('output-editor'),  {...opt, readOnly: true, value: '-- Obfuscated output will appear here.'});
-  rawViewerEditor   = monaco.editor.create(document.getElementById('raw-viewer-container'),   {...opt, readOnly: true});
-  loaderViewerEditor= monaco.editor.create(document.getElementById('loader-viewer-container'),{...opt, readOnly: true});
+  inputEditor = monaco.editor.create(document.getElementById('input-editor'), {...opt, value: '-- Paste your Luau script here...'});
+  outputEditor = monaco.editor.create(document.getElementById('output-editor'), {...opt, readOnly: true, value: '-- Obfuscated output will appear here.'});
+  rawViewerEditor = monaco.editor.create(document.getElementById('raw-viewer-container'), {...opt, readOnly: true});
+  loaderViewerEditor = monaco.editor.create(document.getElementById('loader-viewer-container'), {...opt, readOnly: true});
 });
 
 /* ==================== UI Helpers ==================== */
@@ -281,14 +276,12 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('copyright-year').textContent = new Date().getFullYear();
   checkForUpdate();
 });
-
 function showTab(id, btn) {
   document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
   document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
   document.getElementById(id).style.display = 'block';
   btn?.classList.add('active');
 }
-
 function showToast(msg, type = 'info') {
   const toast = document.getElementById('toast'), icon = document.getElementById('toast-icon'), text = document.getElementById('toast-msg');
   text.textContent = msg; toast.className = 'toast show ' + type;
@@ -296,154 +289,222 @@ function showToast(msg, type = 'info') {
   icon.className = icons[type] || icons.info;
   setTimeout(() => toast.classList.remove('show'), 3000);
 }
-
 function copyMonacoContent(editor, msg) {
   const code = editor.getValue();
   if (!code.trim()) return showToast('Nothing to copy!', 'error');
   navigator.clipboard.writeText(code).then(() => showToast(msg, 'success'));
 }
 
-/* ==================== Obfuscator Core ==================== */
+/* ==================== MAX OBFUSCATOR CORE ==================== */
+const RESERVED = new Set(['and','break','do','else','elseif','end','false','for','function','if','in','local','nil','not','or','repeat','return','then','true','until','while','game','workspace','script','print','wait','task','Instance','Vector3','CFrame','Color3','UDim2','BrickColor','Enum','os','math','string','table','coroutine','bit32','utf8','debug','getfenv','setfenv','rawget','rawset','rawlen','select','tonumber','tostring','type','unpack','pairs','ipairs','next','pcall','xpcall','loadstring','spawn','delay','wait']);
+function randName() { const c = 'Il1'; let s = '_'; for (let i = 0; i < 12; i++) s += c[Math.floor(Math.random()*c.length)]; return s; }
+function randKey(len=20) { const c = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'; let s=''; for (let i=0;i<len;i++) s+=c[Math.floor(Math.random()*c.length)]; return s; }
+
+function buildScopeAST(code) { return luaparse.parse(code, {scope:true, locations:true, ranges:true}); }
+
+function renameVariables(ast) {
+  const map = new Map(), used = new Set(RESERVED);
+  function uniq() { let n; do n=randName(); while(used.has(n)); used.add(n); return n; }
+  function walk(node) {
+    if (!node) return;
+    if (node.type==='LocalStatement' || node.type==='AssignmentStatement') {
+      (node.variables||node.init||[]).forEach(v=>{ if(v.type==='Identifier' && !RESERVED.has(v.name)) map.set(v.name,uniq()); });
+    }
+    if (node.type==='FunctionDeclaration' && node.isLocal && node.identifier) map.set(node.identifier.name,uniq());
+    if (node.type==='FunctionDeclaration') (node.parameters||[]).forEach(p=>{ if(p.type==='Identifier' && !RESERVED.has(p.name)) map.set(p.name,uniq()); });
+    for (const k in node) { const c=node[k]; if(Array.isArray(c)) c.forEach(walk); else if(c && typeof c==='object') walk(c); }
+  }
+  walk(ast);
+  return map;
+}
+
+/* ---- Control-flow flattening ---- */
+function flattenControlFlow(ast, varMap) {
+  let stateVar = randName(), dispatcher = randName();
+  let states = [], counter = 0;
+  function newState() { return ++counter; }
+
+  function collectBlocks(node, exit) {
+    if (!node) return exit;
+    if (node.type==='Chunk') { node.body.forEach(b=>collectBlocks(b,exit)); return exit; }
+
+    const cur = newState();
+    states[cur] = {code: '', next: exit};
+    if (node.type==='IfStatement') {
+      const thenExit = collectBlocks(node.thenClause, exit);
+      const elseExit = node.elseClause ? collectBlocks(node.elseClause, exit) : exit;
+      states[cur].code = `if ${genNode(node.condition)} then ${stateVar}=${thenExit} else ${stateVar}=${elseExit} end`;
+      states[cur].next = null;
+    } else if (node.type==='WhileStatement') {
+      const bodyExit = collectBlocks(node.body, cur);
+      states[cur].code = `if ${genNode(node.condition)} then ${stateVar}=${bodyExit} else ${stateVar}=${exit} end`;
+      states[cur].next = null;
+    } else if (node.type==='RepeatStatement') {
+      const bodyExit = collectBlocks(node.body, cur);
+      states[cur].code = `${stateVar}=${bodyExit}`;
+      states[bodyExit].code += `if not (${genNode(node.condition)}) then ${stateVar}=${bodyExit} else ${stateVar}=${exit} end`;
+      states[cur].next = null;
+    } else {
+      states[cur].code = genNode(node);
+      states[cur].next = exit;
+    }
+    return cur;
+  }
+
+  function genNode(n) {
+    if (!n) return '';
+    if (n.type==='Identifier') return varMap.get(n.name)||n.name;
+    if (n.type==='Literal') return typeof n.value==='string'?`'${n.raw}'`:n.raw;
+    if (n.type==='BinaryExpression') return `(${genNode(n.left)} ${n.operator} ${genNode(n.right)})`;
+    if (n.type==='UnaryExpression') return `${n.operator}${genNode(n.argument)}`;
+    if (n.type==='CallExpression') return `${genNode(n.base)}(${n.arguments.map(genNode).join(',')})`;
+    if (n.type==='ReturnStatement') return `return ${n.arguments.map(genNode).join(',')}`;
+    return '';
+  }
+
+  const entry = newState();
+  collectBlocks(ast, 0);
+  let flat = `local ${stateVar}=${entry} local ${dispatcher}=function() while true do if ${stateVar}==0 then break end `;
+  for (let i=1;i<states.length;i++) {
+    const s=states[i];
+    flat += `if ${stateVar}==${i} then ${s.code} ${s.next!==null?`${stateVar}=${s.next}`:''} end `;
+  }
+  flat += `end end `;
+  return {code: flat + dispatcher + '()', extraLocals:[stateVar,dispatcher]};
+}
+
+/* ---- Number obfuscation ---- */
+function obfuscateNumbers(code) {
+  return code.replace(/\b\d+\b/g, n => {
+    const v = Number(n);
+    if (v===0) return '0';
+    const a = Math.floor(Math.random()*12)+1, b = Math.floor(Math.random()*12)+1;
+    const op = ['+','-','*','/','%'][Math.floor(Math.random()*5)];
+    let expr = `${a}${op}${b}`;
+    if (op==='/' && b===0) expr = `${a}+${b}`;
+    return `((${expr})-${v<0?-v:0})`;
+  });
+}
+
+/* ---- Strong string encryption ---- */
+function encryptStringsMax(code, key, decName) {
+  const regex = /(["'])(?:(?=(\\?))\2.)*?\1/g;
+  return code.replace(regex, lit => {
+    const raw = lit.slice(1,-1);
+    let xor = '';
+    for (let i=0;i<raw.length;i++) xor += String.fromCharCode(raw.charCodeAt(i) ^ key.charCodeAt(i%key.length));
+    const b64 = btoa(xor).replace(/=/g,'').replace(/\+/g,'-').replace(/\//g,'_');
+    return `${decName}("${b64}")`;
+  });
+}
+function decoderMax(key, name) {
+  return `local function ${name}(b)local k="${key}"local d=string.gsub(string.gsub(b,"-","+"),"_","/")local pad=#d%4 if pad>0 then d=d..string.rep("=",4-pad)end local s=""for i=1,#d,4 do local c=string.byte(d,i,i+3) if c then s=s..string.char(bit32.bxor(c,k:byte((#s)%#k+1)))end end return s end`;
+}
+
+/* ---- Junk code ---- */
+function injectJunk() {
+  const count = 300 + Math.floor(Math.random()*200);
+  let junk = '';
+  for (let i=0;i<count;i++) {
+    const op = ['+','-','*','/'][Math.floor(Math.random()*4)];
+    const a = Math.floor(Math.random()*100), b = Math.floor(Math.random()*100);
+    const dummy = randName();
+    junk += `local ${dummy}=${a}${op}${b};`;
+  }
+  return junk;
+}
+
+/* ---- Anti-tamper & anti-debug ---- */
+function antiTamper() {
+  const hashVar = randName();
+  const payload = `local ${hashVar}="${randKey(32)}" local _=function() local src=debug.getinfo(1,"S").source if src:sub(1,1)=="@" then local f=io.open(src:sub(2),"r") if f then local c=f:read("*a") f:close() local h=0 for i=1,#c do h=(h*31+string.byte(c,i))%2^32 end if tostring(h)~=${hashVar} then error("Tampered") end end end end _()`;
+  return payload;
+}
+function antiDebugMax() {
+  return `task.spawn(function()local s=os.clock()while true do task.wait(0.3) if os.clock()-s>1.2 then getfenv().debug=nil error("dbg") end s=os.clock()end end)`;
+}
+
+/* ---- Minify ---- */
+function minifyMax(code) {
+  return code
+    .replace(/--\[\[[\s\S]*?\]\]/g,'')
+    .replace(/--[^\n]*/g,'')
+    .replace(/\s+/g,' ')
+    .replace(/\s*([=+\-*/%^#<>(){}\[\].,;:])\s*/g,'$1')
+    .trim();
+}
+
+/* ---- Full pipeline ---- */
+function fullObfuscate(src, opts) {
+  let out = src;
+  let ast = buildScopeAST(out);
+  const varMap = opts.variableRenaming ? renameVariables(ast) : new Map();
+
+  if (opts.variableRenaming) {
+    // simple rename via string replace (luaparse gives ranges)
+    const reps = [];
+    function collect(node) {
+      if (node.type==='Identifier' && varMap.has(node.name) && node.range) reps.push({s:node.range[0],e:node.range[1],n:varMap.get(node.name)});
+      for (const k in node) { const c=node[k]; if(Array.isArray(c)) c.forEach(collect); else if(c && typeof c==='object') collect(c); }
+    }
+    collect(ast);
+    reps.sort((a,b)=>b.s-a.s);
+    for (const r of reps) out = out.slice(0,r.s)+r.n+out.slice(r.e);
+  }
+
+  if (opts.controlFlow) {
+    const flat = flattenControlFlow(ast, varMap);
+    out = flat.code;
+  }
+
+  if (opts.numberObf) out = obfuscateNumbers(out);
+
+  let decoder = '';
+  if (opts.encryptStrings) {
+    const key = randKey(20);
+    const decName = randName();
+    decoder = decoderMax(key, decName);
+    out = encryptStringsMax(out, key, decName);
+  }
+
+  if (opts.junk) out = injectJunk() + out;
+  if (opts.antiDebug) out = antiDebugMax() + '\n' + out;
+  if (opts.antiTamper) out = antiTamper() + '\n' + out;
+  if (opts.minify) out = minifyMax(out);
+
+  const header = `-- OBFUSCATED BY REDFOX STUDIO | MAX PROTECTION`;
+  return `${header}\n${decoder}\n${out}`;
+}
+
+/* ---- UI hook ---- */
 async function obfuscateLuau() {
   const src = inputEditor.getValue().trim();
-  if (!src || src === '-- Paste your Luau script here...') return showToast('Enter a script.', 'error');
+  if (!src || src.startsWith('-- Paste')) return showToast('Paste a script first','error');
 
   const opts = {
     encryptStrings: opt('str-encrypt'),
     variableRenaming: opt('var-rename'),
     antiDebug: opt('anti-debug'),
-    minify: opt('minify')
+    minify: opt('minify'),
+    controlFlow: opt('control-flow'),
+    numberObf: opt('num-obf'),
+    junk: opt('junk-code'),
+    antiTamper: opt('anti-tamper')
   };
 
-  showToast('Obfuscating...', 'info');
-  await new Promise(r => setTimeout(r, 30));
+  showToast('Running MAX obfuscation…','info');
+  await new Promise(r=>setTimeout(r,50));
 
   try {
     const result = fullObfuscate(src, opts);
     outputEditor.setValue(result);
-    showToast('Obfuscation complete!', 'success');
-  } catch (e) {
-    showToast('Error: ' + e.message, 'error');
+    showToast('MAX OBFUSCATION DONE!','success');
+  } catch(e){
+    showToast('Error: '+e.message,'error');
+    console.error(e);
   }
 }
-
 function opt(id) { return document.getElementById('opt-' + id).checked; }
-
-/* ---------- Helper Functions ---------- */
-const RESERVED = new Set(['and','break','do','else','elseif','end','false','for','function','if','in','local','nil','not','or','repeat','return','then','true','until','while','game','workspace','script','print','wait','task','Instance','Vector3','CFrame','Color3','UDim2','BrickColor','Enum','os','math','string','table','coroutine','bit32','utf8']);
-function randName() { const c = 'Il'; let s = '_'; for (let i = 0; i < 10; i++) s += c[Math.floor(Math.random() * 2)]; return s; }
-function randKey(len) { const c = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'; let s = ''; for (let i = 0; i < len; i++) s += c[Math.floor(Math.random() * c.length)]; return s; }
-
-/* ---------- 1. Variable Renaming ---------- */
-function renameLocals(code) {
-  if (typeof luaparse === 'undefined') return code;
-  try {
-    const ast = luaparse.parse(code, {scope: true, ranges: true});
-    const map = new Map();
-    const used = new Set(RESERVED);
-
-    function unique() { let n; do { n = randName(); } while (used.has(n)); used.add(n); return n; }
-
-    function walk(node) {
-      if (!node) return;
-      if (node.type === 'LocalStatement') {
-        for (const v of node.variables || []) {
-          if (v.type === 'Identifier' && !RESERVED.has(v.name)) map.set(v.name, unique());
-        }
-      }
-      if (node.type === 'FunctionDeclaration') {
-        if (node.isLocal && node.identifier?.type === 'Identifier') map.set(node.identifier.name, unique());
-        for (const p of node.parameters || []) {
-          if (p.type === 'Identifier' && !RESERVED.has(p.name)) map.set(p.name, unique());
-        }
-      }
-      for (const k in node) {
-        const child = node[k];
-        if (Array.isArray(child)) child.forEach(walk);
-        else if (child && typeof child === 'object') walk(child);
-      }
-    }
-    walk(ast);
-
-    const replacements = [];
-    function collect(node) {
-      if (!node) return;
-      if (node.type === 'Identifier' && map.has(node.name) && node.range) {
-        replacements.push({start: node.range[0], end: node.range[1], new: map.get(node.name)});
-      }
-      for (const k in node) {
-        const child = node[k];
-        if (Array.isArray(child)) child.forEach(collect);
-        else if (child && typeof child === 'object') collect(child);
-      }
-    }
-    collect(ast);
-    replacements.sort((a, b) => b.start - a.start);
-
-    let out = code;
-    for (const r of replacements) {
-      out = out.slice(0, r.start) + r.new + out.slice(r.end);
-    }
-    return out;
-  } catch (e) {
-    console.warn('luaparse rename failed', e);
-    return code;
-  }
-}
-
-/* ---------- 2. String Encryption ---------- */
-function encryptStrings(code, key, decoderName) {
-  const regex = /"((?:[^"\\]|\\.)*)"|'((?:[^'\\]|\\.)*)'/g;
-  return code.replace(regex, (match, p1, p2) => {
-    const str = p1 ?? p2;
-    let hex = '';
-    for (let i = 0; i < str.length; i++) {
-      const byte = str.charCodeAt(i) ^ key.charCodeAt(i % key.length);
-      hex += byte.toString(16).padStart(2, '0');
-    }
-    return `${decoderName}("${hex}")`;
-  });
-}
-function decoderFunc(key, name) {
-  return `local function ${name}(h)local k="${key}"local o=""for i=1,#h,2 do local b=tonumber(h:sub(i,i+1),16)if b then o=o..string.char(bit32.bxor(b,k:byte((#o)%#k+1)))end end return o end`;
-}
-
-/* ---------- 3. Anti-Debug ---------- */
-function antiDebug() {
-  return `task.spawn(function()local t=os.clock()while task.wait(.5)do if os.clock()-t>1.5 then getfenv(0).game=nil error('Debugger detected')end t=os.clock()end end)`;
-}
-
-/* ---------- 4. Minify ---------- */
-function minify(code) {
-  return code
-    .replace(/--\[\[[\s\S]*?\]\]/g, '')
-    .replace(/--[^\n\r]*/g, '')
-    .replace(/\s+/g, ' ')
-    .replace(/\s*([=+\-*/%^#<>(){}\[\].,;:])\s*/g, '$1')
-    .trim();
-}
-
-/* ---------- 5. Full Obfuscation Pipeline ---------- */
-function fullObfuscate(src, opts) {
-  let out = src;
-
-  if (opts.variableRenaming) out = renameLocals(out);
-
-  let decoder = '';
-  if (opts.encryptStrings) {
-    const key = randKey(12);
-    const decName = randName();
-    decoder = decoderFunc(key, decName);
-    out = encryptStrings(out, key, decName);
-  }
-
-  if (opts.antiDebug) out = antiDebug() + '\n' + out;
-  if (opts.minify) out = minify(out);
-
-  const header = `-- Obfuscated with RedFox Studio | https://redfoxscripts.com`;
-  const payload = decoder ? decoder + '\n' + out : out;
-  return `${header}\n${payload}`;
-}
 
 /* ==================== Modal & Misc ==================== */
 async function showScriptModal(name, url) {
@@ -459,7 +520,6 @@ async function showScriptModal(name, url) {
   }
 }
 function closeScriptModal() { document.getElementById('scriptModal').classList.remove('visible'); }
-
 function checkForUpdate() {
   fetch("https://raw.githubusercontent.com/Syr0nix/RedFoxScripts.com/main/version.txt?t=" + Date.now())
     .then(r => r.ok ? r.text() : Promise.reject())
