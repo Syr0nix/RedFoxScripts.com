@@ -9,9 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Roboto+Mono&display=swap" rel="stylesheet">
-<script src="https://unpkg.com/@phosphor-icons/web" async></script>
-<!-- luaparse -->
-<script src="https://unpkg.com/luaparse@0.3.0/dist/luaparse.js"></script>
+<script src="https://unpkg.com/@phosphor-icons/web"></script>
 <!-- Monaco Editor CSS -->
 <link rel="stylesheet" data-name="vs/editor/editor.main" href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/editor/editor.main.css">
 <style>
@@ -126,6 +124,7 @@ main p{color:var(--muted-text-color);max-width:720px;line-height:1.6;}
     transition:all .25s ease;box-shadow:0 0 15px transparent;
 }
 .action-button:hover{transform:translateY(-2px);box-shadow:0 0 20px var(--glow-color);}
+.action-button:disabled{opacity:0.5;cursor:not-allowed;}
 .checkbox-wrapper{display:flex;align-items:center;margin-bottom:12px;cursor:pointer;position:relative;}
 .checkbox-wrapper label{color:var(--muted-text-color);cursor:pointer;user-select:none;padding-left:40px;}
 .checkbox-wrapper input[type="checkbox"]{display:none;}
@@ -135,7 +134,7 @@ main p{color:var(--muted-text-color);max-width:720px;line-height:1.6;}
 .checkbox-wrapper input:checked+label::after{transform:translate(14px,-50%);}
 .checkbox-wrapper input:disabled+label{cursor:not-allowed;opacity:.6;}
 #versionTag{position:fixed;right:12px;bottom:12px;background:var(--surface-color);padding:6px 10px;border-radius:6px;border:1px solid var(--border-color);color:var(--muted-text-color);font-size:.8rem;}
-.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:-100px;background:linear-gradient(90deg,#333,#444);color:#fff;padding:12px 20pxpx;border-radius:8px;transition:all .35s cubic-bezier(.68,-.55,.27,1.55);display:flex;align-items:center;gap:10px;z-index:3000;box-shadow:0 5px 20px rgba(0,0,0,.3);border-left:4px solid #555;}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:-100px;background:linear-gradient(90deg,#333,#444);color:#fff;padding:12px 20px;border-radius:8px;transition:all .35s cubic-bezier(.68,-.55,.27,1.55);display:flex;align-items:center;gap:10px;z-index:3000;box-shadow:0 5px 20px rgba(0,0,0,.3);border-left:4px solid #555;}
 .toast.show{bottom:24px;}
 .toast.success{border-left-color:var(--success-color);}
 .toast.error{border-left-color:var(--error-color);}
@@ -193,7 +192,7 @@ body{flex-direction:column;}
 <div>
 <div id="input-editor" class="editor-container"></div>
 <div style="display:flex;gap:8px;margin-top:12px">
-<button id="obfuscateBtn" class="action-button"><i class="ph ph-gear"></i>Obfuscate</button>
+<button id="obfuscateBtn" class="action-button" disabled><i class="ph ph-gear"></i>Obfuscate</button>
 <button id="copyObfBtn" class="action-button" style="background:linear-gradient(90deg,#4b8,#2a6)"><i class="ph ph-clipboard-text"></i>Copy Output</button>
 </div>
 </div>
@@ -232,16 +231,35 @@ body{flex-direction:column;}
 <div id="versionTag">Loading...</div>
 <div id="toast" class="toast"><i id="toast-icon" class="ph"></i><span id="toast-msg"></span></div>
 
+<!-- Load luaparse synchronously -->
+<script>
+  window.luaparseLoaded = false;
+  const luaparseScript = document.createElement('script');
+  luaparseScript.src = 'https://unpkg.com/luaparse@0.3.0/dist/luaparse.js';
+  luaparseScript.onload = () => { window.luaparseLoaded = true; checkReady(); };
+  luaparseScript.onerror = () => showToast('Failed to load luaparse', 'error');
+  document.head.appendChild(luaparseScript);
+</script>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/loader.min.js"></script>
 <script>
 'use strict';
 let inputEditor, outputEditor, rawViewerEditor, loaderViewerEditor;
+let monacoReady = false, luaparseReady = false;
+
+function checkReady() {
+  if (monacoReady && luaparseReady) {
+    document.getElementById('obfuscateBtn').disabled = false;
+    showToast('Obfuscator ready!', 'success');
+  }
+}
 
 /* ==================== Monaco Editor Setup ==================== */
 require.config({paths:{'vs':'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs'}});
 window.MonacoEnvironment = {getWorkerUrl:()=>`data:text/javascript;charset=utf-8,${encodeURIComponent(
   "self.MonacoEnvironment={baseUrl:'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/'};"+
   "importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/base/worker/workerMain.min.js');")}`};
+
 require(['vs/editor/editor.main'], () => {
   monaco.editor.defineTheme('redfox-theme', {
     base: 'vs-dark', inherit: true,
@@ -267,6 +285,8 @@ require(['vs/editor/editor.main'], () => {
   outputEditor = monaco.editor.create(document.getElementById('output-editor'), {...opt, readOnly: true, value: '-- Obfuscated output will appear here.'});
   rawViewerEditor = monaco.editor.create(document.getElementById('raw-viewer-container'), {...opt, readOnly: true});
   loaderViewerEditor = monaco.editor.create(document.getElementById('loader-viewer-container'), {...opt, readOnly: true});
+  monacoReady = true;
+  checkReady();
 });
 
 /* ==================== UI Helpers ==================== */
@@ -276,12 +296,14 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('copyright-year').textContent = new Date().getFullYear();
   checkForUpdate();
 });
+
 function showTab(id, btn) {
   document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
   document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
   document.getElementById(id).style.display = 'block';
   btn?.classList.add('active');
 }
+
 function showToast(msg, type = 'info') {
   const toast = document.getElementById('toast'), icon = document.getElementById('toast-icon'), text = document.getElementById('toast-msg');
   text.textContent = msg; toast.className = 'toast show ' + type;
@@ -289,6 +311,7 @@ function showToast(msg, type = 'info') {
   icon.className = icons[type] || icons.info;
   setTimeout(() => toast.classList.remove('show'), 3000);
 }
+
 function copyMonacoContent(editor, msg) {
   const code = editor.getValue();
   if (!code.trim()) return showToast('Nothing to copy!', 'error');
@@ -297,10 +320,14 @@ function copyMonacoContent(editor, msg) {
 
 /* ==================== MAX OBFUSCATOR CORE ==================== */
 const RESERVED = new Set(['and','break','do','else','elseif','end','false','for','function','if','in','local','nil','not','or','repeat','return','then','true','until','while','game','workspace','script','print','wait','task','Instance','Vector3','CFrame','Color3','UDim2','BrickColor','Enum','os','math','string','table','coroutine','bit32','utf8','debug','getfenv','setfenv','rawget','rawset','rawlen','select','tonumber','tostring','type','unpack','pairs','ipairs','next','pcall','xpcall','loadstring','spawn','delay','wait']);
+
 function randName() { const c = 'Il1'; let s = '_'; for (let i = 0; i < 12; i++) s += c[Math.floor(Math.random()*c.length)]; return s; }
 function randKey(len=20) { const c = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'; let s=''; for (let i=0;i<len;i++) s+=c[Math.floor(Math.random()*c.length)]; return s; }
 
-function buildScopeAST(code) { return luaparse.parse(code, {scope:true, locations:true, ranges:true}); }
+function buildScopeAST(code) { 
+  if (!window.luaparse) throw new Error("luaparse not loaded");
+  return luaparse.parse(code, {scope:true, locations:true, ranges:true}); 
+}
 
 function renameVariables(ast) {
   const map = new Map(), used = new Set(RESERVED);
@@ -318,7 +345,6 @@ function renameVariables(ast) {
   return map;
 }
 
-/* ---- Control-flow flattening ---- */
 function flattenControlFlow(ast, varMap) {
   let stateVar = randName(), dispatcher = randName();
   let states = [], counter = 0;
@@ -373,7 +399,6 @@ function flattenControlFlow(ast, varMap) {
   return {code: flat + dispatcher + '()', extraLocals:[stateVar,dispatcher]};
 }
 
-/* ---- Number obfuscation ---- */
 function obfuscateNumbers(code) {
   return code.replace(/\b\d+\b/g, n => {
     const v = Number(n);
@@ -386,7 +411,6 @@ function obfuscateNumbers(code) {
   });
 }
 
-/* ---- Strong string encryption ---- */
 function encryptStringsMax(code, key, decName) {
   const regex = /(["'])(?:(?=(\\?))\2.)*?\1/g;
   return code.replace(regex, lit => {
@@ -401,7 +425,6 @@ function decoderMax(key, name) {
   return `local function ${name}(b)local k="${key}"local d=string.gsub(string.gsub(b,"-","+"),"_","/")local pad=#d%4 if pad>0 then d=d..string.rep("=",4-pad)end local s=""for i=1,#d,4 do local c=string.byte(d,i,i+3) if c then s=s..string.char(bit32.bxor(c,k:byte((#s)%#k+1)))end end return s end`;
 }
 
-/* ---- Junk code ---- */
 function injectJunk() {
   const count = 300 + Math.floor(Math.random()*200);
   let junk = '';
@@ -414,7 +437,6 @@ function injectJunk() {
   return junk;
 }
 
-/* ---- Anti-tamper & anti-debug ---- */
 function antiTamper() {
   const hashVar = randName();
   const payload = `local ${hashVar}="${randKey(32)}" local _=function() local src=debug.getinfo(1,"S").source if src:sub(1,1)=="@" then local f=io.open(src:sub(2),"r") if f then local c=f:read("*a") f:close() local h=0 for i=1,#c do h=(h*31+string.byte(c,i))%2^32 end if tostring(h)~=${hashVar} then error("Tampered") end end end end _()`;
@@ -424,7 +446,6 @@ function antiDebugMax() {
   return `task.spawn(function()local s=os.clock()while true do task.wait(0.3) if os.clock()-s>1.2 then getfenv().debug=nil error("dbg") end s=os.clock()end end)`;
 }
 
-/* ---- Minify ---- */
 function minifyMax(code) {
   return code
     .replace(/--\[\[[\s\S]*?\]\]/g,'')
@@ -434,14 +455,17 @@ function minifyMax(code) {
     .trim();
 }
 
-/* ---- Full pipeline ---- */
 function fullObfuscate(src, opts) {
   let out = src;
-  let ast = buildScopeAST(out);
+  let ast;
+  try {
+    ast = buildScopeAST(out);
+  } catch (e) {
+    throw new Error("Parse failed: " + e.message);
+  }
   const varMap = opts.variableRenaming ? renameVariables(ast) : new Map();
 
   if (opts.variableRenaming) {
-    // simple rename via string replace (luaparse gives ranges)
     const reps = [];
     function collect(node) {
       if (node.type==='Identifier' && varMap.has(node.name) && node.range) reps.push({s:node.range[0],e:node.range[1],n:varMap.get(node.name)});
@@ -476,8 +500,8 @@ function fullObfuscate(src, opts) {
   return `${header}\n${decoder}\n${out}`;
 }
 
-/* ---- UI hook ---- */
 async function obfuscateLuau() {
+  if (!luaparseReady) return showToast('luaparse not loaded', 'error');
   const src = inputEditor.getValue().trim();
   if (!src || src.startsWith('-- Paste')) return showToast('Paste a script first','error');
 
@@ -526,6 +550,10 @@ function checkForUpdate() {
     .then(v => document.getElementById('versionTag').textContent = 'v' + v.trim())
     .catch(() => document.getElementById('versionTag').textContent = 'v-unknown');
 }
+
+// Set luaparse ready
+window.luaparseReady = true;
+checkReady();
 </script>
 </body>
 </html>
