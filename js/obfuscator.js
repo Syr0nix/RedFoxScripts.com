@@ -16,10 +16,10 @@ function rfRandomIdent(len) {
 }
 
 // ============================================================
-// MODULE 1: AST-ASSISTED VARIABLE RENAMER
-//  - Uses luaparse (if available) to find LOCAL identifiers
+// MODULE 1: AST-ASSISTED VARIABLE RENAMER (SAFE)
+//  - Uses luaparse to find LOCAL identifiers
 //  - Only renames locals (node.isLocal === true)
-//  - Then does text replacement on those names
+//  - NEVER renames inside strings / comments
 // ============================================================
 function renameVariables(code) {
     // Require luaparse global
@@ -39,6 +39,15 @@ function renameVariables(code) {
         "tick","time","wait","spawn","delay",
         "_RF_DEC","_RF_VM_RUN","_RF_VM","_RF_ANTIDEBUG"
     ]);
+
+    // Common Roblox service identifiers you might reuse as locals;
+    // skipping them keeps things very safe.
+    [
+        "Players","ReplicatedStorage","ServerStorage","Lighting","StarterGui",
+        "StarterPlayer","TweenService","RunService","UserInputService",
+        "ContextActionService","SoundService","Teams","HttpService",
+        "TeleportService","MarketplaceService","CollectionService"
+    ].forEach(function (s) { skip.add(s); });
 
     function addName(name) {
         if (!name) return;
@@ -67,9 +76,26 @@ function renameVariables(code) {
 
     function walk(node) {
         if (!node || typeof node !== "object") return;
+
+        // Protect identifiers used as GetService arguments
+        if (node.type === "CallExpression" &&
+            node.base &&
+            node.base.type === "MemberExpression" &&
+            node.base.identifier &&
+            node.base.identifier.name === "GetService" &&
+            Array.isArray(node.arguments)) {
+
+            node.arguments.forEach(function (arg) {
+                if (arg && arg.type === "Identifier") {
+                    skip.add(arg.name);
+                }
+            });
+        }
+
         if (node.type === "Identifier" && node.isLocal) {
             addName(node.name);
         }
+
         for (var key in node) {
             if (!Object.prototype.hasOwnProperty.call(node, key)) continue;
             var child = node[key];
@@ -96,11 +122,96 @@ function renameVariables(code) {
 
     var pattern = new RegExp("\\b(" + allNames.map(escapeReg).join("|") + ")\\b", "g");
 
-    var renamed = code.replace(pattern, function (full, name) {
-        return mapping[name] || full;
-    });
+    function applyMapping(text) {
+        return text.replace(pattern, function (full, name) {
+            return mapping[name] || full;
+        });
+    }
 
-    return renamed;
+    // Token-ish pass: only replace in code segments,
+    // leave strings & comments completely untouched.
+    var result = "";
+    var last = 0;
+    var i = 0;
+
+    while (i < code.length) {
+        var ch = code[i];
+
+        // Line / block comments starting with --
+        if (ch === "-" && code[i + 1] === "-") {
+            // flush code before comment
+            result += applyMapping(code.slice(last, i));
+
+            var j = i + 2;
+            var isLong = (code[i + 2] === "[" && code[i + 3] === "[");
+
+            if (isLong) {
+                // long comment: --[[ ... ]]
+                j = code.indexOf("]]", i + 4);
+                if (j === -1) {
+                    // no closing; rest is comment
+                    result += code.slice(i);
+                    return result;
+                }
+                j += 2;
+            } else {
+                // single-line comment
+                while (j < code.length && code[j] !== "\n") j++;
+            }
+
+            result += code.slice(i, j);
+            i = j;
+            last = i;
+            continue;
+        }
+
+        // Long string [[ ... ]]
+        if (ch === "[" && code[i + 1] === "[") {
+            result += applyMapping(code.slice(last, i));
+
+            var j2 = code.indexOf("]]", i + 2);
+            if (j2 === -1) {
+                result += code.slice(i);
+                return result;
+            }
+            j2 += 2;
+
+            result += code.slice(i, j2);
+            i = j2;
+            last = i;
+            continue;
+        }
+
+        // Quoted string '...' or "..."
+        if (ch === '"' || ch === "'") {
+            result += applyMapping(code.slice(last, i));
+
+            var quote = ch;
+            var j3 = i + 1;
+            while (j3 < code.length) {
+                if (code[j3] === "\\" && j3 + 1 < code.length) {
+                    j3 += 2; // skip escaped char
+                    continue;
+                }
+                if (code[j3] === quote) {
+                    j3++;
+                    break;
+                }
+                j3++;
+            }
+
+            result += code.slice(i, j3);
+            i = j3;
+            last = i;
+            continue;
+        }
+
+        i++;
+    }
+
+    // trailing code after last string/comment
+    result += applyMapping(code.slice(last));
+    return result;
 }
 
 // ============================================================
@@ -141,13 +252,9 @@ function generateJunkLua() {
         "if (" + opaquePredicate() + ") then local q=" + r3 + " end",
         "local _t = tostring(" + Math.random() + ")",
         "local _ = " + r1,
-        // fake function
         "local function " + rfRandomIdent(6) + "() return " + r2 + " end",
-        // fake table
         "local " + rfRandomIdent(5) + " = { " + r1 + ", " + r2 + ", " + r3 + " }",
-        // fake metatable
         "setmetatable({}, {__index = function() return " + r3 + " end})",
-        // fake closure
         "do local a=" + r1 + "; local function " + rfRandomIdent(4) + "() return a end end"
     ];
     return junk[Math.floor(Math.random() * junk.length)];
@@ -213,7 +320,7 @@ function injectJunkNodes(code) {
     let out = [];
     for (let i = 0; i < lines.length; i++) {
         out.push(lines[i]);
-        if (Math.random() < 0.5) { // extra aggressive
+        if (Math.random() < 0.5) {
             out.push(generateJunkLua());
         }
     }
@@ -225,22 +332,21 @@ function injectJunkNodes(code) {
 //  (NOTE: _RF_DEC MUST BE GLOBAL IN THE WRAPPER)
 // ============================================================
 function encryptStrings(code) {
-    return code.replace(/"(.-)"/g, function(_, str, offset, full) {
+    return code.replace(/"(.-)"/g, function (_, str, offset, full) {
 
-    // DO NOT encrypt strings inside GetService()
-    const before = full.slice(Math.max(0, offset - 30), offset);
-    if (before.includes("GetService(")) {
-        return `"${str}"`; // leave it normal
-    }
+        // DO NOT encrypt strings inside GetService("...")
+        var before = full.slice(Math.max(0, offset - 30), offset);
+        if (before.includes("GetService(")) {
+            return "\"" + str + "\"";
+        }
 
-    // XOR key
-    var key = Math.floor(Math.random() * 200) + 30;
-    var bytes = [];
-    for (var i = 0; i < str.length; i++) {
-        bytes.push(str.charCodeAt(i) ^ key);
-    }
-    return '(_RF_DEC("' + bytes.join(",") + '",' + key + "))";
-});
+        var key = Math.floor(Math.random() * 200) + 30;
+        var bytes = [];
+        for (var i = 0; i < str.length; i++) {
+            bytes.push(str.charCodeAt(i) ^ key);
+        }
+        return '(_RF_DEC("' + bytes.join(",") + '",' + key + "))";
+    });
 }
 
 // ============================================================
@@ -272,7 +378,6 @@ function wrapInVM(code) {
 // ROBLOX-FOCUSED ANTI-DEBUG HEADER
 // ============================================================
 function buildAntiDebugHeaderRoblox() {
-    // This returns a Lua string; will be compressed later.
     return [
         "local function _RF_ANTIDEBUG()",
         "    local ok_dbg, dbg = pcall(function() return debug end)",
@@ -353,16 +458,13 @@ window.RedFoxObfuscator = {
             (opts.variableRename ? 1 : 0) +
             (opts.stringEncrypt ? 1 : 0) +
             (opts.controlFlowFlatten ? 1 : 0) +
-            (opts.vmMode ? 2 : 0) + // count multilayer as extra
+            (opts.vmMode ? 2 : 0) +
             (opts.junkNodes ? 1 : 0) +
             (opts.antiDebug ? 1 : 0) +
             (opts.antiTamper ? 1 : 0);
 
-        // 7) Build anti-debug header string if enabled
         var antiDebugChunk = opts.antiDebug ? buildAntiDebugHeaderRoblox() : "";
 
-        // 8) Build outer wrapper (multi-line first)
-        // NOTE: _RF_DEC is GLOBAL (not local) so payload can call it.
         var wrapped = `
 -- RedFox Hybrid Engine
 function _RF_DEC(b,k)
@@ -389,12 +491,8 @@ ${antiDebugChunk}
 return loadstring(out)()
 `;
 
-        // 9) SAFE SINGLE-LINE COMPRESSION:
-        // - Keep the banner as its own line: "-- RedFox Hybrid Engine"
-        // - Everything else becomes one long line.
+        // Banner on its own line, everything else as one line
         var lines = wrapped.split("\n");
-
-        // First non-empty line will be the banner
         var banner = "";
         var bodyLines = [];
         for (var li = 0; li < lines.length; li++) {
@@ -407,12 +505,8 @@ return loadstring(out)()
         }
 
         var bodySingle = bodyLines
-            .map(function (l) {
-                return l.replace(/\s+/g, " ").trim();
-            })
-            .filter(function (l) {
-                return l.length > 0;
-            })
+            .map(function (l) { return l.replace(/\s+/g, " ").trim(); })
+            .filter(function (l) { return l.length > 0; })
             .join(" ");
 
         wrapped = banner + "\n" + bodySingle;
