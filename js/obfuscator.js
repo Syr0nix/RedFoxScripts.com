@@ -354,12 +354,13 @@ window.RedFoxObfuscator = {
         var antiDebugChunk = opts.antiDebug ? buildAntiDebugHeaderRoblox() : "";
 
         // 8) Build outer wrapper (multi-line first)
-      var wrapped = `
---[[ RedFox Hybrid Engine ]]
+        var wrapped = `
+-- RedFox Hybrid Engine
 local function _RF_DEC(b,k)
     local out = ""
     for num in string.gmatch(b, "%d+") do
-        out = out .. string.char(tonumber(num) ~ k)
+        local n = tonumber(num)
+        out = out .. string.char(n ~ k)
     end
     return out
 end
@@ -379,19 +380,19 @@ ${antiDebugChunk}
 return loadstring(out)()
 `;
 
-
-        // 9) SINGLE-LINE OUTPUT
+        // 9) SINGLE-LINE OUTPUT (safe, no broken comments/ops)
         wrapped = wrapped
-    .split("\n")
-    .map(l => l.trim())
-    .filter(l => l.length > 0)
-    .map(l => {
-        if (l.startsWith("--")) return "--[[" + l.slice(2).trim() + "]]";
-        return l;
-    })
-    .join(" ");
-
-
+            .split("\n")
+            .map(l => l.replace(/\s+/g, " ").trim())
+            .filter(l => l.length > 0)
+            .map(l => {
+                // convert line comments into a safe long comment
+                if (l.startsWith("--")) {
+                    return "--[====[" + l.slice(2).trim() + "]====]";
+                }
+                return l;
+            })
+            .join(" ");
 
         return {
             output: wrapped,
