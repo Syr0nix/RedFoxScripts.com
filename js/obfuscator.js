@@ -260,31 +260,32 @@ function generateJunkLua() {
 // MODULE 2: INSANE CONTROL FLOW FLATTENING (STATE MACHINE)
 // ============================================================
 function controlFlowFlattenInsane(code) {
-    // we wrap the whole payload as one big block
-    let parts = [];
 
-    parts.push("local _STATE = 0");
-    parts.push("while true do");
-    parts.push("    if _STATE == 0 then");
+    // split into logical code blocks instead of single lines
+    let blocks = code
+        .replace(/\r\n/g, "\n")
+        .split(/\n+/)
+        .map(l => l.trim())
+        .filter(l => l.length > 0);
 
-    // original script goes here, untouched (can be multi-line)
-    parts.push(code);
+    let flat = [];
+    let state = 0;
 
-    // move to exit state
-    parts.push("        _STATE = 1");
-    parts.push("    elseif _STATE == 1 then");
-    parts.push("        break");
+    flat.push("local _STATE = 0");
+    flat.push("while true do");
 
-    // a few unreachable junk states to look scary
-    for (let i = 2; i <= 4; i++) {
-        parts.push("    elseif _STATE == " + i + " then");
-        parts.push("        " + generateJunkLua());
+    for (let i = 0; i < blocks.length; i++) {
+        flat.push(`    if _STATE == ${state} then`);
+        flat.push(`        ${blocks[i]}`);
+        state++;
+        flat.push(`        _STATE = ${state}`);
+        flat.push("    end");
     }
 
-    parts.push("    end");
-    parts.push("end");
+    flat.push(`    if _STATE == ${state} then break end`);
+    flat.push("end");
 
-    return parts.join("\n");
+    return flat.join("\n");
 }
 // ============================================================
 // MODULE 3: Extra Junk Node Injection
@@ -352,27 +353,28 @@ function encryptStrings(code) {
 // DEEP VM WRAPPER (virtual layer)
 // ============================================================
 function wrapInVM(code) {
-    let bytes = [];
-    for (let i = 0; i < code.length; i++) {
-        bytes.push(code.charCodeAt(i));
-    }
+
+    // normalize Lua payload so that byte offsets are consistent
+    code = code.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+
+    // convert each character to its UTF-8 byte
+    let encoder = new TextEncoder();
+    let bytes = Array.from(encoder.encode(code));
 
     let lua = [];
     lua.push("local _RF_VM = {" + bytes.join(",") + "}");
     lua.push("local function _RF_VM_RUN(t)");
-    lua.push("    local s = {}");
+    lua.push("    local buf = table.create(#t)");
     lua.push("    for i = 1, #t do");
-    lua.push("        s[i] = string.char(t[i])");
+    lua.push("        buf[i] = string.char(t[i])");
     lua.push("    end");
-    lua.push("    local chunk = table.concat(s)");
+    lua.push("    local chunk = table.concat(buf)");
     lua.push("    return loadstring(chunk)()");
     lua.push("end");
-    lua.push("");
     lua.push("_RF_VM_RUN(_RF_VM)");
 
-    return lua.join("\n");
+    return lua.join(\"\\n\");
 }
-
 // ============================================================
 // ROBLOX-FOCUSED ANTI-DEBUG HEADER
 // ============================================================
