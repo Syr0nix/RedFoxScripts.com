@@ -1,3 +1,11 @@
+window.RedFoxObfuscator = {
+    obfuscate: function (code, options) {
+        console.log("Obfuscator working!");
+        // Real obfuscation logic goes here
+        return "OBFUSCATED_PLACEHOLDER";
+    }
+};
+
 // js/obfuscator.js
 ;(function (global) {
     "use strict";
