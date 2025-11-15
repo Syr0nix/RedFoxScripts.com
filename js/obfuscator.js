@@ -522,55 +522,81 @@ function generateJunkLua() {
 
 function controlFlowFlattenInsane(code) {
 
-    // we wrap the whole payload as one big block
-
-    let parts = [];
 
 
 
-    parts.push("local _STATE = 0");
-
-    parts.push("while true do");
-
-    parts.push("    if _STATE == 0 then");
 
 
-
-    // original script goes here, untouched (can be multi-line)
-
-    parts.push(code);
+    // split into logical code blocks instead of single lines
 
 
+    let blocks = code
 
-    // move to exit state
 
-    parts.push("        _STATE = 1");
+        .replace(/\r\n/g, "\n")
 
-    parts.push("    elseif _STATE == 1 then");
 
-    parts.push("        break");
+        .split(/\n+/)
+
+
+        .map(l => l.trim())
+
+
+        .filter(l => l.length > 0);
 
 
 
-    // a few unreachable junk states to look scary
 
-    for (let i = 2; i <= 4; i++) {
 
-        parts.push("    elseif _STATE == " + i + " then");
+    let flat = [];
 
-        parts.push("        " + generateJunkLua());
+
+    let state = 0;
+
+
+
+
+
+    flat.push("local _STATE = 0");
+
+
+    flat.push("while true do");
+
+
+
+
+
+    for (let i = 0; i < blocks.length; i++) {
+
+
+        flat.push(`    if _STATE == ${state} then`);
+
+
+        flat.push(`        ${blocks[i]}`);
+
+
+        state++;
+
+
+        flat.push(`        _STATE = ${state}`);
+
+
+        flat.push("    end");
 
     }
 
 
 
-    parts.push("    end");
 
-    parts.push("end");
-
+    flat.push(`    if _STATE == ${state} then break end`);
 
 
-    return parts.join("\n");
+    flat.push("end");
+
+
+
+
+    return flat.join("\n");
 
 }
 
@@ -592,58 +618,43 @@ function injectJunkNodes(code) {
 
         const line = lines[i];
 
-
         const trimmed = line.trim();
 
         out.push(line);
 
 
 
-
         // don't inject before / after empty lines
-
 
         if (trimmed.length === 0) continue;
 
 
 
-
         const next = lines[i + 1] || "";
-
 
         const nextTrim = next.trim();
 
 
 
-
         // NEVER inject:
-
 
         //  - after lines ending with '.' or ':'  (chained calls, labels)
 
-
         //  - before lines starting with '.' or ')'  (method chains/ends)
-
 
         //  - inside "end", "else", "elseif" lines
 
         const badAfter =
 
-
             trimmed.endsWith(".") ||
-
 
             trimmed.endsWith(":") ||
 
-
             trimmed === "end" ||
-
 
             trimmed.startsWith("else") ||
 
-
             nextTrim.startsWith(".") ||
-
 
             nextTrim.startsWith(")");
 
@@ -666,7 +677,6 @@ function injectJunkNodes(code) {
     return out.join("\n");
 
 }
-
 
 
 
@@ -722,13 +732,26 @@ function encryptStrings(code) {
 
 function wrapInVM(code) {
 
-    let bytes = [];
 
-    for (let i = 0; i < code.length; i++) {
 
-        bytes.push(code.charCodeAt(i));
 
-    }
+
+    // normalize Lua payload so that byte offsets are consistent
+
+
+    code = code.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+
+
+
+
+
+    // convert each character to its UTF-8 byte
+
+
+    let encoder = new TextEncoder();
+
+
+    let bytes = Array.from(encoder.encode(code));
 
 
 
@@ -738,30 +761,32 @@ function wrapInVM(code) {
 
     lua.push("local function _RF_VM_RUN(t)");
 
-    lua.push("    local s = {}");
+
+    lua.push("    local buf = table.create(#t)");
 
     lua.push("    for i = 1, #t do");
 
-    lua.push("        s[i] = string.char(t[i])");
+
+    lua.push("        buf[i] = string.char(t[i])");
 
     lua.push("    end");
 
-    lua.push("    local chunk = table.concat(s)");
+
+    lua.push("    local chunk = table.concat(buf)");
 
     lua.push("    return loadstring(chunk)()");
 
     lua.push("end");
 
-    lua.push("");
 
     lua.push("_RF_VM_RUN(_RF_VM)");
 
 
 
-    return lua.join("\n");
+
+    return lua.join(\"\\n\");
 
 }
-
 
 
 // ============================================================
