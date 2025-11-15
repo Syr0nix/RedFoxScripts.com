@@ -1,1 +1,27 @@
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>RedFox Luau Obfuscator</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <!-- Load luaparse FIRST -->
+  <script src="js/libs/luaparse.min.js"></script>
+  <!-- Then load your scripts -->
+  <script src="js/obfuscator.js"></script>
+  <script src="js/ui.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>RedFox Luau Obfuscator</h1>
+    <textarea id="input" placeholder="Paste your Luau script here..."></textarea>
+    <div class="controls">
+      <button id="obfuscate">Obfuscate</button>
+      <button id="copy">Copy Output</button>
+      <button id="clear">Clear</button>
+    </div>
+    <textarea id="output" readonly placeholder="Obfuscated output will appear here..."></textarea>
+    <div id="status"></div>
+  </div>
+</body>
+</html>
