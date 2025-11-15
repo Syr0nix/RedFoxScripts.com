@@ -1,27 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>RedFox Luau Obfuscator</title>
-  <link rel="stylesheet" href="css/style.css" />
-  <!-- Load luaparse FIRST -->
-  <script src="js/libs/luaparse.min.js"></script>
-  <!-- Then load your scripts -->
-  <script src="js/obfuscator.js"></script>
-  <script src="js/ui.js"></script>
+    <meta charset="UTF-8" />
+    <title>RedFoxScripts Obfuscator</title>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <div class="container">
-    <h1>RedFox Luau Obfuscator</h1>
-    <textarea id="input" placeholder="Paste your Luau script here..."></textarea>
-    <div class="controls">
-      <button id="obfuscate">Obfuscate</button>
-      <button id="copy">Copy Output</button>
-      <button id="clear">Clear</button>
+    <h1>RedFoxScripts Lua Obfuscator</h1>
+
+    <div class="pane">
+        <h2>Input Lua</h2>
+        <textarea id="lua-input" placeholder="Paste your Lua / Roblox script here"></textarea>
     </div>
-    <textarea id="output" readonly placeholder="Obfuscated output will appear here..."></textarea>
-    <div id="status"></div>
-  </div>
+
+    <button id="btn-obfuscate">Obfuscate</button>
+    <span id="obf-stats"></span>
+
+    <div class="pane">
+        <h2>Obfuscated Output</h2>
+        <textarea id="lua-output" readonly></textarea>
+    </div>
+
+    <!-- (Optional) luaparse if you want AST tricks later -->
+    <script src="js/libs/luaparse.min.js"></script>
+
+    <!-- Real obfuscator logic -->
+    <script src="js/obfuscator.js"></script>
+
+    <!-- UI glue -->
+    <script src="js/ui.js"></script>
 </body>
 </html>
