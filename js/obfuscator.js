@@ -1,24 +1,33 @@
 console.log("RedFox Obfuscator Loaded.");
 
-// ------------------------------
-// Helper: random identifier
-// ------------------------------
+// ============================================================
+// HELPER: Random identifier (lIIIIIIIll style)
+// ============================================================
 function rfRandomIdent(len) {
-    var chars = "lI1O0";
-    var out = "_";
+    // all confusion chars: l, I, 1
+    var chars = "lI1";
+    var out = "l"; // start with a 'l'
     for (var i = 0; i < len; i++) {
         out += chars.charAt(Math.floor(Math.random() * chars.length));
     }
-    return out;
+    // end with "ll" to get lIIIIIIIll vibe
+    out += "ll";
+    return "_" + out;
 }
 
-// ------------------------------
-// Module 1: Variable Renaming
-//  - Renames locals, local functions,
-//    and for-loop variables.
-//  - Best effort (text-based), not a full AST.
-// ------------------------------
+// ============================================================
+// MODULE 1: AST-ASSISTED VARIABLE RENAMER
+//  - Uses luaparse (if available) to find LOCAL identifiers
+//  - Only renames locals (node.isLocal === true)
+//  - Then does text replacement on those names
+// ============================================================
 function renameVariables(code) {
+    // Require luaparse global
+    if (typeof luaparse === "undefined") {
+        console.warn("[RedFox] luaparse not found, skipping AST rename.");
+        return code;
+    }
+
     var mapping = Object.create(null);
 
     // Globals / names we DO NOT want to mess with
@@ -28,7 +37,7 @@ function renameVariables(code) {
         "pairs","ipairs","print","warn","error","pcall","xpcall",
         "_G","shared","Enum","Vector3","CFrame","Instance",
         "tick","time","wait","spawn","delay",
-        "_RF_DEC", "_RF_VM_RUN" // our helpers, do NOT touch
+        "_RF_DEC","_RF_VM_RUN","_RF_VM","_RF_ANTIDEBUG"
     ]);
 
     function addName(name) {
@@ -41,55 +50,44 @@ function renameVariables(code) {
         }
     }
 
-    // --- find local function names ---
-    var localFuncRe = /\blocal\s+function\s+([A-Za-z_][A-Za-z0-9_]*)/g;
-    var m;
-    while ((m = localFuncRe.exec(code)) !== null) {
-        addName(m[1]);
+    // Parse with scope tracking
+    var ast;
+    try {
+        ast = luaparse.parse(code, {
+            luaVersion: "5.1",
+            locations: false,
+            ranges: false,
+            comments: false,
+            scope: true
+        });
+    } catch (e) {
+        console.warn("[RedFox] AST parse failed, skipping rename:", e);
+        return code;
     }
 
-    // --- find local variable declarations like: local a, b, c = ... ---
-    var localVarRe = /\blocal\s+((?:[A-Za-z_][A-Za-z0-9_]*\s*(?:,\s*[A-Za-z_][A-Za-z0-9_]*)*))\s*=/g;
-    while ((m = localVarRe.exec(code)) !== null) {
-        var namesPart = m[1];
-        var parts = namesPart.split(",");
-        for (var i = 0; i < parts.length; i++) {
-            var n = parts[i].trim();
-            addName(n);
+    function walk(node) {
+        if (!node || typeof node !== "object") return;
+        if (node.type === "Identifier" && node.isLocal) {
+            addName(node.name);
+        }
+        for (var key in node) {
+            if (!Object.prototype.hasOwnProperty.call(node, key)) continue;
+            var child = node[key];
+            if (!child) continue;
+            if (Array.isArray(child)) {
+                for (var i = 0; i < child.length; i++) {
+                    if (child[i] && typeof child[i] === "object") walk(child[i]);
+                }
+            } else if (child && typeof child === "object" && typeof child.type === "string") {
+                walk(child);
+            }
         }
     }
 
-    // --- numeric for loop: for i = 1, 10 do ---
-    var forNumRe = /\bfor\s+([A-Za-z_][A-Za-z0-9_]*)\s*=/g;
-    while ((m = forNumRe.exec(code)) !== null) {
-        addName(m[1]);
-    }
-
-    // --- generic for loop: for k, v in pairs() do ---
-    var forGenRe = /\bfor\s+((?:[A-Za-z_][A-Za-z0-9_]*\s*(?:,\s*[A-Za-z_][A-Za-z0-9_]*)*))\s+in\b/g;
-    while ((m = forGenRe.exec(code)) !== null) {
-        var p2 = m[1].split(",");
-        for (var j = 0; j < p2.length; j++) {
-            var n2 = p2[j].trim();
-            addName(n2);
-        }
-    }
-
-    // --- function parameters: function foo(a, b, c) ---
-    var funcParamRe = /\bfunction\s+[A-Za-z_][A-Za-z0-9_.:]*\s*\(([^)]*)\)/g;
-    while ((m = funcParamRe.exec(code)) !== null) {
-        var params = m[1].split(",");
-        for (var k = 0; k < params.length; k++) {
-            var p = params[k].trim();
-            if (!p || p === "...") continue;
-            addName(p);
-        }
-    }
+    walk(ast);
 
     var allNames = Object.keys(mapping);
-    if (!allNames.length) {
-        return code; // nothing to rename
-    }
+    if (!allNames.length) return code;
 
     // Build a single regex: \b(name1|name2|...)\b
     function escapeReg(s) {
@@ -98,7 +96,6 @@ function renameVariables(code) {
 
     var pattern = new RegExp("\\b(" + allNames.map(escapeReg).join("|") + ")\\b", "g");
 
-    // Replace identifiers everywhere (NOTE: can hit strings/comments in edge cases)
     var renamed = code.replace(pattern, function (full, name) {
         return mapping[name] || full;
     });
@@ -106,9 +103,9 @@ function renameVariables(code) {
     return renamed;
 }
 
-// ------------------------------
-// Helpers for INSANE flattening / junk
-// ------------------------------
+// ============================================================
+// HELPERS (Junk, shuffle, opaque predicates)
+// ============================================================
 function shuffleArray(arr) {
     for (let i = arr.length - 1; i > 0; i--) {
         let j = Math.floor(Math.random() * (i + 1));
@@ -121,36 +118,48 @@ function randomState(blocks) {
     return b.id.toString();
 }
 
+// UPGRADED OPAQUE PREDICATE: more complex but always true.
 function opaquePredicate() {
-    let a = Math.floor(Math.random() * 50) + 1;
-    let b = Math.floor(Math.random() * 50) + 1;
+    let a = Math.floor(Math.random() * 50) + 10;
+    let b = Math.floor(Math.random() * 50) + 5;
     let c = a + b;
-    return `${a} + ${b} == ${c} and ${a} * ${b} > ${a}`;
+    let d = a * b;
+    // Always true, but messy.
+    return `((( ${a} + ${b} ) == ${c}) and ( ( ${a} * ${b} ) == ${d}) and ( ( ${a} * ${a} ) + ( ${b} * ${b} ) > ${a} ))`;
 }
 
+// SUPER JUNK generation
 function generateJunkLua() {
+    let r1 = Math.floor(Math.random() * 9999);
+    let r2 = Math.floor(Math.random() * 9999);
+    let r3 = Math.floor(Math.random() * 9999);
+
     let junk = [
-        "local _x = (" + Math.floor(Math.random() * 9999) + ")",
+        "local _x = (" + r1 + ")",
         "for _i=1,1 do end",
-        "do local z = " + Math.floor(Math.random() * 9999) + " end",
-        "if (" + opaquePredicate() + ") then local q=1 end",
+        "do local z = " + r2 + " end",
+        "if (" + opaquePredicate() + ") then local q=" + r3 + " end",
         "local _t = tostring(" + Math.random() + ")",
-        "local _ = " + Math.floor(Math.random() * 9999)
+        "local _ = " + r1,
+        // fake function
+        "local function " + rfRandomIdent(6) + "() return " + r2 + " end",
+        // fake table
+        "local " + rfRandomIdent(5) + " = { " + r1 + ", " + r2 + ", " + r3 + " }",
+        // fake metatable
+        "setmetatable({}, {__index = function() return " + r3 + " end})",
+        // fake closure
+        "do local a=" + r1 + "; local function " + rfRandomIdent(4) + "() return a end end"
     ];
     return junk[Math.floor(Math.random() * junk.length)];
 }
 
-// ------------------------------------------------------------
-// MODULE 2: INSANE CONTROL FLOW FLATTENING
-// ------------------------------------------------------------
+// ============================================================
+// MODULE 2: INSANE CONTROL FLOW FLATTENING (STATE MACHINE)
+// ============================================================
 function controlFlowFlattenInsane(code) {
-
-    // 1. Split into "rough" blocks by newline
     let lines = code.split(/[\r\n]+/).filter(l => l.trim().length > 0);
-
     if (lines.length === 0) return code;
 
-    // 2. Convert lines into state blocks
     let blocks = [];
     for (let i = 0; i < lines.length; i++) {
         blocks.push({
@@ -160,7 +169,6 @@ function controlFlowFlattenInsane(code) {
         });
     }
 
-    // 3. Generate junk states (fake dead blocks)
     let junkCount = Math.floor(lines.length * 1.5) + 10;
     for (let j = 0; j < junkCount; j++) {
         blocks.push({
@@ -170,34 +178,25 @@ function controlFlowFlattenInsane(code) {
         });
     }
 
-    // 4. Shuffle block order
     shuffleArray(blocks);
 
-    // 5. Build state machine dispatcher
     let dispatcher = [];
     dispatcher.push("local _STATE = \"" + blocks[0].id + "\"");
     dispatcher.push("while true do");
 
     blocks.forEach((b, idx) => {
         dispatcher.push("    if _STATE == \"" + b.id + "\" then");
-
-        // Insert opaque predicate for INSANE mode
         dispatcher.push("        if ((" + opaquePredicate() + ")) then");
-
         dispatcher.push("            " + b.code);
-
-        // Next state
         if (idx < blocks.length - 1) {
             dispatcher.push("            _STATE = \"" + blocks[idx + 1].id + "\"");
         } else {
             dispatcher.push("            break");
         }
-
         dispatcher.push("        else");
         dispatcher.push("            " + generateJunkLua());
         dispatcher.push("            _STATE = \"" + randomState(blocks) + "\"");
         dispatcher.push("        end");
-
         dispatcher.push("    end");
     });
 
@@ -206,45 +205,38 @@ function controlFlowFlattenInsane(code) {
     return dispatcher.join("\n");
 }
 
-// ------------------------------------------------------------
-// MODULE 3: Junk node injection (light extra junk)
-// ------------------------------------------------------------
+// ============================================================
+// MODULE 3: Extra Junk Node Injection
+// ============================================================
 function injectJunkNodes(code) {
     let lines = code.split("\n");
     let out = [];
     for (let i = 0; i < lines.length; i++) {
         out.push(lines[i]);
-        // random chance to insert extra junk line
-        if (Math.random() < 0.4) {
+        if (Math.random() < 0.5) { // extra aggressive
             out.push(generateJunkLua());
         }
     }
     return out.join("\n");
 }
 
-// ------------------------------
-// Internal string encryption
-// ------------------------------
+// ============================================================
+// STRING ENCRYPTION USING _RF_DEC (XOR)
+// ============================================================
 function encryptStrings(code) {
-    // Replace "string" literals with runtime-decrypted calls
-    // NOTE: very simple, only double-quoted strings.
     return code.replace(/"(.-)"/g, function(_, str) {
-
-        // XOR key
         var key = Math.floor(Math.random() * 200) + 30;
-
         var bytes = [];
         for (var i = 0; i < str.length; i++) {
             bytes.push(str.charCodeAt(i) ^ key);
         }
-
         return '(_RF_DEC("' + bytes.join(",") + '",' + key + "))";
     });
 }
 
-// ------------------------------------------------------------
-// VM Mode wrapper (Module: VM)
-// ------------------------------------------------------------
+// ============================================================
+// DEEP VM WRAPPER (virtual layer)
+// ============================================================
 function wrapInVM(code) {
     let bytes = [];
     for (let i = 0; i < code.length; i++) {
@@ -267,39 +259,48 @@ function wrapInVM(code) {
     return lua.join("\n");
 }
 
-// ------------------------------------------------------------
-// Anti-debug / anti-tamper header generators
-// ------------------------------------------------------------
-function buildAntiDebugHeader() {
+// ============================================================
+// ROBLOX-FOCUSED ANTI-DEBUG HEADER
+// ============================================================
+function buildAntiDebugHeaderRoblox() {
+    // This returns a Lua string; minified later.
     return [
         "local function _RF_ANTIDEBUG()",
-        "    local ok, dbg = pcall(function() return debug end)",
-        "    if ok and dbg and dbg.getinfo then",
-        "        error('RedFox: debugger detected', 0)",
+        "    local ok_dbg, dbg = pcall(function() return debug end)",
+        "    if ok_dbg and dbg and dbg.getinfo then",
+        "        local info = dbg.getinfo(2)",
+        "        if info and info.what == 'Lua' then error('RedFox: debugger detected', 0) end",
         "    end",
-        "    if hookfunction ~= nil then",
-        "        error('RedFox: hookfunction detected', 0)",
+        "    local ok_genv, ggv = pcall(function() return getgenv end)",
+        "    if ok_genv and type(ggv) == 'function' then",
+        "        error('RedFox: exploit env detected', 0)",
+        "    end",
+        "    local suspicious = {'getrenv','getgc','getreg','getupvalues','hookfunction'}",
+        "    local env = getfenv and getfenv(0) or _G",
+        "    for _, name in ipairs(suspicious) do",
+        "        local ok2, fn = pcall(function() return env[name] end)",
+        "        if ok2 and type(fn) == 'function' then",
+        "            error('RedFox: exploit API detected', 0)",
+        "        end",
         "    end",
         "end",
-        "pcall(_RF_ANTIDEBUG)",
+        "task.spawn(function()",
+        "    while true do",
+        "        pcall(_RF_ANTIDEBUG)",
+        "        task.wait(5)",
+        "    end",
+        "end)",
         ""
     ].join("\n");
 }
 
-function buildAntiTamperHeader(expectedHexLen) {
-    // We check the length of 'data' string after it's assigned
-    // So this header will be used INSIDE the wrapper, not here.
-    // We'll embed expectedHexLen into the wrapper.
-    return expectedHexLen; // just pass through; wrapper uses this value
-}
-
-// ------------------------------
-// Main Obfuscator Interface
-// ------------------------------
+// ============================================================
+// MAIN OBFUSCATOR INTERFACE
+// ============================================================
 window.RedFoxObfuscator = {
     obfuscate: function (code, opts) {
 
-        // 1) Variable rename (Module 1)
+        // 1) AST variable renaming
         if (opts.variableRename) {
             code = renameVariables(code);
         }
@@ -309,7 +310,7 @@ window.RedFoxObfuscator = {
             code = controlFlowFlattenInsane(code);
         }
 
-        // 3) Junk node injection
+        // 3) Super junk injection
         if (opts.junkNodes) {
             code = injectJunkNodes(code);
         }
@@ -319,35 +320,40 @@ window.RedFoxObfuscator = {
             code = encryptStrings(code);
         }
 
-        // 5) VM mode
+        // 5) Deep VM + Multilayer
         if (opts.vmMode) {
-            code = wrapInVM(code);
+            // If also flattened & junk: multilayer VM
+            if (opts.controlFlowFlatten && opts.junkNodes) {
+                code = wrapInVM(code);
+                code = wrapInVM(code); // double layer
+            } else {
+                code = wrapInVM(code);
+            }
         }
 
-        // 6) Build Lua pre-header for anti-debug (outside of hex wrapper)
+        // This is the Lua payload we want to hex-encode
         let luaPayload = code;
 
-        // (anti-debug / anti-tamper will be handled in wrapper phase)
-        // At this level, luaPayload is the script we want to run after decode.
-
-        // 7) Hex encode final Lua payload
+        // 6) Hex encode payload
         var hex = "";
         for (var i = 0; i < luaPayload.length; i++) {
             hex += luaPayload.charCodeAt(i).toString(16).padStart(2, "0");
         }
-
         var expectedHexLen = hex.length;
 
         var layers =
             (opts.variableRename ? 1 : 0) +
             (opts.stringEncrypt ? 1 : 0) +
             (opts.controlFlowFlatten ? 1 : 0) +
-            (opts.vmMode ? 1 : 0) +
+            (opts.vmMode ? 2 : 0) + // count multilayer as extra
             (opts.junkNodes ? 1 : 0) +
             (opts.antiDebug ? 1 : 0) +
             (opts.antiTamper ? 1 : 0);
 
-        // 8) Build outer wrapper
+        // 7) Build anti-debug header string if enabled
+        var antiDebugChunk = opts.antiDebug ? buildAntiDebugHeaderRoblox() : "";
+
+        // 8) Build outer wrapper (multi-line first)
         var wrapped = `
 -- RedFox Hybrid Engine
 local function _RF_DEC(b,k)
@@ -361,20 +367,24 @@ end
 local data = "${hex}"
 local out = ""
 
--- Anti-tamper: length check
 ${opts.antiTamper ? ("do if #data ~= " + expectedHexLen + " then error('RedFox: tamper detected', 0) end end") : ""}
 
--- Decode hex payload
 for i = 1, #data, 2 do
     local byte = tonumber(data:sub(i, i+1), 16)
     out = out .. string.char(byte)
 end
 
--- Optional anti-debug inside runtime
-${opts.antiDebug ? buildAntiDebugHeader() : ""}
+${antiDebugChunk}
 
 return loadstring(out)()
 `;
+
+        // 9) SINGLE-LINE OUTPUT
+        wrapped = wrapped
+            .split("\n")
+            .map(function (l) { return l.trim(); })
+            .filter(function (l) { return l.length > 0; })
+            .join(" ");
 
         return {
             output: wrapped,
