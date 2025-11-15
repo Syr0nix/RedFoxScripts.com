@@ -295,15 +295,26 @@ function injectJunkNodes(code) {
 
     for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
+        const trimmed = line.trim();
         out.push(line);
 
-        // NEVER insert junk after a line ending with a dot,
-        // or before a line starting with a dot.
-        const next = lines[i + 1] || "";
+        // don't inject before / after empty lines
+        if (trimmed.length === 0) continue;
 
+        const next = lines[i + 1] || "";
+        const nextTrim = next.trim();
+
+        // NEVER inject:
+        //  - after lines ending with '.' or ':'  (chained calls, labels)
+        //  - before lines starting with '.' or ')'  (method chains/ends)
+        //  - inside "end", "else", "elseif" lines
         const badAfter =
-            line.trim().endsWith(".") ||
-            next.trim().startsWith(".");
+            trimmed.endsWith(".") ||
+            trimmed.endsWith(":") ||
+            trimmed === "end" ||
+            trimmed.startsWith("else") ||
+            nextTrim.startsWith(".") ||
+            nextTrim.startsWith(")");
 
         if (badAfter) continue;
 
@@ -314,7 +325,6 @@ function injectJunkNodes(code) {
 
     return out.join("\n");
 }
-
 
 // ============================================================
 // STRING ENCRYPTION USING _RF_DEC (XOR)
