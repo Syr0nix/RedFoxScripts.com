@@ -245,18 +245,14 @@ function generateJunkLua() {
     let r3 = Math.floor(Math.random() * 9999);
 
     let junk = [
-        "local _x = (" + r1 + ")",
-        "for _i=1,1 do end",
-        "do local z = " + r2 + " end",
-        "if (" + opaquePredicate() + ") then local q=" + r3 + " end",
+        "local _x = " + r1,
+        "do local _y = " + r2 + " end",
+        "for _i = 1, 1 do local _z = " + r3 + " end",
         "local _t = tostring(" + Math.random() + ")",
-        "local _ = " + r1,
-        "local function " + rfRandomIdent(6) + "() return " + r2 + " end",
-        "local " + rfRandomIdent(5) + " = { " + r1 + ", " + r2 + ", " + r3 + " }",
-        "setmetatable({}, {__index = function() return " + r3 + " end})",
-        "do local a=" + r1 + "; local function " + rfRandomIdent(4) + "() return a end end"
+        "local _ = (" + r1 + " + " + r2 + ") ~ " + r3,
+        "if " + opaquePredicate() + " then local _q = " + r3 + " end"
     ];
-    junk = junk.filter(j => !j.trim().startsWith("."));
+
     return junk[Math.floor(Math.random() * junk.length)];
 }
 
