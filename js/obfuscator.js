@@ -5,7 +5,7 @@ console.log("RedFox Obfuscator Loaded");
 window.RedFoxObfuscator = {
     obfuscate: function (code, opts) {
 
-        // TEMPORARY ENGINE so UI works immediately
+        // TEMPORARY ENGINE so the UI works immediately
         let hex = "";
         for (let i = 0; i < code.length; i++) {
             hex += code.charCodeAt(i).toString(16).padStart(2, "0");
