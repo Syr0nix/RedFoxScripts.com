@@ -243,14 +243,14 @@ function generateJunkLua() {
     let r1 = Math.floor(Math.random() * 9999);
     let r2 = Math.floor(Math.random() * 9999);
     let r3 = Math.floor(Math.random() * 9999);
+    let v = rfRandomIdent(5);
 
     let junk = [
-        "local _x = " + r1,
-        "do local _y = " + r2 + " end",
-        "for _i = 1, 1 do local _z = " + r3 + " end",
-        "local _t = tostring(" + Math.random() + ")",
-        "local _ = (" + r1 + " + " + r2 + ") ~ " + r3,
-        "if " + opaquePredicate() + " then local _q = " + r3 + " end"
+        `do local ${v} = ${r1} end`,
+        `do local ${v} = ${r2}*${r3} end`,
+        `do local ${v} = "${r1}.${r2}.${r3}" end`,
+        `do for _=1,1 do local ${v}=${r3} end end`,
+        `do if ${opaquePredicate()} then local ${v} = ${r1} end end`,
     ];
 
     return junk[Math.floor(Math.random() * junk.length)];
