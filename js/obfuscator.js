@@ -225,14 +225,22 @@ function injectJunkNodes(code) {
 //  (NOTE: _RF_DEC MUST BE GLOBAL IN THE WRAPPER)
 // ============================================================
 function encryptStrings(code) {
-    return code.replace(/"(.-)"/g, function(_, str) {
-        var key = Math.floor(Math.random() * 200) + 30;
-        var bytes = [];
-        for (var i = 0; i < str.length; i++) {
-            bytes.push(str.charCodeAt(i) ^ key);
-        }
-        return '(_RF_DEC("' + bytes.join(",") + '",' + key + "))";
-    });
+    return code.replace(/"(.-)"/g, function(_, str, offset, full) {
+
+    // DO NOT encrypt strings inside GetService()
+    const before = full.slice(Math.max(0, offset - 30), offset);
+    if (before.includes("GetService(")) {
+        return `"${str}"`; // leave it normal
+    }
+
+    // XOR key
+    var key = Math.floor(Math.random() * 200) + 30;
+    var bytes = [];
+    for (var i = 0; i < str.length; i++) {
+        bytes.push(str.charCodeAt(i) ^ key);
+    }
+    return '(_RF_DEC("' + bytes.join(",") + '",' + key + "))";
+});
 }
 
 // ============================================================
