@@ -22,7 +22,6 @@ function rfRandomIdent(len) {
 //  - NEVER renames inside strings / comments
 // ============================================================
 function renameVariables(code) {
-    // Require luaparse global
     if (typeof luaparse === "undefined") {
         console.warn("[RedFox] luaparse not found, skipping AST rename.");
         return code;
@@ -30,7 +29,7 @@ function renameVariables(code) {
 
     var mapping = Object.create(null);
 
-    // Globals / names we DO NOT want to mess with
+    // Names we never want to touch
     var skip = new Set([
         "game","workspace","script","self",
         "math","table","string","coroutine","debug","task","os",
@@ -40,26 +39,25 @@ function renameVariables(code) {
         "_RF_DEC","_RF_VM_RUN","_RF_VM","_RF_ANTIDEBUG"
     ]);
 
-    // Common Roblox service identifiers you might reuse as locals;
-    // skipping them keeps things very safe.
+    // Common Roblox service / API names – keep ultra-safe
     [
         "Players","ReplicatedStorage","ServerStorage","Lighting","StarterGui",
         "StarterPlayer","TweenService","RunService","UserInputService",
         "ContextActionService","SoundService","Teams","HttpService",
-        "TeleportService","MarketplaceService","CollectionService"
+        "TeleportService","MarketplaceService","CollectionService",
+        "LocalPlayer","Character","Humanoid","HumanoidRootPart"
     ].forEach(function (s) { skip.add(s); });
 
     function addName(name) {
         if (!name) return;
         if (skip.has(name)) return;
-        if (name.startsWith("_RF_")) return; // don't rename our internals
+        if (name.startsWith("_RF_")) return;
         if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(name)) return;
         if (!mapping[name]) {
             mapping[name] = rfRandomIdent(8);
         }
     }
 
-    // Parse with scope tracking
     var ast;
     try {
         ast = luaparse.parse(code, {
@@ -77,7 +75,21 @@ function renameVariables(code) {
     function walk(node) {
         if (!node || typeof node !== "object") return;
 
-        // Protect identifiers used as GetService arguments
+        // If this identifier is used as a property (foo.Bar), NEVER rename that name
+        if (node.type === "MemberExpression" &&
+            node.identifier &&
+            node.identifier.type === "Identifier") {
+
+            var propName = node.identifier.name;
+            if (!skip.has(propName)) {
+                skip.add(propName);
+                if (mapping[propName]) {
+                    delete mapping[propName];
+                }
+            }
+        }
+
+        // Protect GetService("ServiceName") names too
         if (node.type === "CallExpression" &&
             node.base &&
             node.base.type === "MemberExpression" &&
@@ -86,8 +98,9 @@ function renameVariables(code) {
             Array.isArray(node.arguments)) {
 
             node.arguments.forEach(function (arg) {
-                if (arg && arg.type === "Identifier") {
-                    skip.add(arg.name);
+                if (arg && arg.type === "StringLiteral") {
+                    skip.add(arg.value);
+                    if (mapping[arg.value]) delete mapping[arg.value];
                 }
             });
         }
@@ -115,21 +128,19 @@ function renameVariables(code) {
     var allNames = Object.keys(mapping);
     if (!allNames.length) return code;
 
-    // Build a single regex: \b(name1|name2|...)\b
     function escapeReg(s) {
         return s.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&");
     }
 
     var pattern = new RegExp("\\b(" + allNames.map(escapeReg).join("|") + ")\\b", "g");
 
+    // Only apply mapping in real code, not strings/comments
     function applyMapping(text) {
         return text.replace(pattern, function (full, name) {
             return mapping[name] || full;
         });
     }
 
-    // Token-ish pass: only replace in code segments,
-    // leave strings & comments completely untouched.
     var result = "";
     var last = 0;
     var i = 0;
@@ -137,25 +148,17 @@ function renameVariables(code) {
     while (i < code.length) {
         var ch = code[i];
 
-        // Line / block comments starting with --
+        // comments: --
         if (ch === "-" && code[i + 1] === "-") {
-            // flush code before comment
             result += applyMapping(code.slice(last, i));
 
             var j = i + 2;
             var isLong = (code[i + 2] === "[" && code[i + 3] === "[");
-
             if (isLong) {
-                // long comment: --[[ ... ]]
                 j = code.indexOf("]]", i + 4);
-                if (j === -1) {
-                    // no closing; rest is comment
-                    result += code.slice(i);
-                    return result;
-                }
+                if (j === -1) { result += code.slice(i); return result; }
                 j += 2;
             } else {
-                // single-line comment
                 while (j < code.length && code[j] !== "\n") j++;
             }
 
@@ -165,15 +168,12 @@ function renameVariables(code) {
             continue;
         }
 
-        // Long string [[ ... ]]
+        // long string [[ ... ]]
         if (ch === "[" && code[i + 1] === "[") {
             result += applyMapping(code.slice(last, i));
 
             var j2 = code.indexOf("]]", i + 2);
-            if (j2 === -1) {
-                result += code.slice(i);
-                return result;
-            }
+            if (j2 === -1) { result += code.slice(i); return result; }
             j2 += 2;
 
             result += code.slice(i, j2);
@@ -182,7 +182,7 @@ function renameVariables(code) {
             continue;
         }
 
-        // Quoted string '...' or "..."
+        // '...' or "..."
         if (ch === '"' || ch === "'") {
             result += applyMapping(code.slice(last, i));
 
@@ -190,7 +190,7 @@ function renameVariables(code) {
             var j3 = i + 1;
             while (j3 < code.length) {
                 if (code[j3] === "\\" && j3 + 1 < code.length) {
-                    j3 += 2; // skip escaped char
+                    j3 += 2;
                     continue;
                 }
                 if (code[j3] === quote) {
@@ -209,7 +209,6 @@ function renameVariables(code) {
         i++;
     }
 
-    // trailing code after last string/comment
     result += applyMapping(code.slice(last));
     return result;
 }
