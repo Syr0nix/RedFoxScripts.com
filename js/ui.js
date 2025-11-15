@@ -1,39 +1,38 @@
-console.log("RedFox Obfuscator Loaded.");
+console.log("UI.JS LOADED");
 
-window.RedFoxObfuscator = {
-    obfuscate: function (code, opts) {
+document.addEventListener("DOMContentLoaded", function () {
 
-        let hex = "";
-        for (let i = 0; i < code.length; i++) {
-            hex += code.charCodeAt(i).toString(16).padStart(2, "0");
+    const input  = document.getElementById("lua-input");
+    const output = document.getElementById("lua-output");
+    const button = document.getElementById("btn-obfuscate");
+    const stats  = document.getElementById("obf-stats");
+
+    button.addEventListener("click", function () {
+
+        console.log("BUTTON CLICKED");
+
+        const code = input.value;
+        if (!code.trim()) {
+            alert("Paste a script first!");
+            return;
         }
 
-        let layers = 
-            (opts.variableRename ? 1 : 0) +
-            (opts.stringEncrypt ? 1 : 0) +
-            (opts.controlFlowFlatten ? 1 : 0) +
-            (opts.vmMode ? 1 : 0) +
-            (opts.junkNodes ? 1 : 0) +
-            (opts.antiDebug ? 1 : 0) +
-            (opts.antiTamper ? 1 : 0);
-
-        let wrapped = `
--- RedFox Obfuscator (TEMP ENGINE)
-local data = "${hex}"
-local out = ""
-
-for i = 1, #data, 2 do
-    local byte = tonumber(data:sub(i, i+1), 16)
-    out = out .. string.char(byte)
-end
-
-return loadstring(out)()
-`;
-
-        return {
-            output: wrapped,
-            hexLength: hex.length,
-            layers: layers
+        const opts = {
+            variableRename:  document.getElementById("opt-rename").checked,
+            stringEncrypt:   document.getElementById("opt-strenc").checked,
+            controlFlowFlatten: document.getElementById("opt-flatten").checked,
+            vmMode: document.getElementById("opt-vm").checked,
+            junkNodes: document.getElementById("opt-junk").checked,
+            antiDebug: document.getElementById("opt-antidebug").checked,
+            antiTamper: document.getElementById("opt-antitamper").checked
         };
-    }
-};
+
+        const result = RedFoxObfuscator.obfuscate(code, opts);
+        console.log("OBFUSCATE RESULT:", result);
+
+        output.value = result.output;
+
+        stats.textContent = `Size: ${code.length} → ${result.output.length} chars | Layers: ${result.layers}`;
+    });
+
+});
