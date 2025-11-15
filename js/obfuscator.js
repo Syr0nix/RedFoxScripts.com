@@ -105,6 +105,37 @@ function renameVariables(code) {
 
     return renamed;
 }
+function shuffleArray(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+        let j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+}
+
+function randomState(blocks) {
+    let b = blocks[Math.floor(Math.random() * blocks.length)];
+    return b.id.toString();
+}
+
+function opaquePredicate() {
+    let a = Math.floor(Math.random() * 50) + 1;
+    let b = Math.floor(Math.random() * 50) + 1;
+    let c = a + b;
+    return `${a} + ${b} == ${c} and ${a} * ${b} > ${a}`;
+}
+
+function generateJunkLua() {
+    let junk = [
+        "local _x = (" + Math.floor(Math.random() * 9999) + ")",
+        "for _i=1,1 do end",
+        "do local z = " + Math.floor(Math.random() * 9999) + " end",
+        "if (" + opaquePredicate() + ") then local q=1 end",
+        "local _t = tostring(" + Math.random() + ")",
+        "local _ = " + Math.floor(Math.random() * 9999)
+    ];
+    return junk[Math.floor(Math.random() * junk.length)];
+}
+
 
 // ------------------------------
 // Internal string encryption
@@ -129,6 +160,70 @@ function encryptStrings(code) {
 // ------------------------------
 // Main Obfuscator Interface
 // ------------------------------
+// ------------------------------------------------------------
+// MODULE 2: INSANE CONTROL FLOW FLATTENING
+// ------------------------------------------------------------
+function controlFlowFlattenInsane(code) {
+
+    // 1. Split into "rough" blocks by semicolon or newline
+    let lines = code.split(/[\r\n]+/).filter(l => l.trim().length > 0);
+
+    // 2. Convert lines into state blocks
+    let blocks = [];
+    for (let i = 0; i < lines.length; i++) {
+        blocks.push({
+            id: i,
+            code: lines[i],
+            real: true
+        });
+    }
+
+    // 3. Generate junk states (fake dead blocks)
+    let junkCount = Math.floor(lines.length * 1.5) + 10;
+    for (let j = 0; j < junkCount; j++) {
+        blocks.push({
+            id: "junk" + j,
+            code: generateJunkLua(),
+            real: false
+        });
+    }
+
+    // 4. Shuffle block order
+    shuffleArray(blocks);
+
+    // 5. Build state machine dispatcher
+    let dispatcher = [];
+    dispatcher.push("local _STATE = \"" + blocks[0].id + "\"");
+    dispatcher.push("while true do");
+
+    blocks.forEach((b, idx) => {
+        dispatcher.push("    if _STATE == \"" + b.id + "\" then");
+
+        // Insert opaque predicate for INSANE mode
+        dispatcher.push("        if ((" + opaquePredicate() + ")) then");
+
+        dispatcher.push("            " + b.code);
+
+        // Next state
+        if (idx < blocks.length - 1) {
+            dispatcher.push("            _STATE = \"" + blocks[idx + 1].id + "\"");
+        } else {
+            dispatcher.push("            break");
+        }
+
+        dispatcher.push("        else");
+        dispatcher.push("            " + generateJunkLua());
+        dispatcher.push("            _STATE = \"" + randomState(blocks) + "\"");
+        dispatcher.push("        end");
+
+        dispatcher.push("    end");
+    });
+
+    dispatcher.push("end");
+
+    return dispatcher.join("\n");
+}
+
 window.RedFoxObfuscator = {
     obfuscate: function (code, opts) {
 
