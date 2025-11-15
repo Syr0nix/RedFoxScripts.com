@@ -4,15 +4,15 @@
     <meta charset="UTF-8" />
     <title>RedFox Luau Obfuscator</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
     <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
+
     <h1>RedFox Luau Obfuscator</h1>
 
     <div class="pane">
         <h2>Input Luau</h2>
-        <textarea id="lua-input" placeholder="Paste your Luau / Roblox script here"></textarea>
+        <textarea id="lua-input" placeholder="Paste your script here"></textarea>
     </div>
 
     <div class="controls">
@@ -21,7 +21,7 @@
         <label><input type="checkbox" id="opt-rename" checked> Variable Rename</label><br>
         <label><input type="checkbox" id="opt-strenc" checked> String Encrypt</label><br>
         <label><input type="checkbox" id="opt-flatten" checked> Control Flow Flatten</label><br>
-        <label><input type="checkbox" id="opt-vm" checked> VM Mode (double layer)</label><br>
+        <label><input type="checkbox" id="opt-vm" checked> VM Mode</label><br>
         <label><input type="checkbox" id="opt-junk" checked> Junk Nodes</label><br>
         <label><input type="checkbox" id="opt-antidebug" checked> Anti Debug</label><br>
         <label><input type="checkbox" id="opt-antitamper" checked> Anti Tamper</label><br>
@@ -35,9 +35,10 @@
         <textarea id="lua-output" readonly></textarea>
     </div>
 
-    <!-- luaparse is optional for later AST stuff; safe to leave -->
+    <!-- ORDER MATTERS -->
     <script src="js/libs/luaparse.js"></script>
     <script src="js/obfuscator.js"></script>
     <script src="js/ui.js"></script>
+
 </body>
 </html>
