@@ -1,4 +1,3 @@
-// js/obfuscator.js
 console.log("RedFox Obfuscator Loaded.");
 
 window.RedFoxObfuscator = {
