@@ -4,33 +4,42 @@ document.addEventListener("DOMContentLoaded", function () {
     var output = document.getElementById("lua-output");
     var button = document.getElementById("btn-obfuscate");
     var stats  = document.getElementById("obf-stats");
-    var modeSelector = document.getElementById("obf-mode"); // optional <select>
+
+    function get(id) {
+        return document.getElementById(id);
+    }
 
     if (!input || !output || !button) {
-        console.error("Missing UI elements. Check IDs in index.html");
+        console.error("Missing UI elements, check IDs in index.html");
         return;
     }
 
     button.addEventListener("click", function () {
         var code = input.value;
         if (!code.trim()) {
-            alert("Paste your Luau script first.");
+            alert("Paste your Luau / Roblox script first.");
             return;
         }
 
-        var mode = "max";
-        if (modeSelector && modeSelector.value) {
-            mode = modeSelector.value;
-        }
+        var opts = {
+            variableRename:      get("opt-rename").checked,
+            stringEncrypt:       get("opt-strenc").checked,
+            controlFlowFlatten:  get("opt-flatten").checked,
+            vmMode:              get("opt-vm").checked,
+            junkNodes:           get("opt-junk").checked,
+            antiDebug:           get("opt-antidebug").checked,
+            antiTamper:          get("opt-antitamper").checked
+        };
 
         try {
-            var result = RedFoxObfuscator.obfuscateLuau(code, { level: mode });
+            var result = RedFoxObfuscator.obfuscate(code, opts);
             output.value = result.output;
 
             if (stats) {
                 stats.textContent =
-                    "Mode: " + result.mode +
-                    " | Encoded length: " + result.hexLength + " chars";
+                    "Size: " + code.length + " → " + result.output.length +
+                    " chars | Hex length: " + result.hexLength +
+                    " | Layers: " + result.layers;
             }
         } catch (err) {
             console.error(err);
