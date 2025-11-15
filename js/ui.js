@@ -1,40 +1,37 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const input = document.getElementById("input");
-  const output = document.getElementById("output");
-  const status = document.getElementById("status");
-  const obfuscateBtn = document.getElementById("obfuscate");
-  const copyBtn = document.getElementById("copy");
-  const clearBtn = document.getElementById("clear");
+// js/ui.js
+document.addEventListener("DOMContentLoaded", function () {
+    var input = document.getElementById("lua-input");
+    var output = document.getElementById("lua-output");
+    var button = document.getElementById("btn-obfuscate");
+    var stats = document.getElementById("obf-stats");
 
-  function showStatus(msg, isError = false) {
-    status.textContent = msg;
-    status.style.color = isError ? "#f85149" : "#58a6ff";
-    setTimeout(() => status.textContent = "", 3000);
-  }
-
-  obfuscateBtn.addEventListener("click", () => {
-    const code = input.value.trim();
-    if (!code) return showStatus("Enter Luau code first!", true);
-    
-    try {
-      const result = window.obfuscateLuau(code);
-      output.value = result;
-      showStatus("Obfuscated successfully!");
-    } catch (e) {
-      showStatus("Error: " + e.message, true);
+    if (!input || !output || !button) {
+        console.error("UI elements not found. Check your IDs in index.html");
+        return;
     }
-  });
 
-  copyBtn.addEventListener("click", () => {
-    if (!output.value) return showStatus("Nothing to copy!", true);
-    output.select();
-    document.execCommand("copy");
-    showStatus("Copied to clipboard!");
-  });
+    button.addEventListener("click", function () {
+        var code = input.value;
 
-  clearBtn.addEventListener("click", () => {
-    input.value = "";
-    output.value = "";
-    showStatus("Cleared!");
-  });
+        if (!code.trim()) {
+            alert("Paste your Lua script first.");
+            return;
+        }
+
+        try {
+            var result = RedFoxObfuscator.obfuscate(code, {});
+
+            output.value = result.output;
+
+            if (stats) {
+                stats.textContent =
+                    "Key: " + result.key +
+                    " | Encoded length: " + result.hexLength +
+                    " chars";
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Obfuscation failed: " + err.message);
+        }
+    });
 });
