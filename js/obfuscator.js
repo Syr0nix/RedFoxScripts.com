@@ -523,80 +523,78 @@ function generateJunkLua() {
 function controlFlowFlattenInsane(code) {
 
 
+    // we wrap the whole payload as one big block
+
+
+    let parts = [];
 
 
 
 
-    // split into logical code blocks instead of single lines
+    parts.push("local _STATE = 0");
 
 
-    let blocks = code
+    parts.push("while true do");
 
 
-        .replace(/\r\n/g, "\n")
-
-
-        .split(/\n+/)
-
-
-        .map(l => l.trim())
-
-
-        .filter(l => l.length > 0);
+    parts.push("    if _STATE == 0 then");
 
 
 
 
 
-    let flat = [];
+    // original script goes here, untouched (can be multi-line)
 
 
-    let state = 0;
-
-
-
-
-
-    flat.push("local _STATE = 0");
-
-
-    flat.push("while true do");
+    parts.push(code);
 
 
 
 
 
-    for (let i = 0; i < blocks.length; i++) {
+    // move to exit state
 
 
-        flat.push(`    if _STATE == ${state} then`);
+    parts.push("        _STATE = 1");
 
 
-        flat.push(`        ${blocks[i]}`);
+    parts.push("    elseif _STATE == 1 then");
 
 
-        state++;
+    parts.push("        break");
 
 
-        flat.push(`        _STATE = ${state}`);
 
 
-        flat.push("    end");
+
+    // a few unreachable junk states to look scary
+
+
+    for (let i = 2; i <= 4; i++) {
+
+
+        parts.push("    elseif _STATE == " + i + " then");
+
+
+        parts.push("        " + generateJunkLua());
+
+
+
 
     }
 
 
 
 
-    flat.push(`    if _STATE == ${state} then break end`);
+    parts.push("    end");
 
 
-    flat.push("end");
+    parts.push("end");
 
 
 
 
-    return flat.join("\n");
+    return parts.join("\n");
 
 }
 
@@ -733,25 +731,19 @@ function encryptStrings(code) {
 function wrapInVM(code) {
 
 
+    let bytes = [];
+
+
+    for (let i = 0; i < code.length; i++) {
+
+
+        bytes.push(code.charCodeAt(i));
+
+
+    }
 
 
 
-    // normalize Lua payload so that byte offsets are consistent
-
-
-    code = code.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
-
-
-
-
-
-    // convert each character to its UTF-8 byte
-
-
-    let encoder = new TextEncoder();
-
-
-    let bytes = Array.from(encoder.encode(code));
 
 
 
@@ -762,31 +754,35 @@ function wrapInVM(code) {
     lua.push("local function _RF_VM_RUN(t)");
 
 
-    lua.push("    local buf = table.create(#t)");
+    lua.push("    local s = {}");
 
     lua.push("    for i = 1, #t do");
 
 
-    lua.push("        buf[i] = string.char(t[i])");
+    lua.push("        s[i] = string.char(t[i])");
 
     lua.push("    end");
 
 
-    lua.push("    local chunk = table.concat(buf)");
+    lua.push("    local chunk = table.concat(s)");
 
     lua.push("    return loadstring(chunk)()");
 
     lua.push("end");
 
 
+    lua.push("");
+
     lua.push("_RF_VM_RUN(_RF_VM)");
 
 
 
 
-    return lua.join(\"\\n\");
+    return lua.join("\n");
 
 }
+
+
 
 
 // ============================================================
