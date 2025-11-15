@@ -2,32 +2,35 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <title>RedFoxScripts Obfuscator</title>
+    <title>RedFox Luau Obfuscator</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <h1>RedFoxScripts Lua Obfuscator</h1>
+    <h1>RedFox Luau Obfuscator</h1>
 
     <div class="pane">
-        <h2>Input Lua</h2>
-        <textarea id="lua-input" placeholder="Paste your Lua / Roblox script here"></textarea>
+        <h2>Input Luau</h2>
+        <textarea id="lua-input" placeholder="Paste your Luau / Roblox script here"></textarea>
     </div>
 
-    <button id="btn-obfuscate">Obfuscate</button>
-    <span id="obf-stats"></span>
+    <div class="controls">
+        <label for="obf-mode">Mode:</label>
+        <select id="obf-mode">
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="max" selected>Max</option>
+        </select>
+
+        <button id="btn-obfuscate">Obfuscate</button>
+        <span id="obf-stats"></span>
+    </div>
 
     <div class="pane">
         <h2>Obfuscated Output</h2>
         <textarea id="lua-output" readonly></textarea>
     </div>
 
-    <!-- (Optional) luaparse if you want AST tricks later -->
-    <script src="js/libs/luaparse.min.js"></script>
-
-    <!-- Real obfuscator logic -->
     <script src="js/obfuscator.js"></script>
-
-    <!-- UI glue -->
     <script src="js/ui.js"></script>
 </body>
 </html>
