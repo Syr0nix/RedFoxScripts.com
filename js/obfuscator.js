@@ -354,8 +354,8 @@ window.RedFoxObfuscator = {
         var antiDebugChunk = opts.antiDebug ? buildAntiDebugHeaderRoblox() : "";
 
         // 8) Build outer wrapper (multi-line first)
-        var wrapped = `
--- RedFox Hybrid Engine
+      var wrapped = `
+--[[ RedFox Hybrid Engine ]]
 local function _RF_DEC(b,k)
     local out = ""
     for num in string.gmatch(b, "%d+") do
@@ -379,12 +379,19 @@ ${antiDebugChunk}
 return loadstring(out)()
 `;
 
+
         // 9) SINGLE-LINE OUTPUT
         wrapped = wrapped
-            .split("\n")
-            .map(function (l) { return l.trim(); })
-            .filter(function (l) { return l.length > 0; })
-            .join(" ");
+    .split("\n")
+    .map(l => l.trim())
+    .filter(l => l.length > 0)
+    .map(l => {
+        if (l.startsWith("--")) return "--[[" + l.slice(2).trim() + "]]";
+        return l;
+    })
+    .join(" ");
+
+
 
         return {
             output: wrapped,
