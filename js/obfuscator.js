@@ -256,6 +256,7 @@ function generateJunkLua() {
         "setmetatable({}, {__index = function() return " + r3 + " end})",
         "do local a=" + r1 + "; local function " + rfRandomIdent(4) + "() return a end end"
     ];
+    junk = junk.filter(j => !j.trim().startsWith("."));
     return junk[Math.floor(Math.random() * junk.length)];
 }
 
