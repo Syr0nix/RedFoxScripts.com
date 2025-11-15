@@ -263,8 +263,11 @@ function generateJunkLua() {
 // MODULE 2: INSANE CONTROL FLOW FLATTENING (STATE MACHINE)
 // ============================================================
 function controlFlowFlattenInsane(code) {
-    let lines = code.split(/[\r\n]+/).filter(l => l.trim().length > 0);
-    if (lines.length === 0) return code;
+let lines = code
+    .replace(/\n+/g, "\n")
+    .split("\n")
+    .filter(l => l.trim().length > 0)
+    .map(l => l.trim());    if (lines.length === 0) return code;
 
     let blocks = [];
     for (let i = 0; i < lines.length; i++) {
@@ -317,14 +320,29 @@ function controlFlowFlattenInsane(code) {
 function injectJunkNodes(code) {
     let lines = code.split("\n");
     let out = [];
+
     for (let i = 0; i < lines.length; i++) {
-        out.push(lines[i]);
+        const line = lines[i];
+        out.push(line);
+
+        // NEVER insert junk after a line ending with a dot,
+        // or before a line starting with a dot.
+        const next = lines[i + 1] || "";
+
+        const badAfter =
+            line.trim().endsWith(".") ||
+            next.trim().startsWith(".");
+
+        if (badAfter) continue;
+
         if (Math.random() < 0.5) {
             out.push(generateJunkLua());
         }
     }
+
     return out.join("\n");
 }
+
 
 // ============================================================
 // STRING ENCRYPTION USING _RF_DEC (XOR)
