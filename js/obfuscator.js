@@ -222,6 +222,7 @@ function injectJunkNodes(code) {
 
 // ============================================================
 // STRING ENCRYPTION USING _RF_DEC (XOR)
+//  (NOTE: _RF_DEC MUST BE GLOBAL IN THE WRAPPER)
 // ============================================================
 function encryptStrings(code) {
     return code.replace(/"(.-)"/g, function(_, str) {
@@ -263,7 +264,7 @@ function wrapInVM(code) {
 // ROBLOX-FOCUSED ANTI-DEBUG HEADER
 // ============================================================
 function buildAntiDebugHeaderRoblox() {
-    // This returns a Lua string; minified later.
+    // This returns a Lua string; will be compressed later.
     return [
         "local function _RF_ANTIDEBUG()",
         "    local ok_dbg, dbg = pcall(function() return debug end)",
@@ -322,7 +323,6 @@ window.RedFoxObfuscator = {
 
         // 5) Deep VM + Multilayer
         if (opts.vmMode) {
-            // If also flattened & junk: multilayer VM
             if (opts.controlFlowFlatten && opts.junkNodes) {
                 code = wrapInVM(code);
                 code = wrapInVM(code); // double layer
@@ -354,17 +354,17 @@ window.RedFoxObfuscator = {
         var antiDebugChunk = opts.antiDebug ? buildAntiDebugHeaderRoblox() : "";
 
         // 8) Build outer wrapper (multi-line first)
+        // NOTE: _RF_DEC is GLOBAL (not local) so payload can call it.
         var wrapped = `
 -- RedFox Hybrid Engine
-local function _RF_DEC(b,k)
-    local out=""
+function _RF_DEC(b,k)
+    local out = ""
     for num in string.gmatch(b, "%d+") do
         local n = tonumber(num)
         out = out .. string.char(bit32.bxor(n, k))
     end
     return out
 end
-
 
 local data = "${hex}"
 local out = ""
@@ -381,19 +381,33 @@ ${antiDebugChunk}
 return loadstring(out)()
 `;
 
-        // 9) SINGLE-LINE OUTPUT (safe, no broken comments/ops)
-        wrapped = wrapped
-            .split("\n")
-            .map(l => l.replace(/\s+/g, " ").trim())
-            .filter(l => l.length > 0)
-            .map(l => {
-                // convert line comments into a safe long comment
-                if (l.startsWith("--")) {
-                    return "--[====[" + l.slice(2).trim() + "]====]";
-                }
-                return l;
+        // 9) SAFE SINGLE-LINE COMPRESSION:
+        // - Keep the banner as its own line: "-- RedFox Hybrid Engine"
+        // - Everything else becomes one long line.
+        var lines = wrapped.split("\n");
+
+        // First non-empty line will be the banner
+        var banner = "";
+        var bodyLines = [];
+        for (var li = 0; li < lines.length; li++) {
+            var line = lines[li];
+            if (banner === "" && line.trim().length > 0) {
+                banner = line.trim();
+            } else {
+                bodyLines.push(line);
+            }
+        }
+
+        var bodySingle = bodyLines
+            .map(function (l) {
+                return l.replace(/\s+/g, " ").trim();
+            })
+            .filter(function (l) {
+                return l.length > 0;
             })
             .join(" ");
+
+        wrapped = banner + "\n" + bodySingle;
 
         return {
             output: wrapped,
