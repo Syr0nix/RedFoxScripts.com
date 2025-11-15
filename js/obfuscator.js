@@ -1,11 +1,10 @@
 // js/obfuscator.js
 console.log("RedFox Obfuscator Loaded");
 
-// Create global object for ui.js to call
 window.RedFoxObfuscator = {
     obfuscate: function (code, opts) {
 
-        // TEMPORARY ENGINE so UI works immediately
+        // Convert Lua to hex
         let hex = "";
         for (let i = 0; i < code.length; i++) {
             hex += code.charCodeAt(i).toString(16).padStart(2, "0");
@@ -20,9 +19,11 @@ window.RedFoxObfuscator = {
             (opts.antiDebug ? 1 : 0) +
             (opts.antiTamper ? 1 : 0);
 
+        // DO NOT ESCAPE ${hex}
+        // We WANT JS to substitute the real hex string.
         let wrapped = `
 -- RedFox Obfuscator (TEMP ENGINE)
-local data = "\\${hex}"
+local data = "${hex}"
 local out = ""
 
 for i = 1, #data, 2 do
