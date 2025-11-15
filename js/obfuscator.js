@@ -357,13 +357,14 @@ window.RedFoxObfuscator = {
         var wrapped = `
 -- RedFox Hybrid Engine
 local function _RF_DEC(b,k)
-    local out = ""
+    local out=""
     for num in string.gmatch(b, "%d+") do
         local n = tonumber(num)
-        out = out .. string.char(n ~ k)
+        out = out .. string.char(bit32.bxor(n, k))
     end
     return out
 end
+
 
 local data = "${hex}"
 local out = ""
