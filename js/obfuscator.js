@@ -260,57 +260,32 @@ function generateJunkLua() {
 // MODULE 2: INSANE CONTROL FLOW FLATTENING (STATE MACHINE)
 // ============================================================
 function controlFlowFlattenInsane(code) {
-let lines = code
-    .replace(/\n+/g, "\n")
-    .split("\n")
-    .filter(l => l.trim().length > 0)
-    .map(l => l.trim());    if (lines.length === 0) return code;
+    // we wrap the whole payload as one big block
+    let parts = [];
 
-    let blocks = [];
-    for (let i = 0; i < lines.length; i++) {
-        blocks.push({
-            id: i,
-            code: lines[i],
-            real: true
-        });
+    parts.push("local _STATE = 0");
+    parts.push("while true do");
+    parts.push("    if _STATE == 0 then");
+
+    // original script goes here, untouched (can be multi-line)
+    parts.push(code);
+
+    // move to exit state
+    parts.push("        _STATE = 1");
+    parts.push("    elseif _STATE == 1 then");
+    parts.push("        break");
+
+    // a few unreachable junk states to look scary
+    for (let i = 2; i <= 4; i++) {
+        parts.push("    elseif _STATE == " + i + " then");
+        parts.push("        " + generateJunkLua());
     }
 
-    let junkCount = Math.floor(lines.length * 1.5) + 10;
-    for (let j = 0; j < junkCount; j++) {
-        blocks.push({
-            id: "junk" + j,
-            code: generateJunkLua(),
-            real: false
-        });
-    }
+    parts.push("    end");
+    parts.push("end");
 
-    shuffleArray(blocks);
-
-    let dispatcher = [];
-    dispatcher.push("local _STATE = \"" + blocks[0].id + "\"");
-    dispatcher.push("while true do");
-
-    blocks.forEach((b, idx) => {
-        dispatcher.push("    if _STATE == \"" + b.id + "\" then");
-        dispatcher.push("        if ((" + opaquePredicate() + ")) then");
-        dispatcher.push("            " + b.code);
-        if (idx < blocks.length - 1) {
-            dispatcher.push("            _STATE = \"" + blocks[idx + 1].id + "\"");
-        } else {
-            dispatcher.push("            break");
-        }
-        dispatcher.push("        else");
-        dispatcher.push("            " + generateJunkLua());
-        dispatcher.push("            _STATE = \"" + randomState(blocks) + "\"");
-        dispatcher.push("        end");
-        dispatcher.push("    end");
-    });
-
-    dispatcher.push("end");
-
-    return dispatcher.join("\n");
+    return parts.join("\n");
 }
-
 // ============================================================
 // MODULE 3: Extra Junk Node Injection
 // ============================================================
