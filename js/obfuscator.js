@@ -28,7 +28,7 @@ function renameVariables(code) {
         "pairs","ipairs","print","warn","error","pcall","xpcall",
         "_G","shared","Enum","Vector3","CFrame","Instance",
         "tick","time","wait","spawn","delay",
-        "_RF_DEC" // our helper, do NOT touch
+        "_RF_DEC", "_RF_VM_RUN" // our helpers, do NOT touch
     ]);
 
     function addName(name) {
@@ -105,6 +105,10 @@ function renameVariables(code) {
 
     return renamed;
 }
+
+// ------------------------------
+// Helpers for INSANE flattening / junk
+// ------------------------------
 function shuffleArray(arr) {
     for (let i = arr.length - 1; i > 0; i--) {
         let j = Math.floor(Math.random() * (i + 1));
@@ -136,37 +140,15 @@ function generateJunkLua() {
     return junk[Math.floor(Math.random() * junk.length)];
 }
 
-
-// ------------------------------
-// Internal string encryption
-// ------------------------------
-function encryptStrings(code) {
-    // Replace "string" literals with runtime-decrypted calls
-    // NOTE: very simple, only double-quoted strings.
-    return code.replace(/"(.-)"/g, function(_, str) {
-
-        // XOR key
-        var key = Math.floor(Math.random() * 200) + 30;
-
-        var bytes = [];
-        for (var i = 0; i < str.length; i++) {
-            bytes.push(str.charCodeAt(i) ^ key);
-        }
-
-        return '(_RF_DEC("' + bytes.join(",") + '",' + key + "))";
-    });
-}
-
-// ------------------------------
-// Main Obfuscator Interface
-// ------------------------------
 // ------------------------------------------------------------
 // MODULE 2: INSANE CONTROL FLOW FLATTENING
 // ------------------------------------------------------------
 function controlFlowFlattenInsane(code) {
 
-    // 1. Split into "rough" blocks by semicolon or newline
+    // 1. Split into "rough" blocks by newline
     let lines = code.split(/[\r\n]+/).filter(l => l.trim().length > 0);
+
+    if (lines.length === 0) return code;
 
     // 2. Convert lines into state blocks
     let blocks = [];
@@ -224,6 +206,96 @@ function controlFlowFlattenInsane(code) {
     return dispatcher.join("\n");
 }
 
+// ------------------------------------------------------------
+// MODULE 3: Junk node injection (light extra junk)
+// ------------------------------------------------------------
+function injectJunkNodes(code) {
+    let lines = code.split("\n");
+    let out = [];
+    for (let i = 0; i < lines.length; i++) {
+        out.push(lines[i]);
+        // random chance to insert extra junk line
+        if (Math.random() < 0.4) {
+            out.push(generateJunkLua());
+        }
+    }
+    return out.join("\n");
+}
+
+// ------------------------------
+// Internal string encryption
+// ------------------------------
+function encryptStrings(code) {
+    // Replace "string" literals with runtime-decrypted calls
+    // NOTE: very simple, only double-quoted strings.
+    return code.replace(/"(.-)"/g, function(_, str) {
+
+        // XOR key
+        var key = Math.floor(Math.random() * 200) + 30;
+
+        var bytes = [];
+        for (var i = 0; i < str.length; i++) {
+            bytes.push(str.charCodeAt(i) ^ key);
+        }
+
+        return '(_RF_DEC("' + bytes.join(",") + '",' + key + "))";
+    });
+}
+
+// ------------------------------------------------------------
+// VM Mode wrapper (Module: VM)
+// ------------------------------------------------------------
+function wrapInVM(code) {
+    let bytes = [];
+    for (let i = 0; i < code.length; i++) {
+        bytes.push(code.charCodeAt(i));
+    }
+
+    let lua = [];
+    lua.push("local _RF_VM = {" + bytes.join(",") + "}");
+    lua.push("local function _RF_VM_RUN(t)");
+    lua.push("    local s = {}");
+    lua.push("    for i = 1, #t do");
+    lua.push("        s[i] = string.char(t[i])");
+    lua.push("    end");
+    lua.push("    local chunk = table.concat(s)");
+    lua.push("    return loadstring(chunk)()");
+    lua.push("end");
+    lua.push("");
+    lua.push("_RF_VM_RUN(_RF_VM)");
+
+    return lua.join("\n");
+}
+
+// ------------------------------------------------------------
+// Anti-debug / anti-tamper header generators
+// ------------------------------------------------------------
+function buildAntiDebugHeader() {
+    return [
+        "local function _RF_ANTIDEBUG()",
+        "    local ok, dbg = pcall(function() return debug end)",
+        "    if ok and dbg and dbg.getinfo then",
+        "        error('RedFox: debugger detected', 0)",
+        "    end",
+        "    if hookfunction ~= nil then",
+        "        error('RedFox: hookfunction detected', 0)",
+        "    end",
+        "end",
+        "pcall(_RF_ANTIDEBUG)",
+        ""
+    ].join("\n");
+}
+
+function buildAntiTamperHeader(expectedHexLen) {
+    // We check the length of 'data' string after it's assigned
+    // So this header will be used INSIDE the wrapper, not here.
+    // We'll embed expectedHexLen into the wrapper.
+    return expectedHexLen; // just pass through; wrapper uses this value
+}
+
+// ------------------------------
+// Main Obfuscator Interface
+// ------------------------------
 window.RedFoxObfuscator = {
     obfuscate: function (code, opts) {
 
@@ -232,16 +304,39 @@ window.RedFoxObfuscator = {
             code = renameVariables(code);
         }
 
-        // 2) String encryption
+        // 2) INSANE control-flow flattening
+        if (opts.controlFlowFlatten) {
+            code = controlFlowFlattenInsane(code);
+        }
+
+        // 3) Junk node injection
+        if (opts.junkNodes) {
+            code = injectJunkNodes(code);
+        }
+
+        // 4) String encryption
         if (opts.stringEncrypt) {
             code = encryptStrings(code);
         }
 
-        // 3) Hex encode final code
-        var hex = "";
-        for (var i = 0; i < code.length; i++) {
-            hex += code.charCodeAt(i).toString(16).padStart(2, "0");
+        // 5) VM mode
+        if (opts.vmMode) {
+            code = wrapInVM(code);
         }
+
+        // 6) Build Lua pre-header for anti-debug (outside of hex wrapper)
+        let luaPayload = code;
+
+        // (anti-debug / anti-tamper will be handled in wrapper phase)
+        // At this level, luaPayload is the script we want to run after decode.
+
+        // 7) Hex encode final Lua payload
+        var hex = "";
+        for (var i = 0; i < luaPayload.length; i++) {
+            hex += luaPayload.charCodeAt(i).toString(16).padStart(2, "0");
+        }
+
+        var expectedHexLen = hex.length;
 
         var layers =
             (opts.variableRename ? 1 : 0) +
@@ -252,8 +347,9 @@ window.RedFoxObfuscator = {
             (opts.antiDebug ? 1 : 0) +
             (opts.antiTamper ? 1 : 0);
 
+        // 8) Build outer wrapper
         var wrapped = `
--- RedFox Hybrid TEMP Engine
+-- RedFox Hybrid Engine
 local function _RF_DEC(b,k)
     local out = ""
     for num in string.gmatch(b, "%d+") do
@@ -265,10 +361,17 @@ end
 local data = "${hex}"
 local out = ""
 
+-- Anti-tamper: length check
+${opts.antiTamper ? ("do if #data ~= " + expectedHexLen + " then error('RedFox: tamper detected', 0) end end") : ""}
+
+-- Decode hex payload
 for i = 1, #data, 2 do
     local byte = tonumber(data:sub(i, i+1), 16)
     out = out .. string.char(byte)
 end
+
+-- Optional anti-debug inside runtime
+${opts.antiDebug ? buildAntiDebugHeader() : ""}
 
 return loadstring(out)()
 `;
