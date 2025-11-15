@@ -1,11 +1,11 @@
 // js/obfuscator.js
 console.log("RedFox Obfuscator Loaded");
 
-// Create global object so ui.js can use it
+// Create global object for ui.js to call
 window.RedFoxObfuscator = {
     obfuscate: function (code, opts) {
 
-        // TEMP engine so the UI works immediately
+        // TEMPORARY ENGINE so UI works immediately
         let hex = "";
         for (let i = 0; i < code.length; i++) {
             hex += code.charCodeAt(i).toString(16).padStart(2, "0");
