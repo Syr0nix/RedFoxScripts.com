@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Roboto+Mono&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/@phosphor-icons/web"></script>
-<link rel="stylesheet" data-name="vs/editor/editor.main" href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/editor/editor.main.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/editor/editor.main.min.css">
 <style>
 :root {
     --primary-color: #FF4B2B;
@@ -155,10 +155,10 @@ body{flex-direction:column;}
 </div>
 </div>
 <div class="nav-container" id="nav-container">
-<button class="nav-link active" onclick="showTab('scripts',this)"><i class="ph-duotone ph-scroll"></i>Script Library</button>
-<button class="nav-link" onclick="showTab('tools',this)"><i class="ph-duotone ph-wrench"></i>Power Tools</button>
-<button class="nav-link" onclick="showTab('executor',this)"><i class="ph-duotone ph-play-circle"></i>Executor</button>
-<button class="nav-link" onclick="showTab('obfuscator',this)"><i class="ph-duotone ph-gear-six"></i>Obfuscator</button>
+<button class="nav-link active" onclick="showTab('scripts',this)">Script Library</button>
+<button class="nav-link" onclick="showTab('tools',this)">Power Tools</button>
+<button class="nav-link" onclick="showTab('executor',this)">Executor</button>
+<button class="nav-link" onclick="showTab('obfuscator',this)">Obfuscator</button>
 </div>
 <div class="sidebar-footer">
 <div>© <span id="copyright-year">2025</span> RedFox Studio™</div>
@@ -167,7 +167,7 @@ body{flex-direction:column;}
 </aside>
 <main>
 <section id="scripts" class="section">
-<div class="section-header"><i class="ph-duotone ph-scroll"></i><h2>Script Library</h2></div>
+<div class="section-header"><h2>Script Library</h2></div>
 <p>Paste a script or open one from the library.</p>
 <div class="card-grid">
 <div class="card" onclick="showScriptModal('Build A Boat','https://rawscripts.net/raw/Build-A-Boat-For-Treasure-auto-farm-38247')"><h3>Build A Boat</h3><p>Auto farm example</p></div>
@@ -175,23 +175,23 @@ body{flex-direction:column;}
 </div>
 </section>
 <section id="tools" class="section" style="display:none">
-<div class="section-header"><i class="ph-duotone ph-wrench"></i><h2>Power Tools</h2></div>
+<div class="section-header"><h2>Power Tools</h2></div>
 <p>Utilities like WinOps and FoxStrap.</p>
 </section>
 <section id="executor" class="section" style="display:none">
-<div class="section-header"><i class="ph-duotone ph-play-circle"></i><h2>Executor</h2></div>
+<div class="section-header"><h2>Executor</h2></div>
 <p>Preview and loader generator.</p>
 <img src="https://raw.githubusercontent.com/Syr0nix/RedFoxScripts.com/main/%7B2CA209B1-4839-4547-A0BB-F392DA76E091%7D.png" style="max-width:600px;border-radius:10px;margin-top:12px" alt="Executor Preview">
 </section>
 <section id="obfuscator" class="section" style="display:none">
-<div class="section-header"><i class="ph-duotone ph-gear-six"></i><h2>Obfuscator</h2></div>
-<p>Maximum protection: string encryption, variable renaming, control-flow flattening, junk code, anti-debug, anti-tamper, number obfuscation, and minification.</p>
+<div class="section-header"><h2>Obfuscator</h2></div>
+<p>Maximum protection: string encryption, variable renaming, junk code, anti-debug, anti-tamper, number obfuscation, and minification.</p>
 <div class="obfuscator-grid">
 <div>
 <div id="input-editor" class="editor-container"></div>
 <div style="display:flex;gap:8px;margin-top:12px">
-<button id="obfuscateBtn" class="action-button" disabled><i class="ph ph-gear"></i>Obfuscate</button>
-<button id="copyObfBtn" class="action-button" style="background:linear-gradient(90deg,#4b8,#2a6)"><i class="ph ph-clipboard-text"></i>Copy Output</button>
+<button id="obfuscateBtn" class="action-button" disabled>Obfuscate</button>
+<button id="copyObfBtn" class="action-button" style="background:linear-gradient(90deg,#4b8,#2a6)">Copy Output</button>
 </div>
 </div>
 <div>
@@ -203,7 +203,7 @@ body{flex-direction:column;}
 <div class="checkbox-wrapper"><input id="opt-minify" type="checkbox" checked><label for="opt-minify">Compact / Minify Output</label></div>
 <div class="checkbox-wrapper"><input id="opt-control-flow" type="checkbox"><label for="opt-control-flow">Control-Flow Flattening (Heavy)</label></div>
 <div class="checkbox-wrapper"><input id="opt-num-obf" type="checkbox" checked><label for="opt-num-obf">Number Obfuscation</label></div>
-<div class="checkbox-wrapper"><input id="opt-junk-code" type="checkbox" checked><label for="opt-junk-code">Junk Code (300-500 lines)</label></div>
+<div class="checkbox-wrapper"><input id="opt-junk-code" type="checkbox" checked><label for="opt-junk-code">Junk Code (300 lines)</label></div>
 <div class="checkbox-wrapper"><input id="opt-anti-tamper" type="checkbox"><label for="opt-anti-tamper">Anti-Tamper (Self-Hash)</label></div>
 </div>
 <div style="height:16px"></div>
@@ -212,12 +212,11 @@ body{flex-direction:column;}
 </div>
 </section>
 </main>
-
 <div id="scriptModal" class="modal-overlay">
 <div class="modal-content">
 <div class="modal-header">
 <div id="modalScriptName">Script</div>
-<button onclick="closeScriptModal()" class="close-button"><i class="ph ph-x"></i></button>
+<button onclick="closeScriptModal()" class="close-button">X</button>
 </div>
 <div class="modal-body">
 <div id="loader-viewer-container" class="editor-container"></div>
@@ -225,33 +224,32 @@ body{flex-direction:column;}
 </div>
 </div>
 </div>
-
 <div id="versionTag">v1.1</div>
-<div id="toast" class="toast"><i id="toast-icon" class="ph"></i><span id="toast-msg"></span></div>
+<div id="toast" class="toast"><span id="toast-msg"></span></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/loader.min.js"></script>
-
-
-<script src="https://cdn.jsdelivr.net/npm/luaparse@0.3.0/luaparse.min.js"></script>
-
+<script src="https://unpkg.com/luaparse@0.3.0/luaparse.min.js"></script>
 <script>
 'use strict';
 let inputEditor, outputEditor, rawViewerEditor, loaderViewerEditor;
 
 /* ==================== Monaco Editor Setup ==================== */
-require.config({paths:{'vs':'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs'}});
-window.MonacoEnvironment = {getWorkerUrl:()=>`data:text/javascript;charset=utf-8,${encodeURIComponent(
-  "self.MonacoEnvironment={baseUrl:'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/'};"+
-  "importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/base/worker/workerMain.min.js');")}`};
+require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs' }});
+window.MonacoEnvironment = {
+  getWorkerUrl: () => `data:text/javascript;charset=utf-8,${encodeURIComponent(`
+    self.MonacoEnvironment = { baseUrl: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/' };
+    importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/base/worker/workerMain.min.js');
+  `)}`
+};
 
 require(['vs/editor/editor.main'], () => {
   monaco.editor.defineTheme('redfox-theme', {
     base: 'vs-dark', inherit: true,
     rules: [
-      {token: 'keyword', foreground: 'FF4B2B'},
-      {token: 'comment', foreground: '6A9955'},
-      {token: 'string', foreground: 'CE9178'},
-      {token: 'number', foreground: 'B5CEA8'}
+      { token: 'keyword', foreground: 'FF4B2B' },
+      { token: 'comment', foreground: '6A9955' },
+      { token: 'string', foreground: 'CE9178' },
+      { token: 'number', foreground: 'B5CEA8' }
     ],
     colors: {
       'editor.background': '#1A1A1A',
@@ -260,18 +258,23 @@ require(['vs/editor/editor.main'], () => {
       'editor.selectionBackground': '#FF4B2B40'
     }
   });
+
   const opt = {
     language: 'lua', theme: 'redfox-theme', automaticLayout: true,
-    wordWrap: 'on', minimap: {enabled: true}, fontLigatures: true,
+    wordWrap: 'on', minimap: { enabled: true }, fontLigatures: true,
     fontFamily: 'Roboto Mono'
   };
-  inputEditor = monaco.editor.create(document.getElementById('input-editor'), {...opt, value: '-- Paste your Luau script here...'});
-  outputEditor = monaco.editor.create(document.getElementById('output-editor'), {...opt, readOnly: true, value: '-- Obfuscated output will appear here.'});
-  rawViewerEditor = monaco.editor.create(document.getElementById('raw-viewer-container'), {...opt, readOnly: true});
-  loaderViewerEditor = monaco.editor.create(document.getElementById('loader-viewer-container'), {...opt, readOnly: true});
+
+  inputEditor = monaco.editor.create(document.getElementById('input-editor'), { ...opt, value: '-- Paste your Luau script here...' });
+  outputEditor = monaco.editor.create(document.getElementById('output-editor'), { ...opt, readOnly: true, value: '-- Obfuscated output will appear here.' });
+  rawViewerEditor = monaco.editor.create(document.getElementById('raw-viewer-container'), { ...opt, readOnly: true });
+  loaderViewerEditor = monaco.editor.create(document.getElementById('loader-viewer-container'), { ...opt, readOnly: true });
 
   document.getElementById('obfuscateBtn').disabled = false;
   showToast('RedFox Studio Ready!', 'success');
+}, (err) => {
+  console.error('Monaco failed to load:', err);
+  showToast('Failed to load editor. Check internet.', 'error');
 });
 
 /* ==================== UI Helpers ==================== */
@@ -289,10 +292,10 @@ function showTab(id, btn) {
 }
 
 function showToast(msg, type = 'info') {
-  const toast = document.getElementById('toast'), icon = document.getElementById('toast-icon'), text = document.getElementById('toast-msg');
-  text.textContent = msg; toast.className = 'toast show ' + type;
-  const icons = {success: 'ph-duotone ph-check-circle', error: 'ph-duotone ph-x-circle', info: 'ph-duotone ph-info'};
-  icon.className = icons[type] || icons.info;
+  const toast = document.getElementById('toast');
+  const text = document.getElementById('toast-msg');
+  text.textContent = msg;
+  toast.className = 'toast show ' + type;
   setTimeout(() => toast.classList.remove('show'), 3000);
 }
 
@@ -302,20 +305,20 @@ function copyMonacoContent(editor, msg) {
   navigator.clipboard.writeText(code).then(() => showToast(msg, 'success'), () => showToast('Failed to copy!', 'error'));
 }
 
-/* ==================== MAX OBFUSCATOR CORE ==================== */
-const RESERVED = new Set(['and','break','do','else','elseif','end','false','for','function','if','in','local','nil','not','or','repeat','return','then','true','until','while','game','workspace','script','print','wait','task','Instance','Vector3','CFrame','Color3','UDim2','BrickColor','Enum','os','math','string','table','coroutine','bit32','utf8','debug','getfenv','setfenv','rawget','rawset','rawlen','select','tonumber','tostring','type','unpack','pairs','ipairs','next','pcall','xpcall','loadstring','spawn','delay','wait']);
+/* ==================== OBFUSCATOR CORE ==================== */
+const RESERVED = new Set(['and','break','do','else','elseif','end','false','for','function','if','in','local','nil','not','or','repeat','return','then','true','until','while','game','workspace','script','print','wait','task','Instance','Vector3','CFrame','Color3','UDim2','BrickColor','Enum','os','math','string','table','coroutine','bit32','utf8','debug','getfenv','setfenv','rawget','rawset','rawlen','select','tonumber','tostring','type','unpack','pairs','ipairs','next','pcall','xpcall','loadstring','spawn','delay','task.wait']);
 
 function randName() { const c = 'Il'; let s = '_'; for (let i = 0; i < 12; i++) s += c[Math.floor(Math.random()*c.length)]; return s; }
-function randKey(len=20) { const c = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'; let s=''; for (let i=0;i<len;i++) s+=c[Math.floor(Math.random()*c.length)]; return s; }
+function randKey(len=24) { const c = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'; let s=''; for (let i=0;i<len;i++) s+=c[Math.floor(Math.random()*c.length)]; return s; }
 
-function buildScopeAST(code) { 
+function buildScopeAST(code) {
   if (!window.luaparse) throw new Error("luaparse not loaded");
-  return window.luaparse.parse(code, {scope:true, locations:true, ranges:true, luaVersion: '5.3'}); 
+  return window.luaparse.parse(code, { scope: true, locations: true, ranges: true, luaVersion: 'Luau' });
 }
 
 function renameVariables(ast) {
   const map = new Map(), used = new Set(RESERVED);
-  function uniq() { let n; do n=randName(); while(used.has(n)); used.add(n); return n; }
+  function uniq() { let n; do n = randName(); while (used.has(n)); used.add(n); return n; }
   function walk(node) {
     if (!node) return;
     if (node.scope) {
@@ -323,102 +326,85 @@ function renameVariables(ast) {
         if (!RESERVED.has(name)) map.set(name, uniq());
       }
     }
-    for (const k in node) { const c=node[k]; if(Array.isArray(c)) c.forEach(walk); else if(c && typeof c==='object') walk(c); }
+    for (const k in node) {
+      const c = node[k];
+      if (Array.isArray(c)) c.forEach(walk);
+      else if (c && typeof c === 'object') walk(c);
+    }
   }
   walk(ast);
   return map;
 }
 
-// [FIXED] Expanded genNode to handle more types for control-flow flattening
 function genNode(n) {
-    if (!n) return '';
-    switch(n.type) {
-        case 'Identifier': return n.name;
-        case 'StringLiteral': return `"${n.value.replace(/"/g, '\\"')}"`;
-        case 'NumericLiteral': return n.raw || n.value;
-        case 'BooleanLiteral': return n.raw || String(n.value);
-        case 'NilLiteral': return 'nil';
-        case 'VarargLiteral': return '...';
-        case 'LocalStatement': return `local ${n.variables.map(genNode).join(', ')}${n.init.length > 0 ? ' = ' + n.init.map(genNode).join(', ') : ''}`;
-        case 'AssignmentStatement': return `${n.variables.map(genNode).join(', ')} = ${n.init.map(genNode).join(', ')}`;
-        case 'CallStatement': return genNode(n.expression);
-        case 'BinaryExpression': return `(${genNode(n.left)} ${n.operator} ${genNode(n.right)})`;
-        case 'UnaryExpression': return `${n.operator} ${genNode(n.argument)}`;
-        case 'CallExpression': return `${genNode(n.base)}(${(n.arguments || []).map(genNode).join(',')})`;
-        case 'MemberExpression': return n.indexed ? `${genNode(n.base)}[${genNode(n.identifier)}]` : `${genNode(n.base)}.${genNode(n.identifier)}`;
-        case 'FunctionDeclaration': return `function(${(n.parameters || []).map(genNode).join(',')}) end`; // Simplified, body handled by collector
-        case 'ReturnStatement': return `return ${n.arguments.map(genNode).join(',')}`;
-        default: console.warn('Unsupported node in genNode:', n.type); return '';
-    }
+  if (!n) return '';
+  switch (n.type) {
+    case 'Identifier': return n.name;
+    case 'StringLiteral': return `"${n.value.replace(/"/g, '\\"')}"`;
+    case 'NumericLiteral': return n.raw || String(n.value);
+    case 'BooleanLiteral': return String(n.value);
+    case 'NilLiteral': return 'nil';
+    case 'VarargLiteral': return '...';
+    case 'LocalStatement': return `local ${n.variables.map(genNode).join(', ')}${n.init.length ? ' = ' + n.init.map(genNode).join(', ') : ''}`;
+    case 'AssignmentStatement': return `${n.variables.map(genNode).join(', ')} = ${n.init.map(genNode).join(', ')}`;
+    case 'CallStatement': return genNode(n.expression);
+    case 'BinaryExpression': return `(${genNode(n.left)} ${n.operator} ${genNode(n.right)})`;
+    case 'UnaryExpression': return `${n.operator}${genNode(n.argument)}`;
+    case 'CallExpression': return `${genNode(n.base)}(${(n.arguments || []).map(genNode).join(', ')})`;
+    case 'MemberExpression': return n.indexed ? `${genNode(n.base)}[${genNode(n.identifier)}]` : `${genNode(n.base)}.${genNode(n.identifier)}`;
+    case 'FunctionDeclaration': return `function(${n.parameters.map(genNode).join(', ')}) end`;
+    case 'ReturnStatement': return `return ${n.arguments.map(genNode).join(', ')}`;
+    default: return '';
+  }
 }
 
-function flattenControlFlow(ast, varMap) {
-    let stateVar = randName(), dispatcher = randName();
-    let states = [], counter = 0;
-    const transformedCode = { value: '' }; // Use object to pass by reference
-
-    // This is a highly simplified CFG flattener and may not work for complex cases.
-    function transform(body) {
-        let code = '';
-        for (const node of body) {
-            code += genNode(node) + ';\n';
-        }
-        return code;
-    }
-
-    ast.body.forEach(node => {
-        transformedCode.value += genNode(node) + ';\n';
-    });
-
-    let flatCode = transform(ast.body);
-    let out = `local ${stateVar} = 1; while ${stateVar} ~= 0 do if ${stateVar} == 1 then\n ${flatCode}\n ${stateVar}=0; end; end;`;
-    
-    // NOTE: True CFG flattening is extremely complex. This is a placeholder showing intent.
-    // A proper implementation is beyond a simple bugfix. Returning original code flow.
-    let fullCode = '';
-    ast.body.forEach(node => { fullCode += genNode(node) + '\n'; });
-    return fullCode;
-}
-
-// [FIXED] Simplified and corrected number obfuscation
 function obfuscateNumbers(code) {
-  return code.replace(/\b(\d+(\.\d+)?)\b/g, numStr => {
-    const v = parseFloat(numStr);
-    if (Math.abs(v) < 2 || Math.random() < 0.25) return numStr; // Don't obfuscate small numbers or all numbers
-    const part1 = Math.random() * v;
-    const part2 = v - part1;
-    if (Math.random() > 0.5) {
-      return `(${part1}+${part2})`;
-    } else {
-      return `(${v + part1}-${part1})`;
-    }
+  return code.replace(/\b(\d+(\.\d+)?)\b/g, num => {
+    const v = parseFloat(num);
+    if (Math.abs(v) < 2 || Math.random() < 0.3) return num;
+    const a = Math.random() * v, b = v - a;
+    return Math.random() > 0.5 ? `(${a}+${b})` : `(${v}+${a}-${a})`;
   });
 }
 
 function encryptStringsMax(code, key, decName) {
-  const regex = /(["'])(?:(?=(\\?))\2.)*?\1/g;
-  return code.replace(regex, lit => {
-    const raw = lit.slice(1,-1);
-    if (raw.length === 0) return lit;
+  return code.replace(/(["'])(?:(?=(\\?))\2.)*?\1/g, lit => {
+    const raw = lit.slice(1, -1);
+    if (!raw) return lit;
     let xor = '';
-    for (let i=0; i<raw.length; i++) {
-        xor += String.fromCharCode(raw.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+    for (let i = 0; i < raw.length; i++) {
+      xor += String.fromCharCode(raw.charCodeAt(i) ^ key.charCodeAt(i % key.length));
     }
-    const b64 = btoa(xor);
-    return `${decName}("${b64}")`;
+    return `${decName}("${btoa(xor)}")`;
   });
 }
 
-// [FIXED] Correct Lua decoder with Base64 support
 function decoderMax(key, name) {
-    const b64decoder = `local b='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=' function B64_DECODE(data) data=string.gsub(data,'[^'..b..']','') return(data:gsub('.',function(x)if(x=='=')then return''end local r,f='',(b:find(x)-1)for i=6,1,-1 do r=r..(f%2^i-f%2^(i-1)>0 and '1' or '0')end return r end):gsub('%d%d%d?%d?%d?%d?%d?%d?',function(x)if(#x~=8)then return''end local c=0 for i=1,8 do c=c+(x:sub(i,i)=='1' and 2^(8-i) or 0)end return string.char(c)end))end`;
-    return `local C,D,E='${key}',(string.char),... ${b64decoder} local function ${name}(F)local G,H="",B64_DECODE(F) for I=1,#H do G=G..D(H:byte(I)~C:byte((I-1)%#C+1))end return G end`;
+  return `local function ${name}(s)
+    local k, t = "${key}", {}
+    local d = function(c) return string.char(c) end
+    local b64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+    s = s:gsub("[^" .. b64 .. "=]", "")
+    for i = 1, #s, 4 do
+      local a, b, c, d = s:byte(i, i+3)
+      a = b64:find(string.char(a)) - 1
+      b = b64:find(string.char(b or 61)) - 1
+      c = b64:find(string.char(c or 61)) - 1
+      d = b64:find(string.char(d or 61)) - 1
+      t[#t+1] = d((a << 2) | (b >> 4))
+      if c >= 0 then t[#t+1] = d(((b & 15) << 4) | (c >> 2)) end
+      if d >= 0 then t[#t+1] = d(((c & 3) << 6) | d) end
+    end
+    local r = table.concat(t)
+    local o = {}
+    for i = 1, #r do o[i] = d(r:byte(i) ~ k:byte((i-1) % #k + 1)) end
+    return table.concat(o)
+  end`;
 }
 
 function injectJunk() {
-  const count = 300 + Math.floor(Math.random()*200);
   let junk = '';
-  for (let i=0; i<count; i++) {
+  for (let i = 0; i < 300; i++) {
     const op = ['+','-','*','/'][Math.floor(Math.random()*4)];
     const a = Math.floor(Math.random()*100) + 1;
     const b = Math.floor(Math.random()*100) + 1;
@@ -427,171 +413,139 @@ function injectJunk() {
   return junk;
 }
 
-// [FIXED] Re-implemented Anti-Tamper with a correct post-hash placeholder
 function antiTamper() {
-  const payload = `
-    local HASH_PLACEHOLDER = "%%SCRIPT_HASH%%"
-    local info = debug.getinfo(1, "S")
-    if info.source:sub(1,1) == "@" then
-        local file = io.open(info.source:sub(2), "rb")
-        if file then
-            local content = file:read("*a")
-            file:close()
-            local hash = 0
-            for i=1, #content do
-              hash = (hash * 31 + string.byte(content, i)) % 2^32
-            end
-            if tostring(hash) ~= HASH_PLACEHOLDER then
-                error("Tampered script detected.")
-            end
-        end
-    end`;
-  return payload.trim();
+  return `local HASH = "%%SCRIPT_HASH%%"
+  local src = debug.getinfo(1, "S").source
+  if src:sub(1,1) == "@" then
+    local f = io.open(src:sub(2), "rb")
+    if f then
+      local c = f:read("*a"); f:close()
+      local h = 5381
+      for i = 1, #c do h = ((h * 33) ~ c:byte(i)) & 0xFFFFFFFF end
+      if tostring(h) ~= HASH then error("Tampered") end
+    end
+  end`;
 }
 
 function djb2Hash(str) {
-  let hash = 5381;
+  let h = 5381;
   for (let i = 0; i < str.length; i++) {
-    hash = (hash * 33) ^ str.charCodeAt(i);
+    h = ((h * 33) ^ str.charCodeAt(i)) >>> 0;
   }
-  return (hash >>> 0).toString(); // Return as unsigned 32-bit integer string
+  return h.toString();
 }
 
-
 function antiDebugMax() {
-  return `task.spawn(function() local a=os.clock() while task.wait(0.3) do if os.clock()-a>1 then getfenv().debug=nil;error('Debugger detected',0);end;a=os.clock();end;end)`;
+  return `task.spawn(function() local a = os.clock() while task.wait(0.3) do if os.clock() - a > 1 then getfenv().debug = nil; error("Debugger", 0) end a = os.clock() end end)`;
 }
 
 function minifyMax(code) {
   return code
-    .replace(/--\[\[[\s\S]*?\]\]/g,'')
-    .replace(/--[^\n]*/g,'')
-    .replace(/\s+/g,' ')
-    .replace(/\s*([=+\-*/%^#<>(){}\[\].,;:])\s*/g,'$1')
+    .replace(/--\[\[[\s\S]*?\]\]/g, '')
+    .replace(/--[^\n]*/g, '')
+    .replace(/\s+/g, ' ')
+    .replace(/\s*([=+\-*/%^#<>(){}\[\].,;:])\s*/g, '$1')
     .trim();
 }
 
 function fullObfuscate(src, opts) {
   let out = src;
-  
-  // Anti-Debug and junk code are prepended first
   if (opts.antiDebug) out = antiDebugMax() + '\n' + out;
   if (opts.junk) out = injectJunk() + out;
 
   let ast;
-  try {
-    ast = buildScopeAST(out);
-  } catch (e) {
-    throw new Error("Parse Error: " + e.message);
-  }
+  try { ast = buildScopeAST(out); }
+  catch (e) { throw new Error("Parse Error: " + e.message); }
 
-  // NOTE: True control-flow flattening is highly complex and has been disabled to prevent breaking scripts.
-  // The function structure is left as a placeholder for future development.
-  if (opts.controlFlow) {
-    // let flattened = flattenControlFlow(ast, new Map());
-    // out = flattened;
-    // ast = buildScopeAST(out); // Re-parse after major transformation
-  }
-  
   const varMap = opts.variableRenaming ? renameVariables(ast) : new Map();
-
   if (opts.variableRenaming) {
-    const replacements = [];
-    function collectIdentifiers(node) {
-      if (!node) return;
-      if (node.type === 'Identifier' && varMap.has(node.name) && node.range) {
-          replacements.push({start: node.range[0], end: node.range[1], name: varMap.get(node.name)});
+    const reps = [];
+    function collect(n) {
+      if (n.type === 'Identifier' && varMap.has(n.name) && n.range) {
+        reps.push({ s: n.range[0], e: n.range[1], name: varMap.get(n.name) });
       }
-      for (const key in node) {
-          const child = node[key];
-          if (Array.isArray(child)) child.forEach(collectIdentifiers);
-          else if (child && typeof child === 'object') collectIdentifiers(child);
+      for (const k in n) {
+        const c = n[k];
+        if (Array.isArray(c)) c.forEach(collect);
+        else if (c && typeof c === 'object') collect(c);
       }
     }
-    collectIdentifiers(ast);
-    replacements.sort((a, b) => b.start - a.start);
-    for (const r of replacements) {
-        out = out.slice(0, r.start) + r.name + out.slice(r.end);
-    }
+    collect(ast);
+    reps.sort((a,b) => b.s - a.s);
+    for (const r of reps) out = out.slice(0, r.s) + r.name + out.slice(r.e);
   }
 
   if (opts.numberObf) out = obfuscateNumbers(out);
 
   let decoder = '';
   if (opts.encryptStrings) {
-    const key = randKey(24);
-    const decName = randName();
+    const key = randKey(24), decName = randName();
     decoder = decoderMax(key, decName);
     out = encryptStringsMax(out, key, decName);
   }
-  
-  if (opts.antiTamper) {
-      out = antiTamper() + '\n' + out;
-  }
 
-  // Combine decoder and main script
-  out = `${decoder}\n${out}`;
-  
+  if (opts.antiTamper) out = antiTamper() + '\n' + out;
+  out = decoder + '\n' + out;
+
   if (opts.antiTamper) {
-      const finalHash = djb2Hash(out);
-      out = out.replace('%%SCRIPT_HASH%%', finalHash);
+    const hash = djb2Hash(out);
+    out = out.replace('%%SCRIPT_HASH%%', hash);
   }
 
   if (opts.minify) out = minifyMax(out);
-  
-  const header = `-- Obfuscated by RedFox Studio | https://discord.gg/redfox`;
-  return `${header}\n${out}`;
+
+  return `-- Obfuscated by RedFox Studio | https://discord.gg/redfox\n${out}`;
 }
 
 async function obfuscateLuau() {
   const src = inputEditor.getValue().trim();
-  if (!src || src.startsWith('-- Paste')) return showToast('Paste a script first','error');
+  if (!src || src.startsWith('-- Paste')) return showToast('Paste a script first', 'error');
 
   const opts = {
     encryptStrings: opt('str-encrypt'),
     variableRenaming: opt('var-rename'),
     antiDebug: opt('anti-debug'),
     minify: opt('minify'),
-    controlFlow: opt('control-flow'), // This option is available but currently has a non-invasive implementation.
+    controlFlow: opt('control-flow'),
     numberObf: opt('num-obf'),
     junk: opt('junk-code'),
     antiTamper: opt('anti-tamper')
   };
 
-  showToast('Running MAX obfuscation…','info');
+  showToast('Obfuscating...', 'info');
   outputEditor.setValue('-- Working...');
-  await new Promise(r=>setTimeout(r,50));
+  await new Promise(r => setTimeout(r, 100));
 
   try {
     const result = fullObfuscate(src, opts);
     outputEditor.setValue(result);
-    showToast('MAX obfuscation completed!','success');
-  } catch(e) {
-    outputEditor.setValue(`-- ERROR: ${e.message}\n-- Check the browser console for details.`);
-    showToast('Error: '+e.message,'error');
+    showToast('Obfuscation Complete!', 'success');
+  } catch (e) {
+    outputEditor.setValue(`-- ERROR: ${e.message}`);
+    showToast('Error: ' + e.message, 'error');
     console.error(e);
   }
 }
+
 function opt(id) { return document.getElementById('opt-' + id).checked; }
 
-/* ==================== Modal & Misc ==================== */
+/* ==================== Modal ==================== */
 async function showScriptModal(name, url) {
   document.getElementById('modalScriptName').textContent = name;
   document.getElementById('scriptModal').classList.add('visible');
   loaderViewerEditor.setValue(`-- Loader:\nloadstring(game:HttpGet("${url}"))()`);
-  rawViewerEditor.setValue('-- Fetching script...');
+  rawViewerEditor.setValue('-- Fetching...');
   try {
-    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
-    const response = await fetch(proxyUrl);
-    if (!response.ok) throw new Error(`Fetch failed: ${response.statusText}`);
-    const text = await response.text();
+    const res = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
+    const text = await res.text();
     rawViewerEditor.setValue(text);
   } catch (e) {
-    rawViewerEditor.setValue(`-- Failed to fetch script:\n-- ${e.message}\n-- This may be due to CORS policy.`);
-    console.error('Fetch error:', e);
+    rawViewerEditor.setValue(`-- Failed: ${e.message}`);
   }
 }
-function closeScriptModal() { document.getElementById('scriptModal').classList.remove('visible'); }
+function closeScriptModal() {
+  document.getElementById('scriptModal').classList.remove('visible');
+}
 </script>
 </body>
 </html>
