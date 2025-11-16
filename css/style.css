@@ -1,44 +1,132 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8" />
-    <title>RedFox Luau Obfuscator</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="css/style.css" />
-</head>
-<body>
+/* ===========================
+   GLOBAL
+=========================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
-    <h1>RedFox Luau Obfuscator</h1>
+body {
+    background: #0d0d0d;
+    color: #e0e0e0;
+    font-family: 'Poppins', sans-serif;
+    padding: 20px;
+}
 
-    <div class="pane">
-        <h2>Input Luau</h2>
-        <textarea id="lua-input" placeholder="Paste your script here"></textarea>
-    </div>
+h1 {
+    text-align: center;
+    margin-bottom: 25px;
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #ff4b2b;
+}
 
-    <div class="controls">
-        <h3>Options</h3>
+/* ===========================
+   PANELS
+=========================== */
+.pane {
+    background: #1a1a1a;
+    border: 1px solid #2f2f2f;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 25px;
+}
 
-        <label><input type="checkbox" id="opt-rename" checked> Variable Rename</label><br>
-        <label><input type="checkbox" id="opt-strenc" checked> String Encrypt</label><br>
-        <label><input type="checkbox" id="opt-flatten" checked> Control Flow Flatten</label><br>
-        <label><input type="checkbox" id="opt-vm" checked> VM Mode</label><br>
-        <label><input type="checkbox" id="opt-junk" checked> Junk Nodes</label><br>
-        <label><input type="checkbox" id="opt-antidebug" checked> Anti Debug</label><br>
-        <label><input type="checkbox" id="opt-antitamper" checked> Anti Tamper</label><br>
+.pane h2 {
+    margin-bottom: 12px;
+    color: #ff4b2b;
+    font-weight: 600;
+    font-size: 1.4rem;
+}
 
-        <button id="btn-obfuscate">OBFUSCATE (MAX)</button>
-        <span id="obf-stats"></span>
-    </div>
+/* Textareas */
+textarea {
+    width: 100%;
+    height: 260px;
+    resize: vertical;
+    padding: 12px;
+    background: #111;
+    border: 1px solid #333;
+    border-radius: 8px;
+    color: #e0e0e0;
+    font-family: "Roboto Mono", monospace;
+    font-size: 0.95rem;
+    outline: none;
+}
 
-    <div class="pane">
-        <h2>Obfuscated Output</h2>
-        <textarea id="lua-output" readonly></textarea>
-    </div>
+textarea:focus {
+    border-color: #ff4b2b;
+    box-shadow: 0 0 8px rgba(255, 75, 43, 0.4);
+}
 
-    <!-- ORDER MATTERS -->
-    <script src="js/libs/luaparse.js"></script>
-    <script src="js/obfuscator.js"></script>
-    <script src="js/ui.js"></script>
+/* ===========================
+   OPTIONS PANEL
+=========================== */
+.controls {
+    background: #1a1a1a;
+    border: 1px solid #2f2f2f;
+    padding: 20px;
+    margin-bottom: 25px;
+    border-radius: 10px;
+}
 
-</body>
-</html>
+.controls h3 {
+    margin-bottom: 12px;
+    font-size: 1.25rem;
+    color: #ff4b2b;
+}
+
+.controls label {
+    font-size: 0.95rem;
+    cursor: pointer;
+    color: #b8b8b8;
+}
+
+.controls input[type="checkbox"] {
+    margin-right: 6px;
+}
+
+#obf-stats {
+    margin-left: 10px;
+    font-size: 0.9rem;
+    color: #17a2b8;
+}
+
+/* ===========================
+   BUTTON
+=========================== */
+#btn-obfuscate {
+    margin-top: 14px;
+    padding: 12px 20px;
+    background: linear-gradient(90deg, #ff4b2b, #ff416c);
+    border: none;
+    color: white;
+    font-weight: 600;
+    font-size: 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.25s ease;
+}
+
+#btn-obfuscate:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 15px rgba(255, 75, 43, 0.5);
+}
+
+/* ===========================
+   SCROLLBAR
+=========================== */
+textarea::-webkit-scrollbar {
+    width: 10px;
+}
+textarea::-webkit-scrollbar-track {
+    background: #0d0d0d;
+}
+textarea::-webkit-scrollbar-thumb {
+    background: #ff4b2b;
+    border-radius: 6px;
+}
+textarea::-webkit-scrollbar-thumb:hover {
+    background: #ff416c;
+}
