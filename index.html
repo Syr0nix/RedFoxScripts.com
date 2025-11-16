@@ -1,10 +1,12 @@
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="UTF-8" />
     <title>RedFox Luau Obfuscator</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- Embedded CSS to avoid 404 -->
+    
+    <!-- INLINED CSS (fixes black page & 404) -->
     <style>
-        /* Global & Typography */
         *, *::before, *::after { box-sizing: border-box; }
         html { font-size: 100%; }
         body {
@@ -15,8 +17,6 @@
             color: #f5f5f5;
             line-height: 1.5;
         }
-
-        /* Layout */
         .header { text-align: center; padding: 1rem 0; }
         .header h1 { margin: 0; font-size: 1.8rem; font-weight: 600; color: #ff4b2b; }
         .container { max-width: 960px; margin: 0 auto; padding: 0 1rem; }
@@ -28,8 +28,6 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
         .pane h2, .pane h3 { margin-top: 0; color: #ff4b2b; font-weight: 600; }
-
-        /* Textareas */
         textarea {
             width: 100%;
             min-height: 240px;
@@ -46,8 +44,6 @@
         }
         textarea:focus { border-color: #ff4b2b; box-shadow: 0 0 0 3px rgba(255, 75, 43, 0.25); }
         #lua-output { background: #0a0c0f; }
-
-        /* Toggle Switches */
         .toggle {
             display: flex;
             align-items: center;
@@ -79,8 +75,6 @@
         }
         .toggle input:checked + .slider { background: #ff4b2b; }
         .toggle input:checked + .slider::before { transform: translateX(20px); }
-
-        /* Button */
         #btn-obfuscate {
             margin-top: 1rem;
             width: 100%;
@@ -96,22 +90,87 @@
         }
         #btn-obfuscate:hover { filter: brightness(1.15); }
         #btn-obfuscate:active { transform: translateY(1px); }
-
-        /* Stats */
         #obf-stats {
             display: block;
             margin-top: 0.75rem;
             font-weight: 600;
             color: #28ca42;
         }
-
-        /* Responsive */
         @media (max-width: 600px) {
             .container { padding: 0 0.75rem; }
             .pane { padding: 1rem; }
             textarea { min-height: 180px; }
         }
     </style>
-    <!-- Optional: nice monospace font -->
+
+    <!-- Font -->
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 </head>
+<body>
+    <header class="header">
+        <h1>RedFox Luau Obfuscator</h1>
+    </header>
+
+    <main class="container">
+        <!-- Input -->
+        <section class="pane">
+            <h2>Input Luau</h2>
+            <textarea id="lua-input" placeholder="Paste your script here…"></textarea>
+        </section>
+
+        <!-- Options -->
+        <section class="controls pane">
+            <h3>Obfuscation Options</h3>
+            <label class="toggle">
+                <input type="checkbox" id="opt-rename" checked>
+                <span class="slider"></span>
+                Variable Rename
+            </label>
+            <label class="toggle">
+                <input type="checkbox" id="opt-strenc" checked>
+                <span class="slider"></span>
+                String Encrypt
+            </label>
+            <label class="toggle">
+                <input type="checkbox" id="opt-flatten" checked>
+                <span class="slider"></span>
+                Control Flow Flatten
+            </label>
+            <label class="toggle">
+                <input type="checkbox" id="opt-vm" checked>
+                <span class="slider"></span>
+                VM Mode
+            </label>
+            <label class="toggle">
+                <input type="checkbox" id="opt-junk" checked>
+                <span class="slider"></span>
+                Junk Nodes
+            </label>
+            <label class="toggle">
+                <input type="checkbox" id="opt-antidebug" checked>
+                <span class="slider"></span>
+                Anti Debug
+            </label>
+            <label class="toggle">
+                <input type="checkbox" id="opt-antitamper" checked>
+                <span class="slider"></span>
+                Anti Tamper
+            </label>
+
+            <button id="btn-obfuscate">OBFUSCATE (MAX)</button>
+            <span id="obf-stats"></span>
+        </section>
+
+        <!-- Output -->
+        <section class="pane">
+            <h2>Obfuscated Output</h2>
+            <textarea id="lua-output" readonly></textarea>
+        </section>
+    </main>
+
+    <!-- Scripts -->
+    <script src="js/libs/luaparse.js"></script>
+    <script src="js/obfuscator.js"></script>
+    <script src="js/ui.js"></script>
+</body>
+</html>
