@@ -4,9 +4,7 @@
 *,
 *::before,
 *::after { box-sizing: border-box; }
-
 html { font-size: 100%; }
-
 body {
     margin: 0;
     padding: 0;
@@ -19,23 +17,9 @@ body {
 /* -------------------------------------------------
    Layout
    ------------------------------------------------- */
-.header {
-    text-align: center;
-    padding: 1rem 0;
-}
-.header h1 {
-    margin: 0;
-    font-size: 1.8rem;
-    font-weight: 600;
-    color: #ff4b2b;
-}
-
-.container {
-    max-width: 960px;
-    margin: 0 auto;
-    padding: 0 1rem;
-}
-
+.header { text-align: center; padding: 1rem 0; }
+.header h1 { margin: 0; font-size: 1.8rem; font-weight: 600; color: #ff4b2b; }
+.container { max-width: 960px; margin: 0 auto; padding: 0 1rem; }
 .pane {
     background: #0d0f12;
     border-radius: 12px;
@@ -44,11 +28,7 @@ body {
     box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
 .pane h2,
-.pane h3 {
-    margin-top: 0;
-    color: #ff4b2b;
-    font-weight: 600;
-}
+.pane h3 { margin-top: 0; color: #ff4b2b; font-weight: 600; }
 
 /* -------------------------------------------------
    Textareas
@@ -71,12 +51,10 @@ textarea:focus {
     border-color: #ff4b2b;
     box-shadow: 0 0 0 3px rgba(255, 75, 43, 0.25);
 }
-#lua-output {
-    background: #0a0c0f;
-}
+#lua-output { background: #0a0c0f; }
 
 /* -------------------------------------------------
-   Toggle Switches (real toggles, not checkboxes)
+   Toggle Switches
    ------------------------------------------------- */
 .toggle {
     position: relative;
@@ -87,11 +65,7 @@ textarea:focus {
     user-select: none;
     font-size: 0.95rem;
 }
-.toggle input[type="checkbox"] {
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
+.toggle input[type="checkbox"] { opacity: 0; width: 0; height: 0; }
 .toggle .slider {
     position: relative;
     width: 44px;
@@ -112,12 +86,8 @@ textarea:focus {
     border-radius: 50%;
     transition: transform .25s;
 }
-.toggle input:checked + .slider {
-    background: #ff4b2b;
-}
-.toggle input:checked + .slider::before {
-    transform: translateX(20px);
-}
+.toggle input:checked + .slider { background: #ff4b2b; }
+.toggle input:checked + .slider::before { transform: translateX(20px); }
 
 /* -------------------------------------------------
    Button
@@ -135,17 +105,9 @@ textarea:focus {
     cursor: pointer;
     transition: filter .15s, transform .1s;
 }
-#btn-obfuscate:hover {
-    filter: brightness(1.15);
-}
-#btn-obfuscate:active {
-    transform: translateY(1px);
-}
-#btn-obfuscate:disabled {
-    background: #555;
-    cursor: not-allowed;
-    filter: none;
-}
+#btn-obfuscate:hover { filter: brightness(1.15); }
+#btn-obfuscate:active { transform: translateY(1px); }
+#btn-obfuscate:disabled { background: #555; cursor: not-allowed; filter: none; }
 
 /* -------------------------------------------------
    Stats line
