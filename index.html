@@ -5,14 +5,12 @@
     <title>RedFox Luau Obfuscator</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="style.css" />
-    <!-- Optional: nice monospace font -->
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body>
     <header class="header">
         <h1>RedFox Luau Obfuscator</h1>
     </header>
-
     <main class="container">
         <!-- INPUT -->
         <section class="pane">
@@ -23,43 +21,36 @@
         <!-- OPTIONS -->
         <section class="controls pane">
             <h3>Obfuscation Options</h3>
-
             <label class="toggle">
                 <input type="checkbox" id="opt-rename" checked>
                 <span class="slider"></span>
                 Variable Rename
             </label>
-
             <label class="toggle">
                 <input type="checkbox" id="opt-strenc" checked>
                 <span class="slider"></span>
                 String Encrypt
             </label>
-
             <label class="toggle">
                 <input type="checkbox" id="opt-flatten" checked>
                 <span class="slider"></span>
                 Control Flow Flatten
             </label>
-
             <label class="toggle">
                 <input type="checkbox" id="opt-vm" checked>
                 <span class="slider"></span>
                 VM Mode
             </label>
-
             <label class="toggle">
                 <input type="checkbox" id="opt-junk" checked>
                 <span class="slider"></span>
                 Junk Nodes
             </label>
-
             <label class="toggle">
                 <input type="checkbox" id="opt-antidebug" checked>
                 <span class="slider"></span>
                 Anti Debug
             </label>
-
             <label class="toggle">
                 <input type="checkbox" id="opt-antitamper" checked>
                 <span class="slider"></span>
