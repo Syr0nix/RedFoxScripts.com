@@ -4,118 +4,82 @@
     <meta charset="UTF-8" />
     <title>RedFox Luau Obfuscator</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- INLINE CSS (No more external file) -->
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 20px;
-            color: #333;
-        }
-        h1 {
-            text-align: center;
-            color: #333;
-        }
-        .pane {
-            background: white;
-            border-radius: 8px;
-            padding: 20px;
-            margin: 20px 0;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        .pane h2 {
-            margin-top: 0;
-            color: #555;
-        }
-        textarea {
-            width: 100%;
-            height: 400px;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-family: monospace;
-            font-size: 14px;
-            box-sizing: border-box;
-        }
-        #lua-output {
-            background-color: #f9f9f9;
-        }
-        .controls {
-            background: white;
-            border-radius: 8px;
-            padding: 20px;
-            margin: 20px 0;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        .controls h3 {
-            margin-top: 0;
-            color: #555;
-        }
-        .controls label {
-            display: block;
-            margin: 10px 0;
-            cursor: pointer;
-        }
-        .controls input[type="checkbox"] {
-            margin-right: 8px;
-        }
-        #btn-obfuscate {
-            display: block;
-            width: 100%;
-            padding: 12px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-size: 16px;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-        #btn-obfuscate:hover {
-            background-color: #0056b3;
-        }
-        #obf-stats {
-            display: block;
-            margin-top: 10px;
-            font-weight: bold;
-            color: green;
-        }
-    </style>
+    <link rel="stylesheet" href="style.css" />
+    <!-- Optional: nice monospace font -->
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body>
+    <header class="header">
+        <h1>RedFox Luau Obfuscator</h1>
+    </header>
 
-    <h1>RedFox Luau Obfuscator</h1>
+    <main class="container">
+        <!-- INPUT -->
+        <section class="pane">
+            <h2>Input Luau</h2>
+            <textarea id="lua-input" placeholder="Paste your script here…"></textarea>
+        </section>
 
-    <div class="pane">
-        <h2>Input Luau</h2>
-        <textarea id="lua-input" placeholder="Paste your script here"></textarea>
-    </div>
+        <!-- OPTIONS -->
+        <section class="controls pane">
+            <h3>Obfuscation Options</h3>
 
-    <div class="controls">
-        <h3>Options</h3>
+            <label class="toggle">
+                <input type="checkbox" id="opt-rename" checked>
+                <span class="slider"></span>
+                Variable Rename
+            </label>
 
-        <label><input type="checkbox" id="opt-rename" checked> Variable Rename</label><br>
-        <label><input type="checkbox" id="opt-strenc" checked> String Encrypt</label><br>
-        <label><input type="checkbox" id="opt-flatten" checked> Control Flow Flatten</label><br>
-        <label><input type="checkbox" id="opt-vm" checked> VM Mode</label><br>
-        <label><input type="checkbox" id="opt-junk" checked> Junk Nodes</label><br>
-        <label><input type="checkbox" id="opt-antidebug" checked> Anti Debug</label><br>
-        <label><input type="checkbox" id="opt-antitamper" checked> Anti Tamper</label><br>
+            <label class="toggle">
+                <input type="checkbox" id="opt-strenc" checked>
+                <span class="slider"></span>
+                String Encrypt
+            </label>
 
-        <button id="btn-obfuscate">OBFUSCATE (MAX)</button>
-        <span id="obf-stats"></span>
-    </div>
+            <label class="toggle">
+                <input type="checkbox" id="opt-flatten" checked>
+                <span class="slider"></span>
+                Control Flow Flatten
+            </label>
 
-    <div class="pane">
-        <h2>Obfuscated Output</h2>
-        <textarea id="lua-output" readonly></textarea>
-    </div>
+            <label class="toggle">
+                <input type="checkbox" id="opt-vm" checked>
+                <span class="slider"></span>
+                VM Mode
+            </label>
+
+            <label class="toggle">
+                <input type="checkbox" id="opt-junk" checked>
+                <span class="slider"></span>
+                Junk Nodes
+            </label>
+
+            <label class="toggle">
+                <input type="checkbox" id="opt-antidebug" checked>
+                <span class="slider"></span>
+                Anti Debug
+            </label>
+
+            <label class="toggle">
+                <input type="checkbox" id="opt-antitamper" checked>
+                <span class="slider"></span>
+                Anti Tamper
+            </label>
+
+            <button id="btn-obfuscate">OBFUSCATE (MAX)</button>
+            <span id="obf-stats"></span>
+        </section>
+
+        <!-- OUTPUT -->
+        <section class="pane">
+            <h2>Obfuscated Output</h2>
+            <textarea id="lua-output" readonly></textarea>
+        </section>
+    </main>
 
     <!-- ORDER MATTERS -->
     <script src="js/libs/luaparse.js"></script>
     <script src="js/obfuscator.js"></script>
     <script src="js/ui.js"></script>
-
 </body>
 </html>
