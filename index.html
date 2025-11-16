@@ -2,40 +2,206 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <title>RedFox Luau Obfuscator</title>
+    <title>RedFox Studio</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- External CSS ONLY -->
     <link rel="stylesheet" href="css/style.css" />
+
+    <!-- Icons, Fonts, Monaco Editor -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Roboto+Mono&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" data-name="vs/editor/editor.main" href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/editor/editor.main.css">
 </head>
+
 <body>
 
-    <h1>RedFox Luau Obfuscator</h1>
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="logo-group">
+            <img class="sidebar-logo" src="https://raw.githubusercontent.com/Syr0nix/RedFox-Scripts/main/Screenshot_2025-04-21_034725-removebg-preview.png">
+            <div>
+                <div class="sidebar-title">RedFox</div>
+                <div class="sidebar-sub">RedFox Studio</div>
+            </div>
+        </div>
 
-    <div class="pane">
-        <h2>Input Luau</h2>
-        <textarea id="lua-input" placeholder="Paste your script here"></textarea>
+        <div class="nav-container" id="nav-container">
+            <button class="nav-link active" onclick="showTab('scripts',this)">
+                <i class="ph-duotone ph-scroll"></i> Script Library
+            </button>
+            <button class="nav-link" onclick="showTab('tools',this)">
+                <i class="ph-duotone ph-wrench"></i> Power Tools
+            </button>
+            <button class="nav-link" onclick="showTab('executor',this)">
+                <i class="ph-duotone ph-play-circle"></i> Executor
+            </button>
+            <button class="nav-link" onclick="showTab('obfuscator',this)">
+                <i class="ph-duotone ph-gear-six"></i> Obfuscator
+            </button>
+        </div>
+
+        <div class="sidebar-footer">
+            © <span id="copyright-year">2025</span> RedFox Studio™<br>
+            <a href="https://discord.gg/redfox" target="_blank">Join Discord</a>
+        </div>
+    </aside>
+
+
+    <!-- MAIN CONTENT -->
+    <main>
+
+        <!-- SCRIPT LIBRARY -->
+        <section id="scripts" class="section section-active">
+            <div class="section-header">
+                <i class="ph-duotone ph-scroll"></i>
+                <h2>Script Library</h2>
+            </div>
+
+            <p>Paste a script or pick one from the library.</p>
+
+            <div class="card-grid">
+                <div class="card" onclick="showScriptModal('Build A Boat','https://rawscripts.net/raw/Build-A-Boat-For-Treasure-auto-farm-38247')">
+                    <h3>Build A Boat</h3>
+                    <p>Auto Farm Example</p>
+                </div>
+
+                <div class="card" onclick="showScriptModal('Murder Mystery 2','https://raw.githubusercontent.com/Syr0nix/scripts/main/MM2')">
+                    <h3>Murder Mystery 2</h3>
+                    <p>MM2 Utility</p>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- POWER TOOLS -->
+        <section id="tools" class="section">
+            <div class="section-header">
+                <i class="ph-duotone ph-wrench"></i>
+                <h2>Power Tools</h2>
+            </div>
+            <p>FoxStrap, WinOps, utilities, and more.</p>
+        </section>
+
+
+        <!-- EXECUTOR -->
+        <section id="executor" class="section">
+            <div class="section-header">
+                <i class="ph-duotone ph-play-circle"></i>
+                <h2>Executor</h2>
+            </div>
+
+            <img src="https://raw.githubusercontent.com/Syr0nix/RedFoxScripts.com/main/%7B2CA209B1-4839-4547-A0BB-F392DA76E091%7D.png" class="executor-preview">
+        </section>
+
+
+        <!-- OBFUSCATOR -->
+        <section id="obfuscator" class="section">
+            <div class="section-header">
+                <i class="ph-duotone ph-gear-six"></i>
+                <h2>Obfuscator</h2>
+            </div>
+
+            <p>MAX protection: renaming, encryption, flattening, junk, anti-debug, anti-tamper.</p>
+
+            <div class="obfuscator-grid">
+
+                <!-- INPUT -->
+                <div>
+                    <div id="input-editor" class="editor-container"></div>
+
+                    <div class="obf-buttons">
+                        <button id="obfuscateBtn" class="action-button">
+                            <i class="ph ph-gear"></i> Obfuscate
+                        </button>
+
+                        <button id="copyObfBtn" class="action-button green">
+                            <i class="ph ph-clipboard-text"></i> Copy Output
+                        </button>
+                    </div>
+                </div>
+
+                <!-- OPTIONS + OUTPUT -->
+                <div>
+                    <div class="option-group">
+                        <h4>Settings</h4>
+
+                        <div class="checkbox-wrapper">
+                            <input id="opt-str-encrypt" type="checkbox" checked>
+                            <label for="opt-str-encrypt">String Encryption</label>
+                        </div>
+
+                        <div class="checkbox-wrapper">
+                            <input id="opt-var-rename" type="checkbox" checked>
+                            <label for="opt-var-rename">Variable Renaming</label>
+                        </div>
+
+                        <div class="checkbox-wrapper">
+                            <input id="opt-anti-debug" type="checkbox" checked>
+                            <label for="opt-anti-debug">Anti-Debug</label>
+                        </div>
+
+                        <div class="checkbox-wrapper">
+                            <input id="opt-minify" type="checkbox" checked>
+                            <label for="opt-minify">Minify Output</label>
+                        </div>
+
+                        <div class="checkbox-wrapper">
+                            <input id="opt-control-flow" type="checkbox">
+                            <label for="opt-control-flow">Control-Flow Flattening</label>
+                        </div>
+
+                        <div class="checkbox-wrapper">
+                            <input id="opt-num-obf" type="checkbox" checked>
+                            <label for="opt-num-obf">Number Obfuscation</label>
+                        </div>
+
+                        <div class="checkbox-wrapper">
+                            <input id="opt-junk-code" type="checkbox" checked>
+                            <label for="opt-junk-code">Junk Code</label>
+                        </div>
+
+                        <div class="checkbox-wrapper">
+                            <input id="opt-anti-tamper" type="checkbox">
+                            <label for="opt-anti-tamper">Anti-Tamper</label>
+                        </div>
+                    </div>
+
+                    <div id="output-editor" class="editor-container"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+
+    <!-- SCRIPT MODAL -->
+    <div id="scriptModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div id="modalScriptName">Script</div>
+                <button onclick="closeScriptModal()" class="close-button"><i class="ph ph-x"></i></button>
+            </div>
+            <div class="modal-body">
+                <div id="loader-viewer-container" class="editor-container"></div>
+                <div id="raw-viewer-container" class="editor-container"></div>
+            </div>
+        </div>
     </div>
 
-    <div class="controls">
-        <h3>Options</h3>
-
-        <label><input type="checkbox" id="opt-rename" checked> Variable Rename</label><br>
-        <label><input type="checkbox" id="opt-strenc" checked> String Encrypt</label><br>
-        <label><input type="checkbox" id="opt-flatten" checked> Control Flow Flatten</label><br>
-        <label><input type="checkbox" id="opt-vm" checked> VM Mode</label><br>
-        <label><input type="checkbox" id="opt-junk" checked> Junk Nodes</label><br>
-        <label><input type="checkbox" id="opt-antidebug" checked> Anti Debug</label><br>
-        <label><input type="checkbox" id="opt-antitamper" checked> Anti Tamper</label><br>
-
-        <button id="btn-obfuscate">OBFUSCATE (MAX)</button>
-        <span id="obf-stats"></span>
+    <!-- VERSION + TOAST -->
+    <div id="versionTag">v1.1</div>
+    <div id="toast" class="toast">
+        <i id="toast-icon" class="ph"></i>
+        <span id="toast-msg"></span>
     </div>
 
-    <div class="pane">
-        <h2>Obfuscated Output</h2>
-        <textarea id="lua-output" readonly></textarea>
-    </div>
 
-    <!-- ORDER MATTERS -->
+    <!-- JS FILES -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/loader.min.js"></script>
+
+    <!-- 🔥 YOUR GIANT JS FILES, UNTOUCHED -->
     <script src="js/libs/luaparse.js"></script>
     <script src="js/obfuscator.js"></script>
     <script src="js/ui.js"></script>
