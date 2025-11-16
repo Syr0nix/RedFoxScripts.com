@@ -2,12 +2,11 @@
 console.log("UI.JS LOADED");
 
 document.addEventListener("DOMContentLoaded", () => {
-    const input   = document.getElementById("lua-input");
-    const output  = document.getElementById("lua-output");
-    const button  = document.getElementById("btn-obfuscate");
-    const stats   = document.getElementById("obf-stats");
+    const input  = document.getElementById("lua-input");
+    const output = document.getElementById("lua-output");
+    const button = document.getElementById("btn-obfuscate");
+    const stats  = document.getElementById("obf-stats");
 
-    // Helper: safely read a checkbox value (returns false if element missing)
     const getOpt = id => {
         const el = document.getElementById(id);
         return el ? el.checked : false;
@@ -15,7 +14,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     button.addEventListener("click", () => {
         console.log("BUTTON CLICKED");
-
         const code = input.value.trim();
         if (!code) {
             alert("Paste a script first!");
@@ -23,13 +21,13 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         const opts = {
-            variableRename:    getOpt("opt-rename"),
-            stringEncrypt:     getOpt("opt-strenc"),
-            controlFlowFlatten:getOpt("opt-flatten"),
-            vmMode:            getOpt("opt-vm"),
-            junkNodes:         getOpt("opt-junk"),
-            antiDebug:         getOpt("opt-antidebug"),
-            antiTamper:        getOpt("opt-antitamper")
+            variableRename:     getOpt("opt-rename"),
+            stringEncrypt:      getOpt("opt-strenc"),
+            controlFlowFlatten: getOpt("opt-flatten"),
+            vmMode:             getOpt("opt-vm"),
+            junkNodes:          getOpt("opt-junk"),
+            antiDebug:          getOpt("opt-antidebug"),
+            antiTamper:         getOpt("opt-antitamper")
         };
 
         const result = RedFoxObfuscator.obfuscate(code, opts);
