@@ -4,7 +4,84 @@
     <meta charset="UTF-8" />
     <title>RedFox Luau Obfuscator</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="css/style.css" />
+    <!-- INLINE CSS (No more external file) -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .pane {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .pane h2 {
+            margin-top: 0;
+            color: #555;
+        }
+        textarea {
+            width: 100%;
+            height: 400px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        #lua-output {
+            background-color: #f9f9f9;
+        }
+        .controls {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .controls h3 {
+            margin-top: 0;
+            color: #555;
+        }
+        .controls label {
+            display: block;
+            margin: 10px 0;
+            cursor: pointer;
+        }
+        .controls input[type="checkbox"] {
+            margin-right: 8px;
+        }
+        #btn-obfuscate {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        #btn-obfuscate:hover {
+            background-color: #0056b3;
+        }
+        #obf-stats {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+            color: green;
+        }
+    </style>
 </head>
 <body>
 
